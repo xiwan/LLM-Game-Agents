@@ -44,6 +44,8 @@ Only the werewolves have a kill action. Werewolves decide which player to kill.
 
 Currently the game contains two important modules: Game + Player
 
+![transition-chart](./WereWolf/statics/transition-diagram.png)
+
 The Game module is responsible for driving the process, including
 + Initializing game configuration and players
 + Controlling game pace, invoking the Player module at appropriate times to get responses  
@@ -53,7 +55,7 @@ The Player module is responsible for communicating with the LLM
 + Q&A + Memory: Using **langchain ConversationBufferWindowMemory** to complete prompt templating
 + Summarize + Reasoning: Recording key events (voting, discussion, etc), summarizing and reasoning before answering each question
 
-![transition-chart](./WereWolf/statics/transition-diagram.png)
+
 
 ## LLM-Werewolf-CN
 
@@ -166,6 +168,8 @@ The Player module is responsible for communicating with the LLM
 
 目前游戏包含两个重要模块: 游戏 + 玩家
 
+![transition-chart](./WereWolf/statics/transition-diagram.png)
+
 游戏模块负责驱动进程，包括
 + 初始化游戏配置以及玩家
 + 控制游戏节奏，在合适的时间点调用玩家模块来获取回答
@@ -175,4 +179,3 @@ The Player module is responsible for communicating with the LLM
 + 问答 + 记忆: 利用 **langchain ConversationBufferWindowMemory** 完成提示词模版
 + 总结 + 推理: 记录关键事件（投票，讨论等），每次回答问题前进行总结和推理
 
-![transition-chart](./WereWolf/statics/transition-diagram.png)
