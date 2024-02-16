@@ -16,9 +16,9 @@ class GameMaster:
     
     def _current_time(self, i):
         if self.isDay:
-            self.current_time = "{0}-day".format(i)
+            self.current_time = "DAY {0}".format(i)
         else:
-            self.current_time = "{0}-night".format(i)
+            self.current_time = "NIGHT {0}".format(i)
         return self.current_time
     
     def _reviveRoles(self):
@@ -43,7 +43,7 @@ class GameMaster:
         self.run = True
         self.isDay = False
         self.current_time = ""
-        self.game_message_queue = queue.Queue(maxsize=10)
+        self.game_memory_queue = queue.Queue(maxsize=100)
         self.game_pulbic_log = []
         self.game_wolf_vote_log = []
         self.game_player_vote_log = []
@@ -66,7 +66,7 @@ class GameMaster:
 
         # print(grouped_dict["狼人"])
         message = "现在场上存活角色, 狼人:{0} 村民:{1}".format(str(len(grouped_dict["狼人"])), str(len(grouped_dict["村民"])))
-        # self.game_message_queue.put(message)
+
         Info(message)
 
         if len(grouped_dict["狼人"]) == 0 and len(grouped_dict["村民"]) > 0:
