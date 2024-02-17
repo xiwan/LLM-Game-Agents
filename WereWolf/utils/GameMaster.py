@@ -43,7 +43,7 @@ class GameMaster:
         self.run = True
         self.isDay = False
         self.current_time = ""
-        self.game_memory_queue = queue.Queue(maxsize=100)
+        self.game_memory_queue = queue.Queue(maxsize=10)
         self.game_pulbic_log = []
         self.game_wolf_vote_log = []
         self.game_player_vote_log = []
@@ -55,23 +55,15 @@ class GameMaster:
     
     def _checkWinner(self) -> str:
         """CheckWinner"""
-        # Using a loop
-        # Grouping dictionary keys by value
-        grouped_dict = {"狼人":[], "村民":[]}
-        for player in roles_dict["players"]:
-            if player["status"] == 1:
-                if player["role"] not in grouped_dict:
-                    grouped_dict[player["role"]] = []
-                grouped_dict[player["role"]].append(player)
-
+        grouped_dict = GroupAllPlayers()
         # print(grouped_dict["狼人"])
-        message = "现在场上存活角色, 狼人:{0} 村民:{1}".format(str(len(grouped_dict["狼人"])), str(len(grouped_dict["村民"])))
-
+        message = "\t时间{0},场上存活状态 狼人:{1} 村民:{2}".format(self.current_time, str(len(grouped_dict["狼人"])), str(len(grouped_dict["村民"])))
         Info(message)
+        self.game_memory_queue.put(message)
 
         if len(grouped_dict["狼人"]) == 0 and len(grouped_dict["村民"]) > 0:
             return 1
-        if len(grouped_dict["狼人"]) > 0 and len(grouped_dict["村民"]) == 0:
+        if len(grouped_dict["狼人"]) > 0 and len(grouped_dict["村民"]) <= len(grouped_dict["狼人"]):
             return 2  
         return 0
     
@@ -86,7 +78,7 @@ class GameMaster:
         vote_names_counter = Counter(vote_names)
         Debug("\t player_vote_names most_common: {0}\n".format(vote_names_counter.most_common(1)))
         elem, count = vote_names_counter.most_common(1)[0]
-        Info("\t [player_votes]: {0}, [player_vote_name]: {1}".format(",".join(vote_names_counter), elem))
+        Info("\t [player_votes]: {0}, [player_vote_name]: {1}".format(vote_names_counter, elem))
         
         # kill the player and log it
         if elem != "":
@@ -121,7 +113,7 @@ class GameMaster:
                 Debug("\t player name: {0}".format(player["name"]))
                 if player["name"] == elem:
                     player["status"] = 0 # death !!!!
-                    pub_log = ReadableActionLog("[WOLF VOTE]", self.current_time, player, "玩家{0}于{1}被狼人s投票而出局".format(elem, self.current_time))
+                    pub_log = ReadableActionLog("[WOLF VOTE]", self.current_time, player, "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time))
                     self.game_pulbic_log.append(pub_log)
                     sys_log = SystemLog("[WOLF VOTE]", self.current_time, player, "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time))
                     self.game_system_log.append(sys_log)
@@ -136,14 +128,13 @@ class GameMaster:
         if self.winner == 2:
             message = game_config_dict["system"]["win_villager"].format(GetAllPlayersName())
         message = game_config_dict["system"]["win_none"].format(GetAllPlayersName())
-        Info(message)
         return message
     
     def PreAction(self, i):
         if self.winner != 0:
             self.run = False
             return 
-        Info("===== PreAction {0} ======".format(self._current_time(i)))
+        Info("\t===== PreAction {0} ======".format(self._current_time(i)))
         
         if self.isDay:
             for player in self.player_agents:
@@ -180,7 +171,7 @@ class GameMaster:
         if self.winner != 0:
             self.run = False
             return
-        Info("===== DoAction {0} ======".format(self._current_time(i)))
+        Info("\t===== DoAction {0} ======".format(self._current_time(i)))
         if self.isDay:
             for player in self.player_agents:
                 # 如果玩家是死亡状态
@@ -217,7 +208,7 @@ class GameMaster:
         if self.winner != 0:
             self.run = False
             return
-        Info("===== PostAction {0} ======".format(self._current_time(i)))
+        Info("\t===== PostAction {0} ======".format(self._current_time(i)))
         
         if self.isDay:
             # start voting
@@ -272,11 +263,11 @@ class GameMaster:
             pass
         
         message = self.EndRoundCheck()
-        
+        Info(message)
         pass
     
     def ResetGame(self):
-        Info("===== ResetGame {0} =====".format(GetAllPlayersName()))
+        Info("\t===== ResetGame {0} =====".format(GetAllPlayersName()))
          # prepare the envs
         self._resetGlobal()
         self._reviveRoles()
@@ -286,7 +277,7 @@ class GameMaster:
         pass
 
     def RunGame(self):
-        Info("===== RunGame {0} =====".format(GetAllPlayersName()))
+        Info("\t===== RunGame {0} =====".format(GetAllPlayersName()))
         i = 0
         while self.run and True:
             # escape condition
@@ -303,7 +294,10 @@ class GameMaster:
                 self.PreAction(i)
                 self.DoAction(i)
                 self.PostAction(i)
-            
+                if self.winner != 0:
+                    Info("游戏结束.")
+                    break
+                    
             # night round
             self.isDay = False
             self.PreAction(i)

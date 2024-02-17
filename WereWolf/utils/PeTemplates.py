@@ -15,15 +15,6 @@ inference_modifier = {'max_tokens_to_sample':4096,
                       "stop_sequences": ["\n\nHuman"]
                      }
 
-claude_llm = Bedrock(
-    model_id="anthropic.claude-v2",
-    streaming=True,
-    callbacks=[StreamingStdOutCallbackHandler()],
-    model_kwargs=inference_modifier,
-)
-
-
-
 game_config = """
 {
     "max_round": 1,
@@ -32,7 +23,7 @@ game_config = """
         "action_plan_day": "{0}{1}现在是第{2}天白天的讨论环节，该如何行动?",
         "action_plan_day_vote": "{0}{1}现在是第{2}天白天的投票环节，该如何行动?",
         "action_plan_death": "{0}{1}现在是第{2}天白天，你已经死亡,有何遗言?",
-        "action_confirm": "收到",
+        "action_confirm": "ok",
         "action_villager_team": "未知,需要你推理发现.",
         "action_reflect": "{0}{1}该如何思考?",
         "action_plan_test": "现在全场几人活着几人淘汰"
@@ -71,31 +62,37 @@ roles = """
     {
       "name": "P3",
       "role": "村民",
-      "character": "容易上头",
+      "character": "思维跳跃",
       "status": 1
     },
     {
       "name": "P4",
       "role": "村民",
-      "character": "思维跳跃",
+      "character": "小心谨慎",
       "status": 1
     },
     {
       "name": "P5",
       "role": "村民",
-      "character": "思维缜密",
+      "character": "独立思考",
       "status": 1
     },
     {
       "name": "P6",
       "role": "狼人",
-      "character": "粗心大意", 
+      "character": "胆大心细", 
       "status": 1
     },
     {
       "name": "P7",
       "role": "村民",
       "character": "深思熟虑", 
+      "status": 1
+    },
+    {
+      "name": "P8",
+      "role": "村民",
+      "character": "沉默寡言", 
       "status": 1
     }
   ]
@@ -104,20 +101,20 @@ roles = """
 
 werewolf_rule_v1 = """
 1. 游戏分狼人和村民两大阵营,他们的目标为:
-- 狼人阵营:消灭所有村民。
-- 村民阵营:消灭所有狼人,或游戏结束时存活一名村民。
+- 狼人阵营:消灭所有村民, 或者保证狼人数目大于村民数目
+- 村民阵营:消灭所有狼人, 或者保证村民数目大于狼人数目
 
 2. 游戏分白天和晚上两个阶段交替进行:
-- 晚上狼人睁眼互投票杀死一名玩家, 村名不能睁眼和行动
-- 白天所有存活玩家需要公开讨论, 最后一起投票决定消灭一名疑似狼人的角色, 玩家也可以放弃投票
+- 晚上狼人睁眼互投票杀死一名玩家, 村民不能行动
+- 白天所有存活玩家需要先进行公开讨论思路, 最后一起投票决定消灭一名疑似狼人的角色或者放弃投票
 """
 
 werewolf_command_v1 = """
-- 狼人夜晚投票: WolfVote 参数: target=村民/狼人
-- 玩家白天投票: PlayerVote 参数: target=可疑玩家
-- 放弃行动: Pass 参数: 无
-- 白天玩家讨论: Debate 参数: content=思考/理由
-- 玩家死亡: DeathWords 参数: content=遗言，给予玩家线索
+- 夜晚投票: WolfVote 参数: target=村民/狼人
+- 白天投票: PlayerVote 参数: target=可疑玩家 
+- 弃权: Pass 参数: 无
+- 白天讨论: Debate 参数: content=思考/理由
+- 死亡遗言: DeathWords 参数: content=遗言，给予玩家线索
 """
 
 template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
@@ -143,31 +140,50 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 <reflections>
 - 基于目前的形势,我认为...
 - 根据游戏进程,我的分析为...
+- 现在场上对于村民形势不利,我建议...
 </reflections>
-
-玩家是 {nickname}, 身份是 {role}, 性格为 {character}, 
 
 历史信息:
 <chat_history>
 {chat_history}
 </chat_history>
 
-Human: {input}
+你支持的玩家是 {nickname}, 身份是 {role}, 性格为 {character}
 
-记住，接下来你的目的是: 
-帮助玩家{nickname}判断信息真伪, 充分运用信任、对抗、伪装、领导力中任意能力来做决策, 来引导游戏往有利于玩家的方向进行, 最终赢得比赛.
+记住，接下来你的目的是: 通过决策引导游戏往有利于的方向进行, 最终赢得比赛.
 
-决策满足下面要求：
-- 符合游戏规则<game_rules>
-- 决策内容不要罗嗦,不要说鼓励打气之类套话,不要超过50字数限制
-- 决策分为两类:思考和行动, 任选其中一个即可.
-- 思考:输出为自然语言形式,考虑现阶段玩家身份和游戏局面等因素,判断信息真伪
-- 思考:模仿玩家的性格，严格参考 <reflections> 例子选择合适的输出
-- 行动:在<commands> 中选择, 使用json格式输出, action为必选项, target为可选. 参考 <references> 例子选择合适的输出
-- 行动:在讨论环节，每个玩家必须参与讨论.内容包括但不限于：场上可能的狼人玩家数目,前面玩家的投票，讨论内容等等.
+决策满足下面要求:
+- 判断场上信息真伪, 充分运用信任、对抗、伪装、领导力中任意策略来做决策
+- 内容不要罗嗦, 不要超过50字数限制
+- 决策分为两类:思考或行动, 任选其中一个即可.
+- 思考:输出为自然语言形式,判断信息真伪,分析游戏形势
+- 思考:模仿玩家的性格，严格参考 <reflections> 选择合适的输出
+- 行动:必须用json格式在<commands> 中选择,  参考 <references> 选择合适的输出
+- 行动:在讨论环节，每个玩家必须参与讨论. 讨论的内容包含:场上局势分析,身份隐藏或者诬陷,注意力转移等等
 - 行动:在投票环节，每个玩家必须投票或者放弃
 
+Human: {input}
 AI:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)
+
+
+template_assistant_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
+<game_rules>
+{game_rule}
+</game_rules>
+
+历史信息:
+{chat_history}
+
+Human: {input}
+
+接下来, 你需要将冗长的文字输入进行有效提炼并且输出
+
+满足下面的要求:
+- 保持客观冷静,直接给出现状描述, 不能超过100个字
+- 不需要输出任何中间思考过程，不要给任何推理和主观意见
+- 不输出无关内容，内容言简意赅，突出重点
+
+AI:""".replace("{game_rule}", werewolf_rule_v1)
 
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
@@ -199,8 +215,18 @@ def GetAllWolvesName() -> str:
                 status_str = "存活"
             else:
                 status_str = "淘汰"
-            wolves_name.append(player["name"]+":"+status_str)
+            wolves_name.append(player["name"])
     return ",".join(wolves_name)
+
+def GroupAllPlayers() -> dict:
+    grouped_dict = {"狼人":[], "村民":[]}
+    for player in roles_dict["players"]:
+        if player["status"] == 1:
+            if player["role"] not in grouped_dict:
+                grouped_dict[player["role"]] = []
+            grouped_dict[player["role"]].append(player)
+
+    return grouped_dict
 
 def ActionLog(prefix, current_time, agent, res_obj):
     action_log = {"time": current_time, "player": agent["name"], "status": agent['status'], "response": res_obj}

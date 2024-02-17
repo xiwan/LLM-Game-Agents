@@ -1,11 +1,19 @@
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
+from .GameAssistant import GameAssistant
 from .PeTemplates import *
 
 class GamePlayer:
     global game_config_dict, roles_dict, template_player_role
     
     def __init__(self, template_role, player, GM):
+        
+        claude_llm = Bedrock(
+            model_id="anthropic.claude-v2",
+            streaming=True,
+            callbacks=[StreamingStdOutCallbackHandler()],
+            model_kwargs=inference_modifier,
+        )
         
         self.GM = GM
         
@@ -32,22 +40,29 @@ class GamePlayer:
             verbose=False, 
             memory=role_memory
         )
-        
-        self.agent = player  
-        Debug(self.agent["conversation"])
+        Debug(player["conversation"])
+        self.agent = player
+        self.assistant = GameAssistant(template_assistant_role, player)
         pass
     
     def _invoke(self, question):
         Info("\tQUESTION: " + question)
         return self.agent["conversation"].invoke(input = question)
     
+    def _invokeAssistant(self, question):
+        teamexplain = "(逗号为分割符, 玩家配置为2狼人+6村民, 游戏每轮发言顺序P1,P2,P3,P4,P5等等以此类推)"
+        boardInfo = "目前场上玩家:{0}{1}.".format(GetAllPlayersName(), teamexplain)
+        question = boardInfo + question
+        Info("\tASSISTANT QUESTION : " + question)
+        return self.assistant.DoAnswer(question)
+    
     def _playerInfoBuilder(self):
         playerInfo = ""
         teamexplain = "(逗号为分割符)"
         if self.agent["role"] == "狼人":
-            playerInfo = "你是玩家{0}(狼人身份,本阵营为:{1}).目前场上玩家状态:{2}{3}.".format(self.agent["name"], GetAllWolvesName(), GetAllPlayersName(), teamexplain)
+            playerInfo = "现在是{2},你是玩家{0}(狼人身份,本阵营为:{1}).".format(self.agent["name"], GetAllWolvesName(), self.GM.current_time)
         if self.agent["role"] == "村民":
-            playerInfo = "你是玩家{0}(村民身份).{1}.目前场上玩家状态:{2}{3}.".format(self.agent["name"], "", GetAllPlayersName(), teamexplain)
+            playerInfo = "现在是{2},你是玩家{0}(村民身份).{1}.".format(self.agent["name"], "", self.GM.current_time)
         return playerInfo
     
     def Die(self):
@@ -64,10 +79,12 @@ class GamePlayer:
     
     # answering question
     def DoAnswer(self, question):
+        Info("\t===== DoAnswer {0} {1} ======".format(self.GM.current_time,self.agent["name"]))
         answer = self._invoke(question)
         return answer
     
     def DoAction(self, answer):
+        Info("\t===== DoAction {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
         if answer == "":
             return
         
@@ -114,48 +131,56 @@ class GamePlayer:
                     self.GM.game_player_action_log.append(log)
                     log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent, res_obj)
                     self.GM.game_pulbic_log.append(log)
-                    
-                    #self.GM.game_memory_queue.put(log)
+                    # make it system message
+                    # self.GM.game_memory_queue.put(log)
                 pass
             memories.append(log)
         self.GM.game_system_log.append(SystemLog("[ROUND ACTION]", self.GM.current_time, self.agent, response))
         pass
     
     def DoMemory(self, memorysize=10):
-        # memories = []
-        # while self.game_memory_queue.qsize() > 0:
-        #     memories.append(self.game_memory_queue.get(block=False))
+        Info("\t===== DoMemory {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
         memories = []
+        # system message
+        while self.GM.game_memory_queue.qsize() > 0:
+            memories.append(self.GM.game_memory_queue.get(block=False))
+            
+        # player action log
         for log in self.GM.game_pulbic_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
             
-        output = game_config_dict["player"]["action_confirm"]
-        for memory in memories:
-            self.agent["conversation"].memory.save_context({"input": memory}, {"ouput": output})
+        if len(memories) > 0:
+            summary = self._invokeAssistant(".".join(memories))
+            Debug(summary)
+            output = game_config_dict["player"]["action_confirm"]
+            self.agent["conversation"].memory.save_context({"input": summary['response']}, {"ouput": output})
         pass
     
     def DoReflect(self):
+        
         if not self.GM.isDay:
-            return ""     
+            return ""
+        Info("\t===== DoReflect {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
         # PlayersAllActions = []
         # for log in self.GM.game_pulbic_log:
         #     #if action["time"] == current_time:
         #     PlayersAllActions.append(json.dumps(log, ensure_ascii=False))
         
         memories = self.agent["conversation"].memory.load_memory_variables({})
-        Debug(memories) 
-
+        Debug(memories)
         question = game_config_dict["player"]["action_reflect"].format(self._playerInfoBuilder(), "")
         reflect = self.DoAnswer(question)
         # parse LLM output
         if reflect != "":
             Debug("\tREFLECT: " + reflect["response"])
+            # summary = self._invokeAssistant(reflect["response"])
+            # Debug(summary)
             return reflect["response"]
         return ""
         
     def DoPlanning(self, question_template, idx):
         # last 10 memories
-        self.DoMemory(10)
+        self.DoMemory(20)
         reflect = self.DoReflect()
         question = question_template.format(self._playerInfoBuilder(), reflect, idx)
         answer = self.DoAnswer(question)
