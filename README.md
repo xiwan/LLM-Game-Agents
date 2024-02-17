@@ -46,16 +46,16 @@ Currently the game contains two important modules: Game + Player
 
 ![transition-chart](./WereWolf/statics/transition-diagram.png)
 
-The Game module is responsible for driving the process, including
-+ Initializing game configuration and players
-+ Controlling game pace, invoking the Player module at appropriate times to get responses  
-+ Checking game win conditions
+The game module is responsible for driving the process, including
+- Initializing game configuration and players
+- Controlling game pace, calling the player module at appropriate times to get responses  
+- Detecting win conditions
 
-The Player module is responsible for communicating with the LLM
-+ Q&A + Memory: Using **langchain ConversationBufferWindowMemory** to complete prompt templating
-+ Summarize + Reasoning: Recording key events (voting, discussion, etc), summarizing and reasoning before answering each question
-
-
+The player module is responsible for communicating with the LLM, including
+- Memory: Objectively summarizing based on logging key events (votes, discussions, etc.)
+- Reasoning: Making inferences based on the memory summary
+- Dialogue: Completing character immersion based on prompt templates 
+- Action: Storing important information as memories
 
 ## LLM-Werewolf-CN
 
@@ -175,7 +175,10 @@ The Player module is responsible for communicating with the LLM
 + 控制游戏节奏，在合适的时间点调用玩家模块来获取回答
 + 检测游戏胜利条件
 
-玩家模块负责和LLM通讯
-+ 问答 + 记忆: 利用 **langchain ConversationBufferWindowMemory** 完成提示词模版
-+ 总结 + 推理: 记录关键事件（投票，讨论等），每次回答问题前进行总结和推理
+玩家模块负责和LLM通讯, 包括
++ 记忆: 基于记录关键事件（投票，讨论等）进行客观的总结(LLM2)
++ 推理: 根据记忆的总结，进行推理(LLM1)
++ 对话: 基于提示词模版完成角色带入(LLM1)
++ 行动: 是将重要信息存为记忆*
+
 
