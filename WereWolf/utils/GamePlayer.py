@@ -30,7 +30,7 @@ class GamePlayer:
         _template_role_prompt = PromptTemplate.from_template(_template_role)
         #_template_role_prompt.format(nickname=player["name"], role=player["role"], character=player["character"])
 
-        role_memory = ConversationBufferWindowMemory(k = 27, return_messages=True,
+        role_memory = ConversationBufferWindowMemory(k = 100, return_messages=True,
                                                      human_prefix="Human", ai_prefix="AI", 
                                                      memory_key="chat_history", input_key="input")
 
@@ -42,7 +42,7 @@ class GamePlayer:
         )
         Debug(player["conversation"])
         self.agent = player
-        self.assistant = GameAssistant(template_assistant_role, player)
+        self.assistant = GameAssistant(template_assistant_role, 200)
         pass
     
     def _invoke(self, question):
@@ -50,19 +50,18 @@ class GamePlayer:
         return self.agent["conversation"].invoke(input = question)
     
     def _invokeAssistant(self, question):
-        teamexplain = "(逗号为分割符, 玩家配置为2狼人+6村民, 游戏每轮发言顺序P1,P2,P3,P4,P5等等以此类推)"
-        boardInfo = "目前场上玩家:{0}{1}.".format(GetAllPlayersName(), teamexplain)
+        teamexplain = "(初始配置为2狼人+6村民, 游戏每轮发言顺序为P1,P2,P3,P4,P5,P6,P7,P8)"
+        boardInfo = "[目前场上信息:{0}{1}.] ".format(GetAllPlayersName(), teamexplain)
         question = boardInfo + question
-        Info("\tASSISTANT QUESTION : " + question)
+        Debug("\tASSISTANT QUESTION : " + question)
         return self.assistant.DoAnswer(question)
     
     def _playerInfoBuilder(self):
-        playerInfo = ""
-        teamexplain = "(逗号为分割符)"
+        boardInfo = "目前场上玩家:{0}(逗号为分割符).".format(GetAllPlayersName())
         if self.agent["role"] == "狼人":
-            playerInfo = "现在是{2},你是玩家{0}(狼人身份,本阵营为:{1}).".format(self.agent["name"], GetAllWolvesName(), self.GM.current_time)
+            playerInfo = "现在是{2},你是玩家{0}(狼人身份,本阵营为:{1}).{3}".format(self.agent["name"], GetAllWolvesName(), self.GM.current_time, boardInfo)
         if self.agent["role"] == "村民":
-            playerInfo = "现在是{2},你是玩家{0}(村民身份).{1}.".format(self.agent["name"], "", self.GM.current_time)
+            playerInfo = "现在是{2},你是玩家{0}(村民身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
         return playerInfo
     
     def Die(self):
@@ -108,7 +107,14 @@ class GamePlayer:
                     self.GM.game_pulbic_log.append(log)
                     #self.GM.game_memory_queue.put(log)
                 pass
-            
+
+            if res_obj["action"] == "PlayerDoubt":
+                if self.GM.isDay:
+                    log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent, res_obj)
+                    self.GM.game_pulbic_log.append(log)
+                    #self.GM.game_memory_queue.put(log)
+                pass
+
             if res_obj["action"] == "Debate":
                 if self.GM.isDay:
                     log = ActionLog("player_debate_log", self.GM.current_time, self.agent, res_obj)
@@ -138,6 +144,11 @@ class GamePlayer:
         self.GM.game_system_log.append(SystemLog("[ROUND ACTION]", self.GM.current_time, self.agent, response))
         pass
     
+    def AddMemory(self, memory):
+        Debug(memory)
+        output = game_config_dict["player"]["action_confirm"]
+        self.agent["conversation"].memory.save_context({"input": memory}, {"ouput": output})
+    
     def DoMemory(self, memorysize=10):
         Info("\t===== DoMemory {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
         memories = []
@@ -151,13 +162,11 @@ class GamePlayer:
             
         if len(memories) > 0:
             summary = self._invokeAssistant(".".join(memories))
-            Debug(summary)
-            output = game_config_dict["player"]["action_confirm"]
-            self.agent["conversation"].memory.save_context({"input": summary['response']}, {"ouput": output})
+            self.AddMemory(summary['response'])
         pass
     
     def DoReflect(self):
-        
+        return ""
         if not self.GM.isDay:
             return ""
         Info("\t===== DoReflect {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
@@ -180,7 +189,7 @@ class GamePlayer:
         
     def DoPlanning(self, question_template, idx):
         # last 10 memories
-        self.DoMemory(20)
+        self.DoMemory(50)
         reflect = self.DoReflect()
         question = question_template.format(self._playerInfoBuilder(), reflect, idx)
         answer = self.DoAnswer(question)

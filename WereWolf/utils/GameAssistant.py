@@ -6,9 +6,9 @@ from .PeTemplates import *
 class GameAssistant:
     global game_config_dict, roles_dict, template_player_role
     
-    def __init__(self, template_role, player):
-        
-        _template_role_prompt = PromptTemplate.from_template(template_role)
+    def __init__(self, template_role, num):
+        _template_role = template_role.replace("{num}", str(num))
+        _template_role_prompt = PromptTemplate.from_template(_template_role)
         
         claude_llm = Bedrock(
             model_id="anthropic.claude-v2",
