@@ -1,5 +1,6 @@
 import json
 import queue
+import time
 from collections import Counter
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
 from .GamePlayer import GamePlayer
@@ -9,8 +10,9 @@ from .PeTemplates import *
 class GameMaster:
     global game_config_dict, roles_dict, template_player_role
 
-    def __init__(self, num) -> None:
+    def __init__(self, num, quick=False) -> None:
         self._resetGlobal()
+        self.quick = quick
         
         game_config_dict["max_round"] = num
         pass
@@ -57,6 +59,7 @@ class GameMaster:
         self.palyervotes = []
         self.input_tokens = 0
         self.output_tokens = 0
+        # self.quick = False
         pass
     
     def _checkWinner(self) -> str:
@@ -332,6 +335,7 @@ class GameMaster:
         pass
     
     def ResetGame(self):
+        self.start_time = time.time()
         Info("\t===== {0} ResetGame =====".format(GetAllPlayersName()))
          # prepare the envs
         self._resetGlobal()
@@ -341,11 +345,14 @@ class GameMaster:
 
         pass
 
-    def RunGame(self):
+    def RunGame(self): 
         Info("\t===== {0} RunGame =====".format(GetAllPlayersName()))
         i = 0
         while self.run and True:
             Info("\t===== input_tokens: {0} output_tokens {1} ======".format(self.input_tokens, self.output_tokens))
+            self.end_time = time.time()
+            self.elapsed_time = self.end_time - self.start_time
+            Info("\t===== elapsed_time: {0} ======".format(self.elapsed_time))
             # escape condition
             if i >= game_config_dict["max_round"]:
                 Info("游戏结束.")
@@ -376,6 +383,9 @@ class GameMaster:
         pass
     
     def EndGame(self):
+        self.end_time = time.time()
+        self.elapsed_time = self.end_time - self.start_time
         Info("===== {0} EndGame =====".format(GetAllPlayersName()))
         Info("\t===== input_tokens: {0} output_tokens {1} ======".format(self.input_tokens, self.output_tokens))
+        Info("\t===== elapsed_time: {0} ======".format(self.elapsed_time))
         pass   

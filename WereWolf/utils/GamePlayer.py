@@ -94,12 +94,12 @@ class GamePlayer:
     
     # answering question
     def DoAnswer(self, question):
-        Info("\t===== DoAnswer {0} {1} ======".format(self.GM.current_time,self.agent["name"]))
+        Info("\t\t===== DoAnswer {0} {1} ======".format(self.GM.current_time,self.agent["name"]))
         answer = self._invoke(question)
         return answer
     
     def DoAction(self, answer):
-        Info("\t===== DoAction {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
+        Info("\t\t===== DoAction {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
         if answer == "":
             return
         
@@ -166,7 +166,7 @@ class GamePlayer:
         self.agent["conversation"].memory.save_context({"input": memory}, {"ouput": output})
     
     def DoMemory(self, memorysize=100):
-        Info("\t===== DoMemory {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
+        Info("\t\t===== DoMemory {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
         
         memories = []
         for log in self.GM.game_pulbic_log[-1*memorysize:]:
@@ -184,7 +184,9 @@ class GamePlayer:
         pass
     
     def DoReflect(self, memorysize=20):
-        Info("\t===== DoReflect {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
+        if self.GM.quick:
+            return
+        Info("\t\t===== DoReflect {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
         
         memories = self.agent["conversation"].memory.load_memory_variables({})
         if len(memories['chat_history']) == 0:
