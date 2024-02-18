@@ -24,16 +24,16 @@ Currently the game contains two important modules: Game + Player
 
 ![transition-chart](./statics/transition-diagram.png)
 
-The game module is responsible for driving the process, including
-- Initializing game configuration and players
-- Controlling game pace, calling the player module at appropriate times to get responses  
-- Detecting win conditions
+The game module is responsible for driving the process, including:
+- Initializing game configurations and players
+- Controlling game pace, and invoking the player module at appropriate times to get responses
+- Detecting game win conditions
 
-The player module is responsible for communicating with the LLM, including
-- Memory: Objectively summarizing based on logging key events (votes, discussions, etc.)
-- Reasoning: Making inferences based on the memory summary
-- Dialogue: Completing character immersion based on prompt templates 
-- Action: Storing important information as memories
+The player module is responsible for communicating with the LLM. Each interaction with the game goes through the following loop:
+- Memory: Extracting important logs (votes, discussions, etc) and turning them into long-term memory records of key events
+- Reflect: Reflecting and summarizing based on short-term memory summaries, aiding conversation (LLM1)
+- Answer: Completing character role-playing based on prompt word templates (LLM1)  
+- Action: Saving important information as log entries
 
 ## LLM-Werewolf-CN
 
@@ -159,10 +159,10 @@ The player module is responsible for communicating with the LLM, including
 + 控制游戏节奏，在合适的时间点调用玩家模块来获取回答
 + 检测游戏胜利条件
 
-玩家模块负责和LLM通讯, 包括
-+ 记忆: 基于记录关键事件（投票，讨论等）进行客观的总结(LLM2)
-+ 推理: 根据记忆的总结，进行推理(LLM1)
+玩家模块负责和LLM通讯, 每次和游戏交互需要经过以下循环:
++ 记忆: 提取重要日志（投票，讨论等），变成长期记忆记录关键事件
++ 推理: 根据短期记忆的总结，进行反思和总结, 辅助对话(LLM1)
 + 对话: 基于提示词模版完成角色带入(LLM1)
-+ 行动: 是将重要信息存为记忆*
++ 行动: 是将重要信息存为日志*
 
 
