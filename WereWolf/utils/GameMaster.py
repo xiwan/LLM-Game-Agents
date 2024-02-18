@@ -188,7 +188,7 @@ class GameMaster:
         if self.winner != 0:
             self.run = False
             return 
-        Info("\t===== PreAction {0} ======".format(self._current_time(i)))
+        Info("\t===== {0} PreAction ======".format(self._current_time(i)))
         
         if self.isDay:
             for player in self.player_agents:
@@ -225,7 +225,7 @@ class GameMaster:
         if self.winner != 0:
             self.run = False
             return
-        Info("\t===== DoAction {0} ======".format(self._current_time(i)))
+        Info("\t===== {0} DoAction ======".format(self._current_time(i)))
         if self.isDay:
             for player in self.player_agents:
                 # 如果玩家是死亡状态
@@ -265,7 +265,7 @@ class GameMaster:
         if self.winner != 0:
             self.run = False
             return
-        Info("\t===== PostAction {0} ======".format(self._current_time(i)))
+        Info("\t===== {0} PostAction ======".format(self._current_time(i)))
         
         if self.isDay:
         
@@ -331,7 +331,7 @@ class GameMaster:
         pass
     
     def ResetGame(self):
-        Info("\t===== ResetGame {0} =====".format(GetAllPlayersName()))
+        Info("\t===== {0} ResetGame =====".format(GetAllPlayersName()))
          # prepare the envs
         self._resetGlobal()
         self._reviveRoles()
@@ -341,7 +341,7 @@ class GameMaster:
         pass
 
     def RunGame(self):
-        Info("\t===== RunGame {0} =====".format(GetAllPlayersName()))
+        Info("\t===== {0} RunGame =====".format(GetAllPlayersName()))
         i = 0
         while self.run and True:
             # escape condition
@@ -374,5 +374,5 @@ class GameMaster:
         pass
     
     def EndGame(self):
-        Info("===== EndGame {0} =====".format(GetAllPlayersName()))
+        Info("===== {0} EndGame =====".format(GetAllPlayersName()))
         pass   

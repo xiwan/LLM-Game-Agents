@@ -25,7 +25,7 @@ game_config = """
         "action_plan_death": "{0}{1}现在是第{2}天白天，你已经死亡,有何遗言?",
         "action_confirm": "ok",
         "action_villager_team": "未知,需要你推理发现.",
-        "action_reflect": "{0}{1}该如何思考?",
+        "action_reflect": "{0}{1}.为下一轮行动做个反思和总结",
         "action_plan_test": "现在全场几人活着几人淘汰"
     },
     "god": {

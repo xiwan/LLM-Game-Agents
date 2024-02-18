@@ -41,6 +41,7 @@ class GamePlayer:
             memory=role_memory
         )
         Debug(player["conversation"])
+
         self.agent = player
         self.assistant = GameAssistant(template_assistant_role, 200)
         pass
@@ -64,6 +65,9 @@ class GamePlayer:
             playerInfo = "现在是{2},你是玩家{0}(村民身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
         return playerInfo
     
+    def IsWolf(self):
+        return self.GetRole() == "狼人"
+    
     def Die(self):
         self.agent["status"] = -1
     
@@ -75,6 +79,14 @@ class GamePlayer:
 
     def GetRole(self):
         return self.agent["role"]
+    
+    def DoPlanning(self, question_template, idx):
+        self.DoMemory()
+        self.DoReflect()
+        question = question_template.format(self._playerInfoBuilder(), "", idx)
+        answer = self.DoAnswer(question)
+        self.DoAction(answer)
+        pass
     
     # answering question
     def DoAnswer(self, question):
@@ -149,50 +161,37 @@ class GamePlayer:
         output = game_config_dict["player"]["action_confirm"]
         self.agent["conversation"].memory.save_context({"input": memory}, {"ouput": output})
     
-    def DoMemory(self, memorysize=10):
+    def DoMemory(self, memorysize=100):
         Info("\t===== DoMemory {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
+        
         memories = []
-        # system message
-        while self.GM.game_memory_queue.qsize() > 0:
-            memories.append(self.GM.game_memory_queue.get(block=False))
-            
-        # player action log
         for log in self.GM.game_pulbic_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
+            pass
+        
+        if self.IsWolf():
+            for log in self.GM.game_wolf_vote_log[-1*memorysize:]:
+                memories.append(json.dumps(log, ensure_ascii=False))
+                pass
             
         if len(memories) > 0:
             summary = self._invokeAssistant(".".join(memories))
             self.AddMemory(summary['response'])
         pass
     
-    def DoReflect(self):
-        return ""
-        if not self.GM.isDay:
-            return ""
+    def DoReflect(self, memorysize=20):
         Info("\t===== DoReflect {0} {1} ======".format(self.GM.current_time, self.agent["name"]))
-        # PlayersAllActions = []
-        # for log in self.GM.game_pulbic_log:
-        #     #if action["time"] == current_time:
-        #     PlayersAllActions.append(json.dumps(log, ensure_ascii=False))
         
         memories = self.agent["conversation"].memory.load_memory_variables({})
-        Debug(memories)
+        if len(memories['chat_history']) == 0:
+            return 
+        
+        for history in memories['chat_history'][-1*memorysize:]:
+            Debug(history)
+        
         question = game_config_dict["player"]["action_reflect"].format(self._playerInfoBuilder(), "")
         reflect = self.DoAnswer(question)
-        # parse LLM output
-        if reflect != "":
-            Debug("\tREFLECT: " + reflect["response"])
-            # summary = self._invokeAssistant(reflect["response"])
-            # Debug(summary)
-            return reflect["response"]
-        return ""
-        
-    def DoPlanning(self, question_template, idx):
-        # last 10 memories
-        self.DoMemory(50)
-        reflect = self.DoReflect()
-        question = question_template.format(self._playerInfoBuilder(), reflect, idx)
-        answer = self.DoAnswer(question)
-        self.DoAction(answer)
-        pass
+        Debug("\tREFLECT: " + reflect["response"])
+        return reflect["response"]
+
     
