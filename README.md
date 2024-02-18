@@ -49,7 +49,7 @@ Werewolf Player 6 disguises himself as a villager
 
 ![Disguise](./WereWolf/statics/game-samples/3day-p6-debate.png)
 
-* Summeraize
+* Summerize
 
 Game log summary
 
