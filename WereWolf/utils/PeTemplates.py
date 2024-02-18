@@ -119,6 +119,7 @@ werewolf_command_v1 = """
 - 白天怀疑(所有玩家白天可选行动, 非投票): PlayerDoubt 参数: target=存活玩家 
 - 玩家弃权: Pass 参数: 无 
 - 白天讨论: Debate 参数: content=思考/理由 
+- 获取信息: GetAllPlayersName 参数: 无 
 - 死亡遗言: DeathWords 参数: content=给予玩家线索 
 """
 
@@ -140,6 +141,7 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 - {{"action": "Debate", "content": "我的推理为xx是狼，原因是..."}}
 - {{"action": "Debate", "content": "普通村民，大家投错了!"}}
 - {{"action": "DeathWords", "content": "我觉得xx有很大的嫌疑, 原因是..."}}
+- {{"action": "GetAllPlayersName"}}
 </references>
 
 <reflections>

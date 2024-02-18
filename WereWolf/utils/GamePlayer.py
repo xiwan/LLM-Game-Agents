@@ -1,6 +1,7 @@
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
 from .GameAssistant import GameAssistant
+from .AnthropicTokenCounter import AnthropicTokenCounter
 from .PeTemplates import *
 
 class GamePlayer:
@@ -14,8 +15,7 @@ class GamePlayer:
             callbacks=[StreamingStdOutCallbackHandler()],
             model_kwargs=inference_modifier,
         )
-        
-        self.GM = GM
+        self.token_counter = AnthropicTokenCounter(claude_llm)
         
         _template_role = template_role.replace("{nickname}", player["name"])
         _template_role = _template_role.replace("{role}", player["role"])
@@ -41,14 +41,18 @@ class GamePlayer:
             memory=role_memory
         )
         Debug(player["conversation"])
-
+                
+        self.GM = GM
         self.agent = player
-        self.assistant = GameAssistant(template_assistant_role, 200)
+        self.assistant = GameAssistant(template_assistant_role, 200, GM)
         pass
     
     def _invoke(self, question):
         Info("\tQUESTION: " + question)
-        return self.agent["conversation"].invoke(input = question)
+        answer = self.agent["conversation"].invoke(input = question, config={"callbacks": [self.token_counter]})
+        self.GM.input_tokens = self.GM.input_tokens + self.token_counter.input_tokens
+        self.GM.output_tokens = self.GM.output_tokens + self.token_counter.output_tokens
+        return answer
     
     def _invokeAssistant(self, question):
         teamexplain = "(初始配置为2狼人+6村民, 游戏每轮发言顺序为P1,P2,P3,P4,P5,P6,P7,P8)"

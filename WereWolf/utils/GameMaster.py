@@ -55,6 +55,8 @@ class GameMaster:
         
         self.wolfvotes = []
         self.palyervotes = []
+        self.input_tokens = 0
+        self.output_tokens = 0
         pass
     
     def _checkWinner(self) -> str:
@@ -173,7 +175,7 @@ class GameMaster:
         if self.winner != 0:
             self.game_system_log.append(message)
             # summerize the game
-            self.assistant = GameAssistant(template_assistant_role, 1000)
+            self.assistant = GameAssistant(template_assistant_role, 1000, self)
             memories = []
             # system message
             for log in self.game_system_log[-1000:]:
@@ -189,7 +191,7 @@ class GameMaster:
             self.run = False
             return 
         Info("\t===== {0} PreAction ======".format(self._current_time(i)))
-        
+
         if self.isDay:
             for player in self.player_agents:
                 # 如果玩家是死亡状态
@@ -266,9 +268,8 @@ class GameMaster:
             self.run = False
             return
         Info("\t===== {0} PostAction ======".format(self._current_time(i)))
-        
+
         if self.isDay:
-        
             # calculate votes
             while not self.PlayerVote(i):
                 # clean previous vote
@@ -344,6 +345,7 @@ class GameMaster:
         Info("\t===== {0} RunGame =====".format(GetAllPlayersName()))
         i = 0
         while self.run and True:
+            Info("\t===== input_tokens: {0} output_tokens {1} ======".format(self.input_tokens, self.output_tokens))
             # escape condition
             if i >= game_config_dict["max_round"]:
                 Info("游戏结束.")
@@ -375,4 +377,5 @@ class GameMaster:
     
     def EndGame(self):
         Info("===== {0} EndGame =====".format(GetAllPlayersName()))
+        Info("\t===== input_tokens: {0} output_tokens {1} ======".format(self.input_tokens, self.output_tokens))
         pass   
