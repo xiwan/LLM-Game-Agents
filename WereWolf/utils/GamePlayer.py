@@ -1,31 +1,18 @@
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
 from .GameAssistant import GameAssistant
-from .AnthropicTokenCounter import AnthropicTokenCounter
 from .PeTemplates import *
 
 class GamePlayer:
-    global game_config_dict, roles_dict, template_player_role
+    global game_config_dict, roles_dict, template_player_role,claude_llm
     
     def __init__(self, template_role, player, GM):
-        
-        claude_llm = Bedrock(
-            model_id="anthropic.claude-v2",
-            streaming=True,
-            callbacks=[StreamingStdOutCallbackHandler()],
-            model_kwargs=inference_modifier,
-        )
-        self.token_counter = AnthropicTokenCounter(claude_llm)
-        
+
         _template_role = template_role.replace("{nickname}", player["name"])
         _template_role = _template_role.replace("{role}", player["role"])
         _template_role = _template_role.replace("{character}", player["character"])
-        
-        #confirmed_role = confirmed_role.replace("{init_players}", GetAllPlayersName())
-        # if player["role"] == "狼人":
-        #     confirmed_role = confirmed_role.replace("{teammates}", GetAllWolvesName())
-        # if player["role"] == "村民":
-        #     confirmed_role = confirmed_role.replace("{teammates}", game_config_dict["player"]["action_villager_team"])
+
+        Info("{0} is {1}".format(player["name"], player["role"]))
 
         _template_role_prompt = PromptTemplate.from_template(_template_role)
         #_template_role_prompt.format(nickname=player["name"], role=player["role"], character=player["character"])
@@ -43,8 +30,13 @@ class GamePlayer:
         Debug(player["conversation"])
                 
         self.GM = GM
+        self.token_counter = self.GM.token_counter # AnthropicTokenCounter(claude_llm)
         self.agent = player
-        self.assistant = GameAssistant(template_assistant_role, 200, GM)
+        
+        _template_assistant_role = template_assistant_role.replace("{num}", "200")
+        self.assistant = GameAssistant(_template_assistant_role, GM)
+
+        self.assitant_api = GameAssistant(template_assistant_api_role, GM)
         pass
     
     def _invoke(self, question):
@@ -55,11 +47,15 @@ class GamePlayer:
         return answer
     
     def _invokeAssistant(self, question):
-        teamexplain = "(初始配置为2狼人+6村民, 游戏每轮发言顺序为P1,P2,P3,P4,P5,P6,P7,P8)"
+        teamexplain = "(初始配置为2狼人+6村民, 每轮发言顺序为P1,P2,P3,P4,P5,P6,P7,P8)"
         boardInfo = "[目前场上信息:{0}{1}.] ".format(GetAllPlayersName(), teamexplain)
         question = boardInfo + question
         Debug("\tASSISTANT QUESTION : " + question)
         return self.assistant.DoAnswer(question)
+    
+    def _invokeAssistantApi(self, question):
+        Debug("\tASSISTANT API QUESTION : " + question)
+        return self.assitant_api.DoAnswer("{0}. 按照要求归类".format(question))
     
     def _playerInfoBuilder(self):
         boardInfo = "目前场上玩家:{0}(逗号为分割符).".format(GetAllPlayersName())
@@ -88,14 +84,21 @@ class GamePlayer:
         self.DoMemory()
         self.DoReflect()
         question = question_template.format(self._playerInfoBuilder(), "", idx)
-        answer = self.DoAnswer(question)
-        self.DoAction(answer)
+        answerapi = self.DoAnswer(question)
+        self.DoAction(answerapi)
         pass
     
     # answering question
     def DoAnswer(self, question):
         Info("\t\t===== DoAnswer {0} {1} ======".format(self.GM.current_time,self.agent["name"]))
         answer = self._invoke(question)
+        return answer
+    
+    def DoAnswerApi(self, question):
+        Info("\t\t===== DoAnswerApi {0} {1} ======".format(self.GM.current_time,self.agent["name"]))
+        output = self._invoke(question)
+        Info("")
+        answer = self._invokeAssistantApi(output["response"])
         return answer
     
     def DoAction(self, answer):

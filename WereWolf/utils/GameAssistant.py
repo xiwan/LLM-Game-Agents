@@ -1,24 +1,14 @@
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
-from .AnthropicTokenCounter import AnthropicTokenCounter
 from .PeTemplates import *
 
 
 class GameAssistant:
-    global game_config_dict, roles_dict, template_player_role
+    global game_config_dict, roles_dict, template_player_role, claude_llm
     
-    def __init__(self, template_role, num, GM):
-        _template_role = template_role.replace("{num}", str(num))
-        _template_role_prompt = PromptTemplate.from_template(_template_role)
-        
-        claude_llm = Bedrock(
-            model_id="anthropic.claude-v2",
-            streaming=True,
-            callbacks=[StreamingStdOutCallbackHandler()],
-            model_kwargs=inference_modifier,
-        )
-        self.token_counter = AnthropicTokenCounter(claude_llm)
-        
+    def __init__(self, template_role, GM):
+        # Info(template_role)
+        _template_role_prompt = PromptTemplate.from_template(template_role)
         role_memory = ConversationBufferWindowMemory(k = 1, return_messages=True,
                                                      human_prefix="Human", ai_prefix="AI", 
                                                      memory_key="chat_history", input_key="input")
@@ -30,6 +20,7 @@ class GameAssistant:
         )
         Debug(self.agent)
         self.GM = GM
+        self.token_counter = self.GM.token_counter# AnthropicTokenCounter(claude_llm)
         pass
     
     def _invoke(self, question):

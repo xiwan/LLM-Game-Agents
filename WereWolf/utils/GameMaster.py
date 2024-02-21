@@ -43,6 +43,7 @@ class GameMaster:
         pass
     
     def _resetGlobal(self):
+        self.token_counter = AnthropicTokenCounter(claude_llm)
         self.run = True
         self.isDay = False
         self.current_time = ""
@@ -178,7 +179,8 @@ class GameMaster:
         if self.winner != 0:
             self.game_system_log.append(message)
             # summerize the game
-            self.assistant = GameAssistant(template_assistant_role, 1000, self)
+            _template_assistant_role = template_assistant_role.replace("{num}", "1000")
+            self.assistant = GameAssistant(_template_assistant_role, self)
             memories = []
             # system message
             for log in self.game_system_log[-1000:]:

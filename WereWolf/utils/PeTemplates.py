@@ -7,6 +7,7 @@ from langchain.memory import ConversationKGMemory
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.schema import messages_from_dict, messages_to_dict
 from langchain_community.llms import Bedrock
+from .AnthropicTokenCounter import AnthropicTokenCounter
 
 inference_modifier = {'max_tokens_to_sample':4096, 
                       "temperature":0.85,
@@ -14,6 +15,13 @@ inference_modifier = {'max_tokens_to_sample':4096,
                       "top_p":1,
                       "stop_sequences": ["\n\nHuman"]
                      }
+
+claude_llm = Bedrock(
+    model_id="anthropic.claude-v2",
+    streaming=True,
+    callbacks=[StreamingStdOutCallbackHandler()],
+    model_kwargs=inference_modifier,
+)
 
 game_config = """
 {
@@ -115,13 +123,15 @@ werewolf_rule_v1 = """
 
 werewolf_command_v1 = """
 - 夜晚投票(狼人专属行动): WolfVote 参数: target=村民/狼人
-- 白天投票: PlayerVote 参数: target=存活玩家 
 - 白天怀疑(所有玩家白天可选行动, 非投票): PlayerDoubt 参数: target=存活玩家 
-- 玩家弃权: Pass 参数: 无 
+- 白天投票: PlayerVote 参数: target=存活玩家 
 - 白天讨论: Debate 参数: content=思考/理由 
-- 获取信息: GetAllPlayersName 参数: 无 
-- 死亡遗言: DeathWords 参数: content=给予玩家线索 
+- 玩家信息: GetAllPlayersName 参数: 无 
+- 死亡遗言: DeathWords 参数: content=给予玩家线索
+- 玩家弃权: Pass 参数: 无 
+- 其他动作: Pass 参数: 无 
 """
+
 
 template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
 <game_rules>
@@ -173,6 +183,41 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 Human: {input}
 AI:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)
 
+template_assistant_api_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
+<game_rules>
+{game_rule}
+</game_rules>
+
+你熟悉该游戏所有命令:
+<commands>
+{commands}
+</commands>
+
+输出参考:
+<references>
+- {{"action": "Pass"}}
+- {{"action": "WolfVote", "target": "小明"}}
+- {{"action": "PlayerVote", "target": "老王"}}
+- {{"action": "PlayerDoubt", "target": "老王", content="在我这里xx很值得怀疑，原因是..., 大家可以多关注他"}}
+- {{"action": "Debate", "content": "我的推理为xx是狼，原因是..."}}
+- {{"action": "Debate", "content": "普通村民，大家投错了!"}}
+- {{"action": "DeathWords", "content": "我觉得xx有很大的嫌疑, 原因是..."}}
+- {{"action": "GetAllPlayersName"}}
+</references>
+
+历史信息:
+{chat_history}
+
+Human: {input}
+
+接下来, 你需要将冗长的文字输入进行归类
+
+满足下面的要求:
+- 按照<references>参考, 直接输出json格式
+- 不需要输出任何中间思考过程，不要给任何推理和主观意见
+- 不输出任何无关内容
+
+AI:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)
 
 template_assistant_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
 <game_rules>
@@ -192,6 +237,39 @@ Human: {input}
 - 不输出无关内容，内容言简意赅，突出重点
 
 AI:""".replace("{game_rule}", werewolf_rule_v1)
+
+template_master_role = """现在你在扮演《狼人杀》游戏的上帝角色，使用的《狼人杀》游戏规则：
+{game_rule}
+
+你熟知上帝可以执行的命令:
+<commands>
+- 狼人投票
+- 全体讨论
+- 全体投票
+- 宣布死亡
+</commdands>
+
+输出参考:
+<references>
+- 现在是第一个夜晚，狼人投票
+- 现在是第二天白天讨论，该如何行动?
+- 现在是第三天白天投票,该如何行动?
+- 玩家小红昨晚死亡，你的遗言是什么?
+- 玩家P5白天被投票出局，你的遗言是什么?
+</references>
+
+目前游戏进程:
+<history>
+{history}
+</history>
+
+Human: {input}
+
+满足下面所有要求:
+- 你的操作必须从<commands>选择, 然后用自然语言输出，可以参考<references>
+- 保持客观冷静,直接给出命令,控制输出字数为20字以内，不要给任何推理和主观意见
+
+AI Assistant:""".replace("{game_rule}", werewolf_rule_v1)
 
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
