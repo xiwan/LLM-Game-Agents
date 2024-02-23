@@ -62,7 +62,7 @@ roles = """
   "players": [
     {
       "name": "P1",
-      "role": "狼人",
+      "role": "预言家",
       "character": "话痨",
       "status": 1
     },
@@ -74,7 +74,7 @@ roles = """
     },
     {
       "name": "P3",
-      "role": "村民",
+      "role": "狼人",
       "character": "组织者",
       "status": 1
     },
@@ -113,17 +113,22 @@ roles = """
 """
 
 werewolf_rule_v1 = """
-1. 游戏分狼人和村民两大阵营,他们的目标为:
-- 狼人阵营:消灭所有村民, 或者保证狼人数目大于村民数目
-- 村民阵营:消灭所有狼人, 或者保证村民数目大于狼人数目
+1. 游戏分坏人(狼人)和好人(村民+预言家)两大阵营,他们的目标为:
+- 坏人阵营只有狼人
+- 好人阵营有村民和预言家
+- 坏人阵营:消灭所有好人, 或者保证坏人数目大于好人数目
+- 好人阵营:消灭所有坏人, 或者保证好人数目大于坏人数目
 
 2. 游戏分白天和晚上两个阶段交替进行:
-- 晚上狼人睁眼互投票杀死一名玩家, 村民不能行动
-- 白天所有存活玩家需要先进行公开讨论思路, 最后一起投票决定消灭一名疑似狼人的角色或者放弃投票
+- 晚上狼人睁眼互投票杀死一名玩家
+- 晚上预言家睁眼查验一名玩家身份
+- 白天所有存活玩家需要先进行公开讨论思路, 最后一起投票决定消灭一名疑似坏人的角色或者放弃投票
+
 """
 
 werewolf_command_v1 = """
-- 夜晚投票(狼人专属行动): WolfVote 参数: target=村民/狼人
+- 夜晚投票(狼人专属行动): WolfVote 参数: target=存活玩家
+- 夜晚查验(预言家专属行动): ProphetCheck 参数: target=存活玩家
 - 白天怀疑(所有玩家白天可选行动, 非投票): PlayerDoubt 参数: target=存活玩家 
 - 白天投票: PlayerVote 参数: target=存活玩家 
 - 白天讨论: Debate 参数: content=思考/理由 
@@ -132,7 +137,6 @@ werewolf_command_v1 = """
 - 玩家弃权: Pass 参数: 无 
 - 其他动作: Pass 参数: 无 
 """
-
 
 template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
 <game_rules>
@@ -147,9 +151,11 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 <references>
 - {{"action": "Pass"}}
 - {{"action": "WolfVote", "target": "小明"}}
+- {{"action": "ProphetCheck", "target": "P1"}}
 - {{"action": "PlayerVote", "target": "老王"}}
 - {{"action": "PlayerDoubt", "target": "老王", content="在我这里xx很值得怀疑，原因是..., 大家可以多关注他"}}
 - {{"action": "Debate", "content": "我的推理为xx是狼，原因是..."}}
+- {{"action": "Debate", "content": "我是预言家，我昨晚查了xx的身份..."}}
 - {{"action": "Debate", "content": "普通村民，大家投错了!"}}
 - {{"action": "DeathWords", "content": "我觉得xx有很大的嫌疑, 原因是..."}}
 - {{"action": "GetAllPlayersName"}}
@@ -287,6 +293,12 @@ def GetAllPlayersName() -> str:
         players_name.append(player["name"]+":"+status_str)
     return ",".join(players_name)
 
+def GetPlayerRole(name) -> str:
+    for player in roles_dict["players"]:
+        if player["name"] == name:
+            return "{0}:{1}".format(name, player["role"])
+    return ""
+
 # @tool
 def GetAllWolvesName() -> str:
     """GetAllWolvesName"""
@@ -310,7 +322,7 @@ def GroupAllPlayers() -> dict:
             grouped_dict[player["role"]].append(player)
 
     return grouped_dict
-
+    
 def ActionLog(prefix, current_time, agent, res_obj):
     action_log = {"time": current_time, "player": agent["name"], "status": agent['status'], "response": res_obj}
     Debug("\n {0}={1}\n".format(prefix, action_log))

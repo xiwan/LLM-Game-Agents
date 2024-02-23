@@ -71,10 +71,11 @@ class GameMaster:
         self.game_pulbic_log = []
         self.game_wolf_vote_log = []
         self.game_player_vote_log = []
+        self.game_prophet_check_log = []
         self.game_player_action_log = []
-        self.game_system_log = []
         self.game_player_death_log = []
-        
+        self.game_system_log = []
+
         self.player_agents = []
         self.winner = 0  # 0: 继续 1: 村民 2:狼人
         
@@ -287,7 +288,7 @@ class GameMaster:
                     pass
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
-                    if player.agent["role"] == "狼人":
+                    if player.IsWolf() or player.IsProphet():
                         question_template = game_config_dict["player"]["action_plan_night"]
                         player.DoPlanning(question_template, i)
                     pass

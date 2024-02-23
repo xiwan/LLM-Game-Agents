@@ -1,4 +1,4 @@
-import json
+import json,time
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error
 from .GameAssistant import GameAssistant
 from .PeTemplates import *
@@ -41,6 +41,7 @@ class GamePlayer:
     
     def _invoke(self, question):
         Info("\tQUESTION: " + question)
+        time.sleep(500 / 1000)
         answer = self.agent["conversation"].invoke(input = question, config={"callbacks": [self.token_counter]})
         self.GM.input_tokens = self.GM.input_tokens + self.token_counter.input_tokens
         self.GM.output_tokens = self.GM.output_tokens + self.token_counter.output_tokens
@@ -59,14 +60,22 @@ class GamePlayer:
     
     def _playerInfoBuilder(self):
         boardInfo = "目前场上玩家:{0}(逗号为分割符).".format(GetAllPlayersName())
-        if self.agent["role"] == "狼人":
+        if self.IsWolf():
             playerInfo = "现在是{2},你是玩家{0}(狼人身份,本阵营为:{1}).{3}".format(self.agent["name"], GetAllWolvesName(), self.GM.current_time, boardInfo)
-        if self.agent["role"] == "村民":
+        if self.IsVillager():
             playerInfo = "现在是{2},你是玩家{0}(村民身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
+        if self.IsProphet():
+            playerInfo = "现在是{2},你是玩家{0}(预言家身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
         return playerInfo
     
     def IsWolf(self):
         return self.GetRole() == "狼人"
+    
+    def IsVillager(self):
+        return self.GetRole() == "村民"
+    
+    def IsProphet(self):
+        return self.GetRole() == "预言家"
     
     def Die(self):
         self.agent["status"] = -1
@@ -114,6 +123,19 @@ class GamePlayer:
         for res in response:
             res_obj = json.loads(res)
             log = ""
+            
+            if res_obj["action"] == "ProphetCheck":
+                if not self.GM.isDay:
+                    memory = GetPlayerRole(res_obj["target"])
+                    # print(memory)
+                    log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
+                    self.GM.game_prophet_check_log.append(log)
+                    self.GM.game_prophet_check_log.append(memory)
+                    Info(log + memory)
+                    #log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
+                    # self.GM.game_pulbic_log.append(log)
+                pass
+            
             if res_obj["action"] == "WolfVote":
                 if not self.GM.isDay:
                     log = ActionLog("wolf_vote_log", self.GM.current_time, self.agent, res_obj)
@@ -181,6 +203,11 @@ class GamePlayer:
         
         if self.IsWolf():
             for log in self.GM.game_wolf_vote_log[-1*memorysize:]:
+                memories.append(json.dumps(log, ensure_ascii=False))
+                pass
+            
+        if self.IsProphet():
+            for log in self.GM.game_prophet_check_log[-1*memorysize:]:
                 memories.append(json.dumps(log, ensure_ascii=False))
                 pass
             
