@@ -8,11 +8,12 @@ from .GameAssistant import GameAssistant
 from .PeTemplates import *
 
 class GameMaster:
-    global game_config_dict, roles_dict, template_master_role
+    global game_config_dict, roles_dict, template_master_role, claude_llm, claude_instant_llm
 
-    def __init__(self, num, quick=False) -> None:
+    def __init__(self, num, llm = claude_llm, quick=False) -> None:
         self._resetGlobal()
         self.quick = quick
+        self.llm = llm
         
         _template_master_role = PromptTemplate.from_template(template_master_role)
         #_template_role_prompt.format(nickname=player["name"], role=player["role"], character=player["character"])
@@ -22,7 +23,7 @@ class GameMaster:
                                                      memory_key="history", input_key="input")
         self.agent = ConversationChain(
             prompt=_template_master_role,
-            llm=claude_llm, 
+            llm=self.llm, 
             verbose=False, 
             memory=role_memory
         )

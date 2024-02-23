@@ -13,11 +13,17 @@ inference_modifier = {'max_tokens_to_sample':4096,
                       "temperature":0.85,
                       "top_k":250,
                       "top_p":1,
-                      "stop_sequences": ["\n\nHuman"]
-                     }
+                      "stop_sequences": ["\n\nHuman"]}
 
 claude_llm = Bedrock(
     model_id="anthropic.claude-v2",
+    streaming=True,
+    callbacks=[StreamingStdOutCallbackHandler()],
+    model_kwargs=inference_modifier,
+)
+
+claude_instant_llm = Bedrock(
+    model_id="anthropic.claude-instant-v1",
     streaming=True,
     callbacks=[StreamingStdOutCallbackHandler()],
     model_kwargs=inference_modifier,
@@ -156,7 +162,6 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 - {{"action": "PlayerDoubt", "target": "老王", content="在我这里xx很值得怀疑，原因是..., 大家可以多关注他"}}
 - {{"action": "Debate", "content": "我的推理为xx是狼，原因是..."}}
 - {{"action": "Debate", "content": "我是预言家，我昨晚查了xx的身份..."}}
-- {{"action": "Debate", "content": "普通村民，大家投错了!"}}
 - {{"action": "DeathWords", "content": "我觉得xx有很大的嫌疑, 原因是..."}}
 - {{"action": "GetAllPlayersName"}}
 </references>
@@ -178,14 +183,12 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 接下来你的目的是: 通过决策引导游戏往有利于的方向进行, 最终赢得比赛. 
 
 决策满足下面要求:
-- 判断场上信息真伪, 充分运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
-- 内容不要罗嗦, 不要超过100字数限制,少讲废话, 突出重点
-- 决策分为两类:思考或行动, 任选其中一个即可.
-- 思考:输出为自然语言形式,比如判断信息真伪,分析游戏形势, 场上阵营玩家数目，局面好坏等等
-- 思考:模仿玩家的性格，严格参考 <reflections> 选择合适的输出
+- 判断场上信息真伪, 运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
+- 内容不要罗嗦, 不要超过50字数限制,少讲废话, 突出重点
+- 决策分为两类:思考或行动
+- 思考:模仿玩家的性格，判断信息真伪,分析游戏形势等等,参考 <reflections> 选择合适的输出
 - 行动:必须用json格式在<commands> 中选择,  参考 <references> 选择合适的输出
-- 行动:在讨论环节，每个玩家必须参与讨论. 讨论的内容包含:场上局势分析,身份隐藏或者诬陷,注意力转移等等
-- 行动:在投票环节，每个玩家必须投票或者放弃
+- 行动:在讨论环节，每个玩家必须参与讨论. 在投票环节，每个玩家必须投票或者放弃
 
 Human: {input}
 AI:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)

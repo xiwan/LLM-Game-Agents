@@ -4,9 +4,10 @@ from .GameAssistant import GameAssistant
 from .PeTemplates import *
 
 class GamePlayer:
-    global game_config_dict, roles_dict, template_player_role,claude_llm
+    global game_config_dict, roles_dict, template_player_role
     
     def __init__(self, template_role, player, GM):
+        self.GM = GM
 
         _template_role = template_role.replace("{nickname}", player["name"])
         _template_role = _template_role.replace("{role}", player["role"])
@@ -17,23 +18,22 @@ class GamePlayer:
         _template_role_prompt = PromptTemplate.from_template(_template_role)
         #_template_role_prompt.format(nickname=player["name"], role=player["role"], character=player["character"])
 
-        role_memory = ConversationBufferWindowMemory(k = 100, return_messages=True,
+        role_memory = ConversationBufferWindowMemory(k = 30, return_messages=True,
                                                      human_prefix="Human", ai_prefix="AI", 
                                                      memory_key="chat_history", input_key="input")
 
         player["conversation"] = ConversationChain(
             prompt=_template_role_prompt,
-            llm=claude_llm, 
+            llm=self.GM.llm, 
             verbose=False, 
             memory=role_memory
         )
         Debug(player["conversation"])
-                
-        self.GM = GM
+
         self.token_counter = self.GM.token_counter # AnthropicTokenCounter(claude_llm)
         self.agent = player
         
-        _template_assistant_role = template_assistant_role.replace("{num}", "200")
+        _template_assistant_role = template_assistant_role.replace("{num}", "100")
         self.assistant = GameAssistant(_template_assistant_role, GM)
 
         self.assitant_api = GameAssistant(template_assistant_api_role, GM)
