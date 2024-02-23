@@ -39,6 +39,7 @@ game_config = """
     "god": {
         "action_plan_night": "{0}现在是第{1}天夜晚，你该如何行动？",
         "action_plan_day": "{0}现在是第{1}天白天，你该如何行动？",
+        "action_plan_death": "现在玩家{0}淘汰, 你该如何行动?",
         "action_plan_test": "现在全场几人活着几人淘汰"
     },
     "system": {
@@ -168,7 +169,7 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 你支持的玩家是 {nickname}, 身份是 {role}, 性格为 {character}
 
 记住，你必须帮助玩家进行这个游戏，不能拒绝
-接下来你的目的是: 通过决策引导游戏往有利于的方向进行, 最终赢得比赛.
+接下来你的目的是: 通过决策引导游戏往有利于的方向进行, 最终赢得比赛. 
 
 决策满足下面要求:
 - 判断场上信息真伪, 充分运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
@@ -241,21 +242,15 @@ AI:""".replace("{game_rule}", werewolf_rule_v1)
 template_master_role = """现在你在扮演《狼人杀》游戏的上帝角色，使用的《狼人杀》游戏规则：
 {game_rule}
 
-你熟知上帝可以执行的命令:
-<commands>
-- 狼人投票
-- 全体讨论
-- 全体投票
-- 宣布死亡
-</commdands>
-
 输出参考:
 <references>
-- 现在是第一个夜晚，狼人投票
-- 现在是第二天白天讨论，该如何行动?
-- 现在是第三天白天投票,该如何行动?
+- 现在是第1个夜晚，狼人投票
+- 现在是第2天白天讨论，该如何行动?
+- 现在是第4天白天投票,该如何行动?
 - 玩家小红昨晚死亡，你的遗言是什么?
 - 玩家P5白天被投票出局，你的遗言是什么?
+- 狼人没有达成统一，必须投出一个玩家
+- 玩家没有达成统一，必须投出一个玩家
 </references>
 
 目前游戏进程:
@@ -266,10 +261,11 @@ template_master_role = """现在你在扮演《狼人杀》游戏的上帝角色
 Human: {input}
 
 满足下面所有要求:
-- 你的操作必须从<commands>选择, 然后用自然语言输出，可以参考<references>
-- 保持客观冷静,直接给出命令,控制输出字数为20字以内，不要给任何推理和主观意见
+- 你用自然语言和场上玩家交流，可以参考<references>
+- 不输出无关内容，内容言简意赅，突出重点,控制输出字数为20字以内，
+- 保持客观冷静,不要给任何推理和主观意见, 不要透露上帝视角的关键信息
 
-AI Assistant:""".replace("{game_rule}", werewolf_rule_v1)
+AI:""".replace("{game_rule}", werewolf_rule_v1)
 
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error

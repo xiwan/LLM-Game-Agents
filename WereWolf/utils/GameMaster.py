@@ -8,14 +8,34 @@ from .GameAssistant import GameAssistant
 from .PeTemplates import *
 
 class GameMaster:
-    global game_config_dict, roles_dict, template_player_role
+    global game_config_dict, roles_dict, template_master_role
 
     def __init__(self, num, quick=False) -> None:
         self._resetGlobal()
         self.quick = quick
         
+        _template_master_role = PromptTemplate.from_template(template_master_role)
+        #_template_role_prompt.format(nickname=player["name"], role=player["role"], character=player["character"])
+
+        role_memory = ConversationBufferWindowMemory(k = 1, return_messages=True,
+                                                     human_prefix="Human", ai_prefix="AI", 
+                                                     memory_key="history", input_key="input")
+        self.agent = ConversationChain(
+            prompt=_template_master_role,
+            llm=claude_llm, 
+            verbose=False, 
+            memory=role_memory
+        )
+        
         game_config_dict["max_round"] = num
         pass
+    
+    def _invoke(self, question):
+        Info("\t GOD QUESTION : " + question)
+        answer = self.agent.invoke(input = question, config={"callbacks": [self.token_counter]})
+        self.input_tokens = self.input_tokens + self.token_counter.input_tokens
+        self.output_tokens = self.output_tokens + self.token_counter.output_tokens
+        return answer
     
     def _current_time(self, i):
         if self.isDay:
@@ -53,6 +73,8 @@ class GameMaster:
         self.game_player_vote_log = []
         self.game_player_action_log = []
         self.game_system_log = []
+        self.game_player_death_log = []
+        
         self.player_agents = []
         self.winner = 0  # 0: 继续 1: 村民 2:狼人
         
@@ -60,6 +82,7 @@ class GameMaster:
         self.palyervotes = []
         self.input_tokens = 0
         self.output_tokens = 0
+        self.god_instruct = ""
         # self.quick = False
         pass
     
@@ -68,8 +91,8 @@ class GameMaster:
         grouped_dict = GroupAllPlayers()
         # print(grouped_dict["狼人"])
         message = "\t时间{0},场上存活状态 狼人:{1} 村民:{2}".format(self.current_time, str(len(grouped_dict["狼人"])), str(len(grouped_dict["村民"])))
-        Info(message)
-        self.game_memory_queue.put(message)
+        #Info(message)
+        #self.game_memory_queue.put(message)
 
         if len(grouped_dict["狼人"]) == 0 and len(grouped_dict["村民"]) > 0:
             return 1
@@ -116,6 +139,8 @@ class GameMaster:
                     player["status"] = 0 # death !!!!
                     pub_log = ReadableActionLog("[PLAYER VOTE]", self.current_time, player, "玩家{0}于{1}被玩家投票而出局".format(elem, self.current_time))
                     self.game_pulbic_log.append(pub_log)
+                    # for god
+                    self.game_memory_queue.put(pub_log)
                     vote_log = SystemLog("[PLAYER VOTE]", self.current_time, player, "玩家{0}于{1}被玩家投票而出局".format(elem, self.current_time))
                     self.game_system_log.append(vote_log)
                     return True
@@ -162,6 +187,8 @@ class GameMaster:
                     player["status"] = 0 # death !!!!
                     pub_log = ReadableActionLog("[WOLF VOTE]", self.current_time, player, "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time))
                     self.game_pulbic_log.append(pub_log)
+                    # for god
+                    self.game_memory_queue.put(pub_log)
                     sys_log = SystemLog("[WOLF VOTE]", self.current_time, player, "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time))
                     self.game_system_log.append(sys_log)
                     return True
@@ -366,6 +393,13 @@ class GameMaster:
             # day round
             if i > 1:
                 self.isDay = True
+                # messages = []
+                # while not self.game_memory_queue.empty():
+                #     messages.append(self.game_memory_queue.get(False))    
+                # question = game_config_dict["god"]["action_plan_day"].format(",".join(messages), i)  
+                # if len(messages) > 0:
+                #     question = game_config_dict["god"]["action_plan_death"].format(",".join(messages), i)
+                # self.god_instruct = self._invoke(question)["response"]
                 self.PreAction(i)
                 self.DoAction(i)
                 self.PostAction(i)
@@ -375,6 +409,8 @@ class GameMaster:
                     
             # night round
             self.isDay = False
+            # question = game_config_dict["god"]["action_plan_night"].format("", i)
+            # self.god_instruct = self._invoke(question)["response"]
             self.PreAction(i)
             self.DoAction(i)
             self.PostAction(i)

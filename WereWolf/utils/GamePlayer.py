@@ -84,6 +84,9 @@ class GamePlayer:
         self.DoMemory()
         self.DoReflect()
         question = question_template.format(self._playerInfoBuilder(), "", idx)
+        if self.GM.god_instruct != "":
+            question = self._playerInfoBuilder() + "." + self.GM.god_instruct
+        
         answerapi = self.DoAnswer(question)
         self.DoAction(answerapi)
         pass
