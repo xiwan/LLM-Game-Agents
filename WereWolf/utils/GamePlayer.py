@@ -18,9 +18,13 @@ class GamePlayer:
         _template_role_prompt = PromptTemplate.from_template(_template_role)
         #_template_role_prompt.format(nickname=player["name"], role=player["role"], character=player["character"])
 
-        role_memory = ConversationBufferWindowMemory(k = 30, return_messages=True,
-                                                     human_prefix="Human", ai_prefix="AI", 
+        role_memory = ConversationBufferWindowMemory(k = 10, return_messages=True,
+                                                     human_prefix="Human", ai_prefix="Assistant", 
                                                      memory_key="chat_history", input_key="input")
+        
+        # role_memory = ConversationSummaryBufferMemory(llm=self.GM.llm, max_token_limit=200, return_messages=True, 
+        #                                               human_prefix="Human", ai_prefix="Assistant", 
+        #                                               memory_key="chat_history", input_key="input")
 
         player["conversation"] = ConversationChain(
             prompt=_template_role_prompt,
@@ -61,11 +65,11 @@ class GamePlayer:
     def _playerInfoBuilder(self):
         boardInfo = "目前场上玩家:{0}(逗号为分割符).".format(GetAllPlayersName())
         if self.IsWolf():
-            playerInfo = "现在是{2},你是玩家{0}(狼人身份,本阵营为:{1}).{3}".format(self.agent["name"], GetAllWolvesName(), self.GM.current_time, boardInfo)
+            playerInfo = "现在是{2},你支持的玩家是{0}(狼人身份,本阵营为:{1}).{3}".format(self.agent["name"], GetAllWolvesName(), self.GM.current_time, boardInfo)
         if self.IsVillager():
-            playerInfo = "现在是{2},你是玩家{0}(村民身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
+            playerInfo = "现在是{2},你支持的玩家是{0}(村民身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
         if self.IsProphet():
-            playerInfo = "现在是{2},你是玩家{0}(预言家身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
+            playerInfo = "现在是{2},你支持的玩家是{0}(预言家身份).{1}.{3}".format(self.agent["name"], "", self.GM.current_time, boardInfo)
         return playerInfo
     
     def IsWolf(self):
@@ -123,7 +127,8 @@ class GamePlayer:
         for res in response:
             res_obj = json.loads(res)
             log = ""
-            
+            if not "action" in res_obj:
+                continue
             if res_obj["action"] == "ProphetCheck":
                 if not self.GM.isDay:
                     memory = GetPlayerRole(res_obj["target"])

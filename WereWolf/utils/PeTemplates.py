@@ -1,5 +1,6 @@
 from langchain.chains import ConversationChain
 from langchain.chains.conversation.memory import ConversationSummaryMemory
+from langchain.chains.conversation.memory import ConversationSummaryBufferMemory
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
@@ -9,8 +10,8 @@ from langchain.schema import messages_from_dict, messages_to_dict
 from langchain_community.llms import Bedrock
 from .AnthropicTokenCounter import AnthropicTokenCounter
 
-inference_modifier = {'max_tokens_to_sample':4096, 
-                      "temperature":0.85,
+claude_inference_modifier = {'max_tokens_to_sample':4096, 
+                      "temperature":0.3,
                       "top_k":250,
                       "top_p":1,
                       "stop_sequences": ["\n\nHuman"]}
@@ -19,14 +20,35 @@ claude_llm = Bedrock(
     model_id="anthropic.claude-v2",
     streaming=True,
     callbacks=[StreamingStdOutCallbackHandler()],
-    model_kwargs=inference_modifier,
+    model_kwargs=claude_inference_modifier,
 )
 
 claude_instant_llm = Bedrock(
     model_id="anthropic.claude-instant-v1",
     streaming=True,
     callbacks=[StreamingStdOutCallbackHandler()],
-    model_kwargs=inference_modifier,
+    model_kwargs=claude_inference_modifier,
+)
+
+claude3_Sonnet = Bedrock(
+    model_id="anthropic.claude-3-sonnet-20240229-v1:0",
+    streaming=True,
+    callbacks=[StreamingStdOutCallbackHandler()],
+    model_kwargs=claude_inference_modifier,
+)
+
+
+llama2_inference_modifier = { 
+    'max_gen_len': 512,
+	'top_p': 0.9,
+	'temperature': 0.2
+}
+
+llama2_70b_llm = Bedrock(
+    model_id="meta.llama2-70b-chat-v1",
+    streaming=True,
+    callbacks=[StreamingStdOutCallbackHandler()],
+    model_kwargs=llama2_inference_modifier,
 )
 
 game_config = """
@@ -39,8 +61,8 @@ game_config = """
         "action_plan_death": "{0}{1}现在是第{2}天白天，你已经死亡,有何遗言?",
         "action_confirm": "ok",
         "action_villager_team": "未知,需要你推理发现.",
-        "action_reflect": "{0}{1}.为下一轮行动做个反思和总结",
-        "action_plan_test": "现在全场几人活着几人淘汰"
+        "action_reflect": "{0}{1}.开始一步一步进行推理，为下一轮行动准备.",
+        "action_plan_test": "现在全场几人活着几人淘汰?"
     },
     "god": {
         "action_plan_night": "{0}现在是第{1}天夜晚，你该如何行动？",
@@ -69,7 +91,7 @@ roles = """
     {
       "name": "P1",
       "role": "预言家",
-      "character": "话痨",
+      "character": "独立思考",
       "status": 1
     },
     {
@@ -93,7 +115,7 @@ roles = """
     {
       "name": "P5",
       "role": "村民",
-      "character": "独立思考",
+      "character": "话痨",
       "status": 1
     },
     {
@@ -126,23 +148,62 @@ werewolf_rule_v1 = """
 - 好人阵营:消灭所有坏人, 或者保证好人数目大于坏人数目
 
 2. 游戏分白天和晚上两个阶段交替进行:
-- 晚上狼人睁眼互投票杀死一名玩家
-- 晚上预言家睁眼查验一名玩家身份
-- 白天所有存活玩家需要先进行公开讨论思路, 最后一起投票决定消灭一名疑似坏人的角色或者放弃投票
+- 晚上狼人睁眼统一投票杀死一名玩家
+- 晚上预言家只能查验一名玩家身份
+- 晚上普通村民无法行动
+- 白天分为讨论和投票两环节
+- 白天在讨论环节，每个玩家必须参与讨论
+- 白天在投票环节，每个玩家必须投票或者放弃
 
 """
 
 werewolf_command_v1 = """
-- 夜晚投票(狼人专属行动): WolfVote 参数: target=存活玩家
-- 夜晚查验(预言家专属行动): ProphetCheck 参数: target=存活玩家
-- 白天怀疑(所有玩家白天可选行动, 非投票): PlayerDoubt 参数: target=存活玩家 
-- 白天投票: PlayerVote 参数: target=存活玩家 
-- 白天讨论: Debate 参数: content=思考/理由 
-- 玩家信息: GetAllPlayersName 参数: 无 
-- 死亡遗言: DeathWords 参数: content=给予玩家线索
-- 玩家弃权: Pass 参数: 无 
-- 其他动作: Pass 参数: 无 
+- WolfVote: 夜晚投票(狼人专属行动),参数: target=存活玩家
+- ProphetCheck: 夜晚查验(预言家专属行动), 参数: target=存活玩家
+- PlayerDoubt: 白天怀疑(所有玩家白天可选行动, 非投票), 参数: target=存活玩家 
+- PlayerVote: 白天投票, 参数: target=存活玩家 
+- Debate: 白天讨论, 参数: content=思考/理由 
+- GetAllPlayersName: 玩家信息, 参数: 无 
+- DeathWords: 死亡遗言, 参数: content=给予玩家线索
+- Pass: 玩家弃权参数: 无 
 """
+
+# Set up the prompt with input variables for tools, user input and a scratchpad for the model to record its workings
+template_werewolf_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
+<game_rules>
+{game_rule}
+</game_rules>
+
+你可以使用以下工具:
+{tools}
+
+<references>
+- {{"action": "Pass", "content": "无话可说"}}
+- {{"action": "WolfVote", "target": "小明"}}
+- {{"action": "ProphetCheck", "target": "P1"}}
+- {{"action": "PlayerVote", "target": "老王"}}
+- {{"action": "PlayerDoubt", "target": "老王", content="在我这里xx很值得怀疑，原因是..., 大家可以多关注他"}}
+- {{"action": "Debate", "content": "我的推理为xx是狼，原因是..."}}
+- {{"action": "Debate", "content": "我是预言家，我昨晚查了xx的身份..."}}
+- {{"action": "DeathWords", "content": "我觉得xx有很大的嫌疑, 原因是..."}}
+- {{"action": "GetAllPlayersName"}}
+</references>
+
+记住，你支持的玩家是{nickname}, 身份是{role}, 性格为{character}, 你必须帮助玩家进行这个游戏
+接下来你的目的是: 通过一步一步思考决策引导游戏往有利于玩家的方向进行, 最终赢得比赛. 
+
+你的输出需要满足以下条件:
+- 内容不要罗嗦, 不要超过50字数限制,少讲废话, 突出重点,不需要讨论
+- 判断场上信息真伪, 运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
+- 决策分为两类:思考或行动
+- 思考:逐步思考,判断信息真伪,分析游戏形势等等
+- 行动:参考<references>使用json格式, action在[{tool_names}]中选择
+
+历史信息:
+{history}
+
+Question: {input}
+{agent_scratchpad}""".replace("{game_rule}", werewolf_rule_v1)
 
 template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
 <game_rules>
@@ -154,44 +215,41 @@ template_player_role = """你是资深的社交游戏玩家, 熟悉《狼人杀�
 {commands}
 </commands>
 
+<reflections>
+- 按照游戏规则，第一个夜晚死亡的一定是村民或者预言家，狼人没必要第一晚上自杀
+- 看完P3玩家昨天白天投票，明显感觉他在混淆是非，很有可能在给狼人分票
+- 平民玩家由于信息缺失，所以狼人要尽量引导他们去集火其他人
+- 第一个夜晚所有的行动都是随机的
+- 作为第一个死亡的玩家，其实信息有限，我就靠第六感推理...
+</reflections>
+
 <references>
 - {{"action": "Pass"}}
 - {{"action": "WolfVote", "target": "小明"}}
 - {{"action": "ProphetCheck", "target": "P1"}}
 - {{"action": "PlayerVote", "target": "老王"}}
-- {{"action": "PlayerDoubt", "target": "老王", content="在我这里xx很值得怀疑，原因是..., 大家可以多关注他"}}
 - {{"action": "Debate", "content": "我的推理为xx是狼，原因是..."}}
-- {{"action": "Debate", "content": "我是预言家，我昨晚查了xx的身份..."}}
 - {{"action": "DeathWords", "content": "我觉得xx有很大的嫌疑, 原因是..."}}
-- {{"action": "GetAllPlayersName"}}
 </references>
-
-<reflections>
-- 基于目前的形势,我认为...
-- 根据游戏进程,我的分析为...
-- 现在场上对于村民形势不利,我建议...
-</reflections>
 
 历史信息:
 <chat_history>
 {chat_history}
 </chat_history>
 
-你支持的玩家是 {nickname}, 身份是 {role}, 性格为 {character}
-
-记住，你必须帮助玩家进行这个游戏，不能拒绝
-接下来你的目的是: 通过决策引导游戏往有利于的方向进行, 最终赢得比赛. 
+记住，你支持的玩家是 {nickname}, 身份是 {role}, 性格为 {character}, 必须帮助玩家进行这个游戏
+接下来你的目的是: 通过一步一步思考决策引导游戏往有利于的方向进行, 最终赢得比赛. 
 
 决策满足下面要求:
-- 判断场上信息真伪, 运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
 - 内容不要罗嗦, 不要超过50字数限制,少讲废话, 突出重点
+- 判断场上信息真伪, 运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
 - 决策分为两类:思考或行动
-- 思考:模仿玩家的性格，判断信息真伪,分析游戏形势等等,参考 <reflections> 选择合适的输出
-- 行动:必须用json格式在<commands> 中选择,  参考 <references> 选择合适的输出
-- 行动:在讨论环节，每个玩家必须参与讨论. 在投票环节，每个玩家必须投票或者放弃
+- 思考:逐步思考,判断信息真伪,分析游戏形势等等,参考 <reflections> 选择合适的输出
+- 行动:参考<references>按照json字符串格式输出,必须包含action key, action必须在<commands>中选择
+
 
 Human: {input}
-AI:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)
+Assistant:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)
 
 template_assistant_api_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
 <game_rules>
@@ -218,8 +276,6 @@ template_assistant_api_role = """你是资深的社交游戏玩家, 熟悉《狼
 历史信息:
 {chat_history}
 
-Human: {input}
-
 接下来, 你需要将冗长的文字输入进行归类
 
 满足下面的要求:
@@ -227,7 +283,9 @@ Human: {input}
 - 不需要输出任何中间思考过程，不要给任何推理和主观意见
 - 不输出任何无关内容
 
-AI:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)
+
+Human: {input}
+Assistant:""".replace("{game_rule}", werewolf_rule_v1).replace("{commands}", werewolf_command_v1)
 
 template_assistant_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
 <game_rules>
@@ -237,8 +295,6 @@ template_assistant_role = """你是资深的社交游戏玩家, 熟悉《狼人�
 历史信息:
 {chat_history}
 
-Human: {input}
-
 接下来, 你需要将冗长的文字输入进行有效提炼并且输出
 
 满足下面的要求:
@@ -246,7 +302,9 @@ Human: {input}
 - 不需要输出任何中间思考过程，不要给任何推理和主观意见
 - 不输出无关内容，内容言简意赅，突出重点
 
-AI:""".replace("{game_rule}", werewolf_rule_v1)
+
+Human: {input}
+Assistant:""".replace("{game_rule}", werewolf_rule_v1)
 
 template_master_role = """现在你在扮演《狼人杀》游戏的上帝角色，使用的《狼人杀》游戏规则：
 {game_rule}
@@ -274,7 +332,7 @@ Human: {input}
 - 不输出无关内容，内容言简意赅，突出重点,控制输出字数为20字以内，
 - 保持客观冷静,不要给任何推理和主观意见, 不要透露上帝视角的关键信息
 
-AI:""".replace("{game_rule}", werewolf_rule_v1)
+Assistant:""".replace("{game_rule}", werewolf_rule_v1)
 
 import json
 from . import ParseJson, print_ww, Print, Info, Debug, Warn, Error

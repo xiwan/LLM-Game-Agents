@@ -11,7 +11,7 @@ class GameAssistant:
         # Info(template_role)
         _template_role_prompt = PromptTemplate.from_template(template_role)
         role_memory = ConversationBufferWindowMemory(k = 1, return_messages=True,
-                                                     human_prefix="Human", ai_prefix="AI", 
+                                                     human_prefix="Human", ai_prefix="Assistant", 
                                                      memory_key="chat_history", input_key="input")
         self.agent = ConversationChain(
             prompt=_template_role_prompt,
