@@ -170,34 +170,27 @@ werewolf_command_v1 = """
 
 # Set up the prompt with input variables for tools, user input and a scratchpad for the model to record its workings
 template_werewolf_role = """你是资深的社交游戏玩家, 熟悉《狼人杀》游戏规则:
-<game_rules>
 {game_rule}
-</game_rules>
 
 你可以使用以下工具:
 {tools}
 
-<references>
-- {{"action": "Pass", "content": "无话可说"}}
-- {{"action": "WolfVote", "target": "小明"}}
-- {{"action": "ProphetCheck", "target": "P1"}}
-- {{"action": "PlayerVote", "target": "老王"}}
-- {{"action": "PlayerDoubt", "target": "老王", content="在我这里xx很值得怀疑，原因是..., 大家可以多关注他"}}
-- {{"action": "Debate", "content": "我的推理为xx是狼，原因是..."}}
-- {{"action": "Debate", "content": "我是预言家，我昨晚查了xx的身份..."}}
-- {{"action": "DeathWords", "content": "我觉得xx有很大的嫌疑, 原因是..."}}
-- {{"action": "GetAllPlayersName"}}
-</references>
+输出需要满足以下条件:
+- 内容不要罗嗦, 不要超过100字数限制, 少讲废话, 突出重点,不需要讨论
+- 判断场上信息真伪, 运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
+- 使用如下格式:
+
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
 
 记住，你支持的玩家是{nickname}, 身份是{role}, 性格为{character}, 你必须帮助玩家进行这个游戏
 接下来你的目的是: 通过一步一步思考决策引导游戏往有利于玩家的方向进行, 最终赢得比赛. 
-
-你的输出需要满足以下条件:
-- 内容不要罗嗦, 不要超过50字数限制,少讲废话, 突出重点,不需要讨论
-- 判断场上信息真伪, 运用辩解,对抗,欺骗,伪装,坦白等等任意策略来做决策
-- 决策分为两类:思考或行动
-- 思考:逐步思考,判断信息真伪,分析游戏形势等等
-- 行动:参考<references>使用json格式, action在[{tool_names}]中选择
 
 历史信息:
 {history}
