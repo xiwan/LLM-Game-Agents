@@ -7,10 +7,11 @@ class GamePlayer:
     
     global game_config_dict, roles_dict
     
-    def __init__(self, template_role, player, GM):
+    def __init__(self, player, GM):
         self.GM = GM
         self.agent = player
-        
+        template_role = self.agent["prompt"]
+        # print(template_role)
         _template_role = template_role.replace("{nickname}", player["name"])
         _template_role = _template_role.replace("{role}", player["role"])
         _template_role = _template_role.replace("{character}", player["character"])

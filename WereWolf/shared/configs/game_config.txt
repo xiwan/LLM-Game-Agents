@@ -1,0 +1,31 @@
+{
+    "max_round": 1,
+    "player": {
+        "action_plan_night": "{0}{1}现在是第{2}天夜晚，该如何行动?",
+        "action_plan_day": "{0}{1}现在是第{2}天白天的讨论环节，该如何行动?",
+        "action_plan_day_vote": "{0}{1}现在是第{2}天白天的投票环节，该如何行动?",
+        "action_plan_death": "{0}{1}现在是第{2}天白天，你已经死亡,有何遗言?",
+        "action_confirm": "ok",
+        "action_villager_team": "未知,需要你推理发现.",
+        "action_reflect": "{0}{1}.开始一步一步进行推理，为下一轮行动准备.",
+        "action_plan_test": "现在全场几人活着几人淘汰?"
+    },
+    "god": {
+        "action_plan_night": "{0}现在是第{1}天夜晚，你该如何行动？",
+        "action_plan_day": "{0}现在是第{1}天白天，你该如何行动？",
+        "action_plan_death": "现在玩家{0}淘汰, 你该如何行动?",
+        "action_plan_test": "现在全场几人活着几人淘汰"
+    },
+    "system": {
+        "death_night": "昨晚, 玩家{0}被狼人淘汰, 遗言为:{1}.",
+        "death_day": "今天, 玩家{0}被玩家淘汰, 遗言为:{1}.",
+        "wolf_vote_again": "上轮投票失败，这次只能投{0}玩家中一人",
+        "wolf_vote_again_2": "上轮投票失败，投票必须选一名玩家",
+        "player_vote_again": "上轮投票失败，这次只能投{0}玩家中一人",
+        "player_vote_again_2": "上轮投票失败，投票必须选一名玩家",
+        "win_wolf": "狼人胜利!",
+        "win_villager": "村民胜利!",
+        "win_none": "游戏继续. 目前玩家存活情况:{0}",
+        "board": "现在玩家存活情况:{0}"
+    }
+}

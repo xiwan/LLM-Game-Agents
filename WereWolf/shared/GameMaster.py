@@ -65,7 +65,7 @@ class GameMaster:
     def _setupPlayers(self):
         # cache the player agents
         for player in roles_dict["players"]:
-            _player = GamePlayer(template_player_role, player, self)
+            _player = GamePlayer(player, self)
             self.player_agents.append(_player)
         pass
     
@@ -86,7 +86,7 @@ class GameMaster:
         if len(vote_names) == 0:
             return False
         
-        self.palyervotes = find_most_frequent(vote_names)
+        self.palyervotes = FindMostFrequent(vote_names)
         if len(self.palyervotes) != 1:
             for player in self.player_agents:
                 if player.agent["role"] == "狼人":
@@ -133,7 +133,7 @@ class GameMaster:
         if len(vote_names) == 0:
             return False
         
-        self.wolfvotes = find_most_frequent(vote_names)
+        self.wolfvotes = FindMostFrequent(vote_names)
         
         if len(self.wolfvotes) != 1:
             for player in self.player_agents:
@@ -342,6 +342,7 @@ class GameMaster:
         pass
     
     def ResetGame(self):
+        LoadPlayerPrompts()
         self.start_time = time.time()
         Info("\t===== {0} ResetGame =====".format(GetAllPlayersName()))
          # prepare the envs

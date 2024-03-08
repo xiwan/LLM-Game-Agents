@@ -36,13 +36,10 @@ class LangchainMiniMemory():
     
     def _update(self, memory, summary=False):
         self.memories.append(memory)
-
         if self.k > 0:
-            k_memories = self.memories[-1*self.k:]
-
-#         print("=" * 88)
-#         print(k_memories)
-        return k_memories
+            self.memories = self.memories[-1*self.k:]
+        # print(len(self.memories))
+        return self.memories
 
     def clear(self):
         self.memories = []
@@ -150,8 +147,7 @@ class AnthropicBedrock3(LLMProduct, LLMInterface):
             messages = [message]
         else:
             messages = self.memory._update(message)
-        # print("="*88)
-        # print(messages)
+            
         response = None
         if self.stream:
             with self.client.messages.stream(

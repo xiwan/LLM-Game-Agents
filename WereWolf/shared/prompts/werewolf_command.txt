@@ -1,0 +1,16 @@
+<wolf>
+- WolfVote: 夜晚投票(狼人专属行动),参数: target=存活玩家
+</wolf>
+
+<prophet>
+- ProphetCheck: 夜晚查验(预言家专属行动), 参数: target=存活玩家
+</prophet>
+
+<player>
+- PlayerDoubt: 白天怀疑(所有玩家白天可选行动, 非投票), 参数: target=存活玩家 
+- PlayerVote: 白天投票, 参数: target=存活玩家 
+- Debate: 白天讨论, 参数: content=思考/理由 
+- GetAllPlayersName: 玩家信息, 参数: 无 
+- DeathWords: 死亡遗言, 参数: content=给予玩家线索
+- Pass: 玩家弃权参数: 无 
+</player>
