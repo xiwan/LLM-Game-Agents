@@ -2,21 +2,31 @@
 
 This is a social deduction game "Werewolf" driven by LLM models. It is mainly used to study whether mainstream LLM models can simulate human players to play the game.
 
+### How to Run
+
+Make sure you have Python 3.9.16 and pip 21.3.1
+In this directory, run pip3 install -r requirements.txt
+To start, run python3 Entry.py
+
 ### Rules 
 
-**Role Assignment**:
-There are only two roles - villagers and werewolves. At the start of the game, the moderator randomly assigns players as villagers or werewolves.
+1. The game is divided into two camps: the bad guys and the good guys. The bad guys camp only has werewolves, while the good guys camp has a witch, villagers, and a seer. Their goals are:
+- Bad guys camp: Eliminate all good guys, or ensure that the number of bad guys is greater than the number of good guys.
+- Good guys camp: Eliminate all bad guys, or ensure that the number of good guys is greater than the number of bad guys.
 
-**Night Phase**:
-Only the werewolves have a kill action. Werewolves decide which player to kill.
+2. Item restrictions:
+- The witch has only one bottle of poison and one bottle of antidote, with no replenishment after use.
 
-**Day Phase**:
-1. Players discuss and vote: All players discuss then vote to eliminate one player.
-2. Check for deaths: The moderator confirms players that died the previous night.
+3. The game alternates between night and day phases:
+- At night, all players keep their eyes closed, and they can only open their eyes and take action when it's their turn.
+- At night, the werewolves need to reach a unanimous vote to kill one player.
+- At night, the seer can only verify the identity of one player and cannot take any other actions.
+- At night, the witch can only use one bottle of antidote or poison, and it can only be used on one player.
+- At night, ordinary villagers cannot take any action.
+- During the day, all players open their eyes, and the phase is divided into discussion and voting rounds.
+- During the day: Discussion round, every player must participate in the discussion.
+- During the day: Voting round, every player must vote or abstain.
 
-**Game End Conditions**:
-1. If the number of werewolves is equal to or greater than villagers, the werewolves win.
-2. If the number of villagers equals the werewolves, the villagers win.
 
 ### Implementation
 
@@ -39,81 +49,40 @@ The player module is responsible for communicating with the LLM. Each interactio
 
 这个是基于LLM模型驱动的社交游戏《狼人杀》。主要用来研究主流LLM模型能否模拟人类玩家进行游戏。
 
+### 如何运行它
+
++ 确保你有 Python 3.9.16  pip 21.3.1
++ 在此目录下运行 pip3 install -r requirements.txt
++ 启动方法 python3 Entry.py
+
 ### 规则
 
-**角色分配**:
-只有两种角色 - 村民和狼人。游戏开始时,法官随机分配玩家为村民或狼人。
+1.游戏分坏人和好人两大阵营, 坏人阵营只有狼人,好人阵营有女巫，村民和预言家。他们的目标为:
+- 坏人阵营:消灭所有好人, 或者保证坏人数目大于好人数目
+- 好人阵营:消灭所有坏人, 或者保证好人数目大于坏人数目
 
-**夜晚阶段**:
-只有狼人的杀人行动。狼人可以决定杀死一名玩家。
+2.道具限制：
+- 女巫只有一瓶毒药和一瓶解药，使用完后没有补充
 
-**白天阶段**:
-1. 玩家讨论和投票:所有玩家进行讨论,然后投票决定淘汰一名玩家。
-2. 检查死亡:法官确认前一晚死亡的玩家。
+3.游戏分白天和晚上两个阶段交替进行:
 
-**游戏结束条件**:
-1. 狼人的数量等于或多于村民,狼人胜利。
-2. 村民的数量等于狼人数量,村民胜利。
+- 晚上所有玩家闭眼，轮到自己才可以睁眼行动
+- 晚上狼人需要达成统一投票杀死一名玩家
+- 晚上预言家只能查验一名玩家身份,无法有其他行动
+- 晚上女巫每个晚上只能用一瓶解药或者毒药, 并且只能对一名玩家使用
+- 晚上普通村民晚上无法行动
+- 白天所有玩家睁眼, 分为讨论和投票两环节
+- 白天:讨论环节，每个玩家必须参与讨论
+- 白天:投票环节，每个玩家必须投票或者放弃
 
 ### 实现
 
 #### 第一个版本
 
-为了简单，第一个版本的法官由程序控制，玩家为LLM配置，采用**2狼+6村民**的模式, 具体的配置如下:
+为了简单，第一个版本的法官由程序控制，玩家为LLM配置，采用**2狼+1预言家+1女巫+4村民**的模式, 具体的配置如下:
 
 ~~~
-{
-  "players": [
-    {
-      "name": "P1",
-      "role": "狼人",
-      "character": "话痨",
-      "status": 1
-    },
-    {
-      "name": "P2",
-      "role": "村民", 
-      "character": "腼腆型",
-      "status": 1
-    },
-    {
-      "name": "P3",
-      "role": "村民",
-      "character": "组织者",
-      "status": 1
-    },
-    {
-      "name": "P4",
-      "role": "村民",
-      "character": "规矩型",
-      "status": 1
-    },
-    {
-      "name": "P5",
-      "role": "村民",
-      "character": "独立思考",
-      "status": 1
-    },
-    {
-      "name": "P6",
-      "role": "狼人",
-      "character": "过激型", 
-      "status": 1
-    },
-    {
-      "name": "P7",
-      "role": "村民",
-      "character": "观察家", 
-      "status": 1
-    },
-    {
-      "name": "P8",
-      "role": "村民",
-      "character": "互动达人", 
-      "status": 1
-    }
-  ]
-}
+[{"id": 1001, "name": "P1", "role": "预言家", "character": "独立思考", "status": 1}, {"id": 1002, "name": "P2", "role": "女巫", "character": "腼腆型", "status": 1}, {"id": 1003, "name": "P3", "role": "狼人", "character": "组织者", "status": 1}, {"id": 1004, "name": "P4", "role": "村民", "character": "规矩型", "status": 1}, {"id": 1005, "name": "P5", "role": "村民", "character": "话痨", "status": 1}, {"id": 1006, "name": "P6", "role": "狼人", "character": "过激型", "status": 1}, {"id": 1007, "name": "P7", "role": "村民", "character": "观察家", "status": 1}, {"id": 1008, "name": "P8", "role": "村民", "character": "互动达人", "status": 1}]
 ~~~
 
 游戏的框架还是由程序驱动，会在规定的时间几点调用以下问题模版，比如:
@@ -152,7 +121,7 @@ The player module is responsible for communicating with the LLM. Each interactio
 
 目前游戏包含两个重要模块: 游戏 + 玩家
 
-![transition-chart](.statics/transition-diagram.png)
+![transition-chart](./statics/transition-diagram.png)
 
 游戏模块负责驱动进程，包括
 + 初始化游戏配置以及玩家
