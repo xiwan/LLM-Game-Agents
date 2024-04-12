@@ -19,6 +19,18 @@ def GetPlayerRole(name) -> str:
             return "{0}:{1}".format(name, player["role"])
     return ""
 
+def GetPlayerInfo() -> str:
+    player_info = []
+    for player in roles_dict["players"]:
+        tmp_player = {}
+        tmp_player["id"] = player["id"]
+        tmp_player["name"] = player["name"]
+        tmp_player["role"] = player["role"]
+        tmp_player["character"] = player["character"]
+        tmp_player["status"] = player["status"]
+        player_info.append(tmp_player)
+    return player_info
+
 # @tool
 def GetAllWolvesName() -> str:
     """GetAllWolvesName"""
@@ -90,16 +102,19 @@ def RetriveTools(text: str, tag_name: str) -> str:
 werewolf_rule_v1 = LoadPrompt("werewolf_rule.txt")
 werewolf_command_v1 = LoadPrompt("werewolf_command.txt")
 
-wolf_command = RetriveTools(werewolf_command_v1, "wolf")
-prophet_command = RetriveTools(werewolf_command_v1, "prophet")
-palyer_command = RetriveTools(werewolf_command_v1, "player")
+wolf_command = RetriveTools(werewolf_command_v1, "wolf").rstrip("\n")
+prophet_command = RetriveTools(werewolf_command_v1, "prophet").rstrip("\n")
+witch_command = RetriveTools(werewolf_command_v1, "witch").rstrip("\n")
+palyer_command = RetriveTools(werewolf_command_v1, "player").rstrip("\n")
 
 wolf_tools = wolf_command + palyer_command
 prophet_tools = prophet_command + palyer_command
+witch_tools = witch_command + palyer_command
 player_tools = palyer_command
 
 template_wolf_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", wolf_tools)
 template_prophet_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
+template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_command)
 template_player_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
 
 template_assistant_role = LoadPrompt("template_assistant_role.txt").replace("{game_rule}", werewolf_rule_v1)
@@ -118,6 +133,22 @@ def LoadPlayerPrompts() -> str:
             player["prompt"] = template_player_role
         elif player["role"] == "预言家":
             player["prompt"] = template_prophet_role
+        elif player["role"] == "女巫":
+            player["prompt"] = template_witch_role
         else:
             player["prompt"] = ""
             pass
+        
+    
+def SortedPlayersInNight(players):
+    # 定义角色优先级字典
+    role_priorities = {
+        "狼人": 1,
+        "预言家": 2,
+        "女巫": 3,
+        "村民": 4
+    }
+    # 根据角色优先级对玩家列表进行排序
+    sorted_players = sorted(players, key=lambda player: role_priorities.get(player.GetRole(), 5))
+
+    return sorted_players

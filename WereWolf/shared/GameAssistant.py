@@ -10,12 +10,17 @@ class GameAssistant:
         self.template_role = LangchainMiniPromptTemplate(template_role)
         
         role_memory = LangchainMiniMemory(k=1)
-        self.agent = LangchainMini(model_id="anthropic.claude-3-sonnet-20240229-v1:0", stream=True, memory=role_memory)
+        self.agent = LangchainMini(
+            model_id="anthropic.claude-3-sonnet-20240229-v1:0", 
+            stream=True, 
+            memory=role_memory,
+            system=template_role)
 
         pass
     
     def _invoke(self, question):
-        _question = self.template_role.format(input=question)
+        # _question = self.template_role.format(input=question)
+        _question= question
         answer = self.agent.invoke(_question)
         # self.GM.input_tokens = self.GM.input_tokens + self.token_counter.input_tokens
         # self.GM.output_tokens = self.GM.output_tokens + self.token_counter.output_tokens

@@ -8,18 +8,23 @@ class GameMaster:
     
     global game_config_dict, roles_dict
     
-    def __init__(self, num, quick=False) -> None:
+    def __init__(self, num, queueSize=10, quick=False) -> None:
+        self.quick = quick
+        self.queueSize = queueSize
         self._resetGlobal()
-        self.quick = quick 
+        
         game_config_dict["max_round"] = num
         pass
         
         
     def _resetGlobal(self):
         self.run = True
+        self.exit_flag = False
+        self.round = 0
         self.isDay = False
         self.current_time = ""
-        self.game_memory_queue = queue.Queue(maxsize=10)
+        self.game_memory_queue = queue.Queue(maxsize=self.queueSize)
+        self.game_output_queue = queue.Queue(maxsize=self.queueSize)
         self.game_pulbic_log = []
         self.game_wolf_vote_log = []
         self.game_player_vote_log = []
@@ -40,10 +45,11 @@ class GameMaster:
         pass
     
     def _current_time(self, i):
+        self.round = i
         if self.isDay:
-            self.current_time = "DAY {0}".format(i)
+            self.current_time = "DAY {0}".format(self.round)
         else:
-            self.current_time = "NIGHT {0}".format(i)
+            self.current_time = "NIGHT {0}".format(self.round)
         return self.current_time
     
     def _reviveRoles(self):
@@ -66,6 +72,7 @@ class GameMaster:
         # cache the player agents
         for player in roles_dict["players"]:
             _player = GamePlayer(player, self)
+            _player.RefreshInventory()
             self.player_agents.append(_player)
         pass
     
@@ -89,15 +96,15 @@ class GameMaster:
         self.palyervotes = FindMostFrequent(vote_names)
         if len(self.palyervotes) != 1:
             for player in self.player_agents:
-                if player.agent["role"] == "狼人":
-                    question =""
-                    if len(self.palyervotes) > 1:
-                        question = game_config_dict["system"]["player_vote_again"].format(",".join(self.palyervotes))
-                    if len(self.palyervotes) == 0:
-                        question = game_config_dict["system"]["player_vote_again_2"].format(",".join(self.palyervotes))
-                    Info(question)
-                    self.game_system_log.append(question)
-                    player.AddMemory(question)
+                # if player.agent["role"] == "狼人":
+                question =""
+                if len(self.palyervotes) > 1:
+                    question = game_config_dict["system"]["player_vote_again"].format(",".join(self.palyervotes))
+                if len(self.palyervotes) == 0:
+                    question = game_config_dict["system"]["player_vote_again_2"].format(",".join(self.palyervotes))
+                Info(question)
+                self.game_system_log.append(question)
+                player.AddMemory(question)
             return False
                 
         Debug("\t player_vote_names: {0}".format(vote_names))
@@ -112,11 +119,12 @@ class GameMaster:
                 Debug("\t player name: {0}".format(player["name"]))
                 if player["name"] == elem:
                     player["status"] = 0 # death !!!!
-                    pub_log = ReadableActionLog("[PLAYER VOTE]", self.current_time, player, "玩家{0}于{1}被玩家投票而出局".format(elem, self.current_time))
+                    player_log = "玩家{0}于{1}被玩家投票而出局".format(elem, self.current_time)
+                    pub_log = ReadableActionLog("[PLAYER VOTE]", self.current_time, player, player_log)
                     self.game_pulbic_log.append(pub_log)
                     # for god
                     self.game_memory_queue.put(pub_log)
-                    vote_log = SystemLog("[PLAYER VOTE]", self.current_time, player, "玩家{0}于{1}被玩家投票而出局".format(elem, self.current_time))
+                    vote_log = SystemLog("[PLAYER VOTE]", self.current_time, player, player_log)
                     self.game_system_log.append(vote_log)
                     return True
                     
@@ -134,10 +142,10 @@ class GameMaster:
             return False
         
         self.wolfvotes = FindMostFrequent(vote_names)
-        
+        # not on agreement, need to share memory
         if len(self.wolfvotes) != 1:
             for player in self.player_agents:
-                if player.agent["role"] == "狼人":
+                if player.IsWolf():
                     question =""
                     if len(self.wolfvotes) > 1:
                         question = game_config_dict["system"]["wolf_vote_again"].format(",".join(self.wolfvotes))
@@ -145,6 +153,7 @@ class GameMaster:
                         question = game_config_dict["system"]["wolf_vote_again_2"].format(",".join(self.wolfvotes))
                     Info(question)
                     self.game_system_log.append(question)
+                    self.game_wolf_vote_log.append(question)
                     player.AddMemory(question)
             return False
         
@@ -160,11 +169,13 @@ class GameMaster:
                 Debug("\t player name: {0}".format(player["name"]))
                 if player["name"] == elem:
                     player["status"] = 0 # death !!!!
-                    pub_log = ReadableActionLog("[WOLF VOTE]", self.current_time, player, "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time))
+                    
+                    player_log = "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time)
+                    pub_log = ReadableActionLog("[WOLF VOTE]", self.current_time, player, player_log)
                     self.game_pulbic_log.append(pub_log)
                     # for god
                     self.game_memory_queue.put(pub_log)
-                    sys_log = SystemLog("[WOLF VOTE]", self.current_time, player, "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time))
+                    sys_log = SystemLog("[WOLF VOTE]", self.current_time, player, player_log)
                     self.game_system_log.append(sys_log)
                     return True
         return False
@@ -195,6 +206,12 @@ class GameMaster:
 
         return message
     
+    def GetMessages(self):
+        messages = []
+        while not self.game_output_queue.empty():
+            messages.append(self.game_output_queue.get())
+        return messages
+
     def PreAction(self, i):
         if self.winner != 0:
             self.run = False
@@ -203,6 +220,8 @@ class GameMaster:
         
         if self.isDay:
             for player in self.player_agents:
+                if self.exit_flag:
+                    return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
                     pass
@@ -218,7 +237,10 @@ class GameMaster:
                 pass
             pass
         else:
-            for player in self.player_agents:
+            sorted_players = SortedPlayersInNight(self.player_agents)
+            for player in sorted_players:
+                if self.exit_flag:
+                    return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
                     pass
@@ -240,6 +262,8 @@ class GameMaster:
         
         if self.isDay:
             for player in self.player_agents:
+                if self.exit_flag:
+                    return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
                     pass
@@ -256,7 +280,10 @@ class GameMaster:
         else:
             # clean previous vote
             self.game_wolf_vote_log = []
-            for player in self.player_agents:
+            sorted_players = SortedPlayersInNight(self.player_agents)
+            for player in sorted_players:
+                if self.exit_flag:
+                    return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
                     pass
@@ -265,7 +292,7 @@ class GameMaster:
                     pass
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
-                    if player.IsWolf() or player.IsProphet():
+                    if not player.IsVillager():
                         question_template = game_config_dict["player"]["action_plan_night"]
                         player.DoPlanning(question_template, i)
                     pass
@@ -282,6 +309,8 @@ class GameMaster:
         if self.isDay:
             # calculate votes
             while not self.PlayerVote(i):
+                if self.exit_flag:
+                    return
                 # clean previous vote
                 self.game_player_vote_log = []
                 # reset votes
@@ -311,6 +340,8 @@ class GameMaster:
 
             # leave death words
             for player in self.player_agents:
+                if self.exit_flag:
+                    return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
                     pass
@@ -325,11 +356,13 @@ class GameMaster:
                     pass
                 pass
 
-        else:
+        else: # night post action
             while not self.WolfVote(i):
+                if self.exit_flag:
+                    return
                 message = "时间{0}, 狼人没有统一选择, 夜晚必须要投出一名玩家.".format(self.current_time)
                 Info("\t====== "+ message)
-                self.game_pulbic_log.append(message)
+                # self.game_wolf_vote_log.append(message)
                 # reset votes
                 self.wolfvotes = []
                 # re poll

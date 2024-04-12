@@ -35,10 +35,12 @@ class LangchainMiniMemory():
         return history
     
     def _update(self, memory, summary=False):
+        #print("==========memory_update_start==========")
         self.memories.append(memory)
         if self.k > 0:
             self.memories = self.memories[-1*self.k:]
-        # print(len(self.memories))
+        #print(self.memories)
+        #print("==========memory_update_end==========")
         return self.memories
 
     def clear(self):
@@ -47,14 +49,17 @@ class LangchainMiniMemory():
     def summerize(self):
         if self.llm is None:
             return None
-
+        
         content = self.historyStr()
+        print(content)
         if len(content) > 0:
-            _template = LangchainMiniPromptTemplate("{content}. 简洁总结不超过{num}字.")
-            num = min(len(self.memories[-1*self.k:])*10, 100)
+            _template = LangchainMiniPromptTemplate("{content}. 自然语言简洁总结,不超过{num}字, 需要保留关键信息，比如玩家姓名.")
+            num = min(len(self.memories[-1*self.k:])*15, 100)
             prompt = _template.format(content=content, num=num)
-            # print(prompt)
-            return self.llm.invoke(prompt)
+            
+            print(prompt)
+            print("-"*88)
+            return self.llm._invoke(prompt)
         return None
 
 class LLMInterface(ABC):
@@ -136,42 +141,46 @@ class AnthropicBedrock3(LLMProduct, LLMInterface):
     
     def _memory(self, memory):
         self.memory = memory
+        self.memory.llm = self
         pass
     
     def _invoke(self, prompt):
         message = {"role": self.role, "content": prompt}
         qapair = [message]
         messages = [message]
-        
+
         if self.memory is None:
             messages = [message]
         else:
             messages = self.memory._update(message)
-            
-        response = None
-        if self.stream:
-            with self.client.messages.stream(
-                model=self.model_id,
-                max_tokens=self.max_tokens,
-                temperature=self.temperature,
-                system=self.system,
-                messages=messages
-            ) as stream:
-                streamtext = ""
-                for text in stream.text_stream:
-                    print(text, end='', flush=True)
-                    streamtext = streamtext + text
-                response = {"role": self.assistant, "content": streamtext}
-        else:
-            message = self.client.messages.create(
-                model=self.model_id,
-                max_tokens=self.max_tokens,
-                temperature=self.temperature,
-                system=self.system,
-                messages=messages
-            )
-            response = {"role": self.assistant, "content": message.content}
         
+        response = None
+        try:
+            if self.stream:
+                with self.client.messages.stream(
+                    model=self.model_id,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                    system=self.system,
+                    messages=messages
+                ) as stream:
+                    streamtext = ""
+                    for text in stream.text_stream:
+                        print(text, end='', flush=True)
+                        streamtext = streamtext + text
+                    response = {"role": self.assistant, "content": streamtext}
+            else:
+                message = self.client.messages.create(
+                    model=self.model_id,
+                    max_tokens=self.max_tokens,
+                    temperature=self.temperature,
+                    system=self.system,
+                    messages=messages
+                )
+                response = {"role": self.assistant, "content": message.content}
+        except Exception as e:
+            logger.info(str(e))
+            
         qapair.append(response)
         if (not self.memory is None) and (not response is None):
             self.memory._update(response)
@@ -221,12 +230,18 @@ class LangchainMini():
         pass
 
     def invoke(self, prompt: str):
-        if not self.llm.memory is None:
+        if False and not self.llm.memory is None: 
             qapair = self.llm.memory.summerize()
             history = "" if qapair is None else qapair[1]
             prompt = LangchainMiniPromptTemplate(prompt).format(history=history, chat_history=history)
         # logger.info(prompt)
         return self.llm._invoke(prompt)
+    
+    def addMemory(self, memory: str):
+        message = {"role": self.llm.role, "content": memory}
+        self.llm.memory._update(message)
+        message = {"role": self.llm.assistant, "content": "ok"}
+        self.llm.memory._update(message)
     
     def clear(self):
         if not self.llm.memory is None:
