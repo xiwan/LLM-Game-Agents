@@ -391,9 +391,10 @@ class GameMaster:
             
             # witch action
             witch = GetPlayer(self.player_agents, "女巫")
-            if witch != None:
-                
-                pass
+            if witch != None and witch.GetStatus() == 1: 
+                question_template = game_config_dict["player"]["action_plan_night"]
+                witch.DoPlanning(question_template, i)
+            pass
         
         message = self.EndRoundCheck()
         Info(message)
