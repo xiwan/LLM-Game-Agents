@@ -1,7 +1,9 @@
 from . import *
 from .PeTemplates import *
-from .GameAssistant import GameAssistant
 from .GamePlayer import GamePlayer
+from .GamePlayerWitch import GamePlayerWitch
+from .GamePlayerWolf import GamePlayerWolf
+from .GameAssistant import GameAssistant
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
 
 class GameMaster:
@@ -20,6 +22,7 @@ class GameMaster:
     def _resetGlobal(self):
         self.run = True
         self.exit_flag = False
+        self.inGame = False
         self.round = 0
         self.isDay = False
         self.current_time = ""
@@ -71,8 +74,14 @@ class GameMaster:
     def _setupPlayers(self):
         # cache the player agents
         for player in roles_dict["players"]:
-            _player = GamePlayer(player, self)
-            _player.RefreshInventory()
+            if player["role"] == "女巫":
+                _player = GamePlayerWitch(player, self)
+                _player.RefreshInventory()
+            elif player["role"] == "狼人":
+                _player = GamePlayerWolf(player, self)
+            else:
+                _player = GamePlayer(player, self)
+            
             self.player_agents.append(_player)
         pass
     
@@ -210,7 +219,10 @@ class GameMaster:
         messages = []
         while not self.game_output_queue.empty():
             messages.append(self.game_output_queue.get())
-        return messages
+        output = {}
+        output['messages'] = messages
+        output['end'] = not self.inGame
+        return output
 
     def PreAction(self, i):
         if self.winner != 0:
@@ -221,6 +233,7 @@ class GameMaster:
         if self.isDay:
             for player in self.player_agents:
                 if self.exit_flag:
+                    self.run = False
                     return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
@@ -240,6 +253,7 @@ class GameMaster:
             sorted_players = SortedPlayersInNight(self.player_agents)
             for player in sorted_players:
                 if self.exit_flag:
+                    self.run = False
                     return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
@@ -263,6 +277,7 @@ class GameMaster:
         if self.isDay:
             for player in self.player_agents:
                 if self.exit_flag:
+                    self.run = False
                     return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
@@ -283,6 +298,7 @@ class GameMaster:
             sorted_players = SortedPlayersInNight(self.player_agents)
             for player in sorted_players:
                 if self.exit_flag:
+                    self.run = False
                     return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
@@ -310,6 +326,7 @@ class GameMaster:
             # calculate votes
             while not self.PlayerVote(i):
                 if self.exit_flag:
+                    self.run = False
                     return
                 # clean previous vote
                 self.game_player_vote_log = []
@@ -341,6 +358,7 @@ class GameMaster:
             # leave death words
             for player in self.player_agents:
                 if self.exit_flag:
+                    self.run = False
                     return
                 # 如果玩家是死亡状态
                 if player.GetStatus() == -1:
@@ -359,6 +377,7 @@ class GameMaster:
         else: # night post action
             while not self.WolfVote(i):
                 if self.exit_flag:
+                    self.run = False
                     return
                 message = "时间{0}, 狼人没有统一选择, 夜晚必须要投出一名玩家.".format(self.current_time)
                 Info("\t====== "+ message)
@@ -368,6 +387,12 @@ class GameMaster:
                 # re poll
                 self.DoAction(i)
 
+                pass
+            
+            # witch action
+            witch = GetPlayer(self.player_agents, "女巫")
+            if witch != None:
+                
                 pass
         
         message = self.EndRoundCheck()
@@ -398,6 +423,7 @@ class GameMaster:
         Info("\t===== {0} RunGame =====".format(GetAllPlayersName()))
         i = 0
         while self.run and True:
+            self.inGame = True
             Info("\t===== input_tokens: {0} output_tokens {1} ======".format(self.input_tokens, self.output_tokens))
             self.end_time = time.time()
             self.elapsed_time = self.end_time - self.start_time
@@ -429,3 +455,4 @@ class GameMaster:
             if self.winner != 0:
                 Info("游戏结束.")
                 break
+        self.inGame = False

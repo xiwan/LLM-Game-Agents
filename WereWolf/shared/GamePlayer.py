@@ -20,7 +20,7 @@ class GamePlayer:
         logger.info("{0} is {1}".format(player["name"], player["role"]))
         
         self.template_role = LangchainMiniPromptTemplate(_template_role)
-        self.inventory = []
+
         # player agent
         role_memory = LangchainMiniMemory(k=10)
         player["conversation"] = LangchainMini(
@@ -32,34 +32,14 @@ class GamePlayer:
         # assistant agent
         _template_assistant_role = template_assistant_role.replace("{num}", "144")
         self.assistant = GameAssistant(_template_assistant_role, GM)
-        
         pass
-  
-    def RefreshInventory(self):
-        if self.IsWitch():
-            self.inventory = [1, 1] # 0 poision 1 antidote
-    
-    def _getItem(self, idx):
-        if self.IsWitch():
-            return self.inventory[idx]
-        return -1
-            
-    def _useItem(self, idx): 
-        if self.IsWitch(): # 0 poision 1 antidote
-            self.inventory[idx] = max(0, min(self.inventory[idx], self.inventory[idx]-1))
-        
+
     def _stateInfoBuilder(self):
         boardInfo = "目前场上玩家信息:{0}.".format(GetAllPlayersName())
-        if self.IsWitch():
-            boardInfo += "药水道具状态:毒药{0},解药{1}".format(self._getItem(0), self._getItem(1))
         return boardInfo
     
     def _playerInfoBuilder(self):
-        roleInfo = self.agent["role"]
-        extraInfo = ""
-        if self.IsWolf():
-            extraInfo += "本阵营玩家为:{0}.".format(GetAllWolvesName())
-        playerInfo = game_config_dict["player"]["action_prefix"].format(self.agent["name"], self.agent["role"], self.agent["character"], extraInfo)
+        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), "")
         return playerInfo 
     
     def _invoke(self, question):
@@ -87,6 +67,9 @@ class GamePlayer:
 
     def GetRole(self):
         return self.agent["role"]
+    
+    def GetCharacter(self):
+        return self.agent["character"]
     
     def IsWolf(self):
         return self.GetRole() == "狼人"

@@ -13,6 +13,12 @@ def GetAllPlayersName() -> str:
         players_name.append(player["name"]+":"+status_str)
     return ",".join(players_name)
 
+def GetPlayer(players, role):
+    for player in players:
+        if player.GetRole() == role:
+            return player
+    return None
+
 def GetPlayerRole(name) -> str:
     for player in roles_dict["players"]:
         if player["name"] == name:
