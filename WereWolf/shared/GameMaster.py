@@ -11,7 +11,7 @@ class GameMaster:
     
     global game_config_dict, roles_dict
     
-    def __init__(self, num, queueSize=10, quick=False) -> None:
+    def __init__(self, num=10, queueSize=10, quick=False) -> None:
         self.quick = quick
         self.queueSize = queueSize
         self._resetGlobal()
@@ -51,9 +51,9 @@ class GameMaster:
     def _current_time(self, i):
         self.round = i
         if self.isDay:
-            self.current_time = "DAY {0}".format(self.round)
+            self.current_time = "DAY-{0}".format(self.round)
         else:
-            self.current_time = "NIGHT {0}".format(self.round)
+            self.current_time = "NIGHT-{0}".format(self.round)
         return self.current_time
     
     def _reviveRoles(self):
@@ -353,7 +353,7 @@ class GameMaster:
                 
                 if self.PlayerVote(i):
                     break
-                message = "时间{0}, 玩家没有统一选择.玩家重新在{1}中选择嫌疑人投票!".format(self.current_time, self.palyervotes)
+                message = game_config_dict["system"]["player_vote_failed"].format(self.current_time, self.palyervotes)
                 Info("\t====== "+ message)
                 self.game_pulbic_log.append(message)
                 pass
@@ -382,7 +382,7 @@ class GameMaster:
                 if self.exit_flag:
                     self.run = False
                     return
-                message = "时间{0}, 狼人没有统一选择, 夜晚必须要投出一名玩家.".format(self.current_time)
+                message = game_config_dict["system"]["wolf_vote_failed"].format(self.current_time)
                 Info("\t====== "+ message)
                 # self.game_wolf_vote_log.append(message)
                 # reset votes

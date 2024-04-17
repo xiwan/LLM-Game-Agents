@@ -86,13 +86,13 @@ class GamePlayer:
         return self.GetRole() == "女巫"
     
     def MessageRoleType(self):
-        if self.IsVillager():
+        if self.IsVillager(): # villager
             return 1
-        if self.IsProphet():
+        if self.IsProphet(): # prophet
             return 2
-        if self.IsWolf():
+        if self.IsWolf(): # wolf
             return 3
-        if self.IsWitch():
+        if self.IsWitch(): # witch
             return 4
         return 5 # assistant
     
@@ -134,17 +134,17 @@ class GamePlayer:
         answer = self.DoAnswer(question)
         response = self.DoValidate(question, answer)
         self.DoAction(response)
-        time.sleep(5)
+        time.sleep(3)
         pass
 
     # answering question
     def DoAnswer(self, question):
-        Info("\t\t******** DoAnswer {0} {1} ********".format(self.GM.current_time,self.agent["name"]))
+        Info("\t\t******** DoAnswer {0} {1} ********".format(self.GM.current_time, self.GetName()))
         answer = self._invoke(question)
         return answer
 
     def DoValidate(self, question, answer):
-        Info("\t\t******** DoValidate {0} {1} {2}********".format(self.GM.current_time, self.agent["name"], self.questionTry))
+        Info("\t\t******** DoValidate {0} {1} {2}********".format(self.GM.current_time, self.GetName(), self.questionTry))
         self.questionTry = self.questionTry - 1
         if answer == "":
             return None
@@ -175,7 +175,7 @@ class GamePlayer:
         return response
         
     def DoAction(self, response):
-        Info("\t\t******** DoAction {0} {1} ********".format(self.GM.current_time, self.agent["name"]))
+        Info("\t\t******** DoAction {0} {1} ********".format(self.GM.current_time, self.GetName()))
         
         memories = []
         for res in response:
@@ -183,75 +183,12 @@ class GamePlayer:
             log = None
             if not "action" in res_obj:
                 continue
-            
+                
+            res_obj["action_time"] = self.GM.current_time
             if "target" in res_obj:
                 log = self.UsePlayerAbility(res_obj["action"], res_obj["target"], res_obj)
             else:
                 log = self.UsePlayerAbility(res_obj["action"], None, res_obj)
-            
-#             if res_obj["action"] == "ProphetCheck":
-#                 self.UsePlayerAbility(res_obj["action"], res_obj["target"])
-#                 # memory = CheckPlayerRole(res_obj["target"])
-#                 # print(memory)
-#                 log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
-#                 # self.GM.game_prophet_check_log.append(log)
-#                 # self.GM.game_prophet_check_log.append(memory)
-#                 # Info("\t\t {0} {1}".format(log))
-#                 #log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
-#                 # self.GM.game_pulbic_log.append(log)
-#                 pass
-            
-#             if res_obj["action"] == "WitchPoision":
-#                 self.UsePlayerAbility(res_obj["action"], res_obj["target"])
-#                 log = ReadableActionLog("witch_poision_log", self.GM.current_time, self.agent, res_obj)
-#                 pass
-                
-#             if res_obj["action"] == "WitchAntidote":
-#                 self.UsePlayerAbility(res_obj["action"], res_obj["target"])
-#                 log = ReadableActionLog("witch_antidote_log", self.GM.current_time, self.agent, res_obj)
-#                 pass
-            
-#             if res_obj["action"] == "WolfVote":
-#                 if not self.GM.isDay:
-#                     log = ActionLog("wolf_vote_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_wolf_vote_log.append(log)
-#                     log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent, res_obj)
-#                 pass
-                
-#             if res_obj["action"] == "PlayerVote":
-#                 if self.GM.isDay:
-#                     log = ActionLog("player_vote_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_player_vote_log.append(log)
-#                     log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_pulbic_log.append(log)
-#                     #self.GM.game_memory_queue.put(log)
-#                 pass
-
-#             if res_obj["action"] == "PlayerDoubt":
-#                 if self.GM.isDay:
-#                     log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_pulbic_log.append(log)
-#                     #self.GM.game_memory_queue.put(log)
-#                 pass
-
-#             if res_obj["action"] == "Debate":
-#                 if self.GM.isDay:
-#                     log = ActionLog("player_debate_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_player_action_log.append(log)
-#                     log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_pulbic_log.append(log)
-#                     #self.GM.game_memory_queue.put(log)
-#                 pass
-           
-#             if res_obj["action"] == "DeathWords":
-#                 if self.GM.isDay:
-#                     log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_player_action_log.append(log)
-#                     log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent, res_obj)
-#                     self.GM.game_pulbic_log.append(log)
-#                     # make it system message
-#                     # self.GM.game_memory_queue.put(log)
-#                 pass
             
             if not log is None: 
                 memories.append(log)
@@ -260,7 +197,7 @@ class GamePlayer:
         pass
         
     def DoMemory(self, memorysize=20):
-        Info("\t\t******** DoMemory {0} {1} ********".format(self.GM.current_time, self.agent["name"]))
+        Info("\t\t******** DoMemory {0} {1} ********".format(self.GM.current_time, self.GetName()))
         
         memories = []
         # only for worlf
