@@ -3,6 +3,7 @@ from .PeTemplates import *
 from .GamePlayer import GamePlayer
 from .GamePlayerWitch import GamePlayerWitch
 from .GamePlayerWolf import GamePlayerWolf
+from .GamePlayerProphet import GamePlayerProphet
 from .GameAssistant import GameAssistant
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
 
@@ -79,6 +80,8 @@ class GameMaster:
                 _player.RefreshInventory()
             elif player["role"] == "狼人":
                 _player = GamePlayerWolf(player, self)
+            elif player["role"] == "预言家":
+                _player = GamePlayerProphet(player, self)
             else:
                 _player = GamePlayer(player, self)
             

@@ -1,6 +1,7 @@
 from . import *
 from .PeTemplates import *
 from .GameAssistant import GameAssistant
+
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
 
 class GamePlayer:
@@ -8,6 +9,7 @@ class GamePlayer:
     global game_config_dict, roles_dict
     
     def __init__(self, player, GM):
+        self.questionTry = 3
         self.GM = GM
         self.player_memory = ""
         self.agent = player
@@ -93,12 +95,35 @@ class GamePlayer:
         if self.IsWitch():
             return 4
         return 5 # assistant
-
-    # answering question
-    def DoAnswer(self, question):
-        Info("\t\t******** DoAnswer {0} {1} ********".format(self.GM.current_time,self.agent["name"]))
-        answer = self._invoke(question)
-        return answer
+    
+    def UsePlayerAbility(self, abilityName, target=None, item=None):
+        log = None
+        if abilityName is None or target is None:
+            return log
+        
+        if self.GM.isDay:
+            if res_obj["action"] == "PlayerVote":
+                log = ActionLog("player_vote_log", self.GM.current_time, self.agent, item)
+                self.GM.game_player_vote_log.append(log)
+                log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent, item)
+                self.GM.game_pulbic_log.append(log)
+                pass
+            if res_obj["action"] == "PlayerDoubt":
+                log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent, item)
+                self.GM.game_pulbic_log.append(log)
+            if res_obj["action"] == "Debate":
+                log = ActionLog("player_debate_log", self.GM.current_time, self.agent, item)
+                self.GM.game_player_action_log.append(log)
+                log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent, item)
+                self.GM.game_pulbic_log.append(log)
+                pass
+            if res_obj["action"] == "DeathWords":
+                log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
+                self.GM.game_player_action_log.append(log)
+                log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
+                self.GM.game_pulbic_log.append(log)
+                pass
+        return log
     
     def DoPlanning(self, question_template, idx):
         if self.GM.exit_flag:
@@ -107,15 +132,25 @@ class GamePlayer:
         self.DoReflect()
         question = question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), idx)
         answer = self.DoAnswer(question)
-        self.DoAction(answer)
+        response = self.DoValidate(question, answer)
+        self.DoAction(response)
         time.sleep(5)
         pass
-        
-    def DoAction(self, answer):
-        Info("\t\t******** DoAction {0} {1} ********".format(self.GM.current_time, self.agent["name"]))
+
+    # answering question
+    def DoAnswer(self, question):
+        Info("\t\t******** DoAnswer {0} {1} ********".format(self.GM.current_time,self.agent["name"]))
+        answer = self._invoke(question)
+        return answer
+
+    def DoValidate(self, question, answer):
+        Info("\t\t******** DoValidate {0} {1} {2}********".format(self.GM.current_time, self.agent["name"], self.questionTry))
+        self.questionTry = self.questionTry - 1
         if answer == "":
-            return
- 
+            return None
+        if self.questionTry == 0:
+            return ""
+        
         try:
             output_message = {}
             output_message["player_id"] = self.agent["id"]
@@ -128,70 +163,98 @@ class GamePlayer:
             
             self.GM.game_output_queue.put(output_message)
         except queue.Full:
-            print('game_output_queue.Full')
+            logger.exception('game_output_queue.Full')
             
         response = ParseJson(answer[len(answer)-1]["content"])
+        
+        if response is None:
+            answer = self.DoAnswer(question)
+            response = self.DoValidate(self, question, answer)
+        Info("\t\t DoValidate result: {0}".format(response))
+        self.questionTry = 3
+        return response
+        
+    def DoAction(self, response):
+        Info("\t\t******** DoAction {0} {1} ********".format(self.GM.current_time, self.agent["name"]))
+        
         memories = []
         for res in response:
             res_obj = json.loads(res)
-            log = ""
+            log = None
             if not "action" in res_obj:
                 continue
-            if res_obj["action"] == "ProphetCheck":
-                if not self.GM.isDay:
-                    memory = GetPlayerRole(res_obj["target"])
-                    # print(memory)
-                    log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
-                    # self.GM.game_prophet_check_log.append(log)
-                    self.GM.game_prophet_check_log.append(memory)
-                    Info(log + " 结果 " +memory)
-                    #log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
-                    # self.GM.game_pulbic_log.append(log)
-                pass
             
-            if res_obj["action"] == "WolfVote":
-                if not self.GM.isDay:
-                    log = ActionLog("wolf_vote_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_wolf_vote_log.append(log)
-                    log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent, res_obj)
-                pass
+            if "target" in res_obj:
+                log = self.UsePlayerAbility(res_obj["action"], res_obj["target"], res_obj)
+            else:
+                log = self.UsePlayerAbility(res_obj["action"], None, res_obj)
+            
+#             if res_obj["action"] == "ProphetCheck":
+#                 self.UsePlayerAbility(res_obj["action"], res_obj["target"])
+#                 # memory = CheckPlayerRole(res_obj["target"])
+#                 # print(memory)
+#                 log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
+#                 # self.GM.game_prophet_check_log.append(log)
+#                 # self.GM.game_prophet_check_log.append(memory)
+#                 # Info("\t\t {0} {1}".format(log))
+#                 #log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, res_obj)
+#                 # self.GM.game_pulbic_log.append(log)
+#                 pass
+            
+#             if res_obj["action"] == "WitchPoision":
+#                 self.UsePlayerAbility(res_obj["action"], res_obj["target"])
+#                 log = ReadableActionLog("witch_poision_log", self.GM.current_time, self.agent, res_obj)
+#                 pass
                 
-            if res_obj["action"] == "PlayerVote":
-                if self.GM.isDay:
-                    log = ActionLog("player_vote_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_player_vote_log.append(log)
-                    log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_pulbic_log.append(log)
-                    #self.GM.game_memory_queue.put(log)
-                pass
-
-            if res_obj["action"] == "PlayerDoubt":
-                if self.GM.isDay:
-                    log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_pulbic_log.append(log)
-                    #self.GM.game_memory_queue.put(log)
-                pass
-
-            if res_obj["action"] == "Debate":
-                if self.GM.isDay:
-                    log = ActionLog("player_debate_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_player_action_log.append(log)
-                    log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_pulbic_log.append(log)
-                    #self.GM.game_memory_queue.put(log)
-                pass
-           
-            if res_obj["action"] == "DeathWords":
-                if self.GM.isDay:
-                    log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_player_action_log.append(log)
-                    log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent, res_obj)
-                    self.GM.game_pulbic_log.append(log)
-                    # make it system message
-                    # self.GM.game_memory_queue.put(log)
-                pass
+#             if res_obj["action"] == "WitchAntidote":
+#                 self.UsePlayerAbility(res_obj["action"], res_obj["target"])
+#                 log = ReadableActionLog("witch_antidote_log", self.GM.current_time, self.agent, res_obj)
+#                 pass
             
-            memories.append(log)
+#             if res_obj["action"] == "WolfVote":
+#                 if not self.GM.isDay:
+#                     log = ActionLog("wolf_vote_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_wolf_vote_log.append(log)
+#                     log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent, res_obj)
+#                 pass
+                
+#             if res_obj["action"] == "PlayerVote":
+#                 if self.GM.isDay:
+#                     log = ActionLog("player_vote_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_player_vote_log.append(log)
+#                     log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_pulbic_log.append(log)
+#                     #self.GM.game_memory_queue.put(log)
+#                 pass
+
+#             if res_obj["action"] == "PlayerDoubt":
+#                 if self.GM.isDay:
+#                     log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_pulbic_log.append(log)
+#                     #self.GM.game_memory_queue.put(log)
+#                 pass
+
+#             if res_obj["action"] == "Debate":
+#                 if self.GM.isDay:
+#                     log = ActionLog("player_debate_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_player_action_log.append(log)
+#                     log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_pulbic_log.append(log)
+#                     #self.GM.game_memory_queue.put(log)
+#                 pass
+           
+#             if res_obj["action"] == "DeathWords":
+#                 if self.GM.isDay:
+#                     log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_player_action_log.append(log)
+#                     log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent, res_obj)
+#                     self.GM.game_pulbic_log.append(log)
+#                     # make it system message
+#                     # self.GM.game_memory_queue.put(log)
+#                 pass
+            
+            if not log is None: 
+                memories.append(log)
 
         self.GM.game_system_log.append(SystemLog("[ROUND ACTION]", self.GM.current_time, self.agent, response))
         pass

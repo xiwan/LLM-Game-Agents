@@ -76,10 +76,14 @@ def SystemLog(prefix, current_time, agent, res_obj):
     return action_log
 
 def ParseJson(text):
-    # 使用正则表达式查找 {} 之间的内容
-    json_pattern = re.compile( r'{[\s\S]*?}') 
-    json_strings = re.findall(json_pattern, text)
-    return json_strings
+    try:
+        # 使用正则表达式查找 {} 之间的内容
+        json_pattern = re.compile( r'{[\s\S]*?}') 
+        json_strings = re.findall(json_pattern, text)
+        return json_strings
+    except Error:
+        logger.exception("Cannot parse json")
+    return None
 
 def FindMostFrequent(arr):
     freq = Counter(arr)
@@ -102,7 +106,7 @@ def RetriveTools(text: str, tag_name: str) -> str:
         actions = re.findall(pattern, text, re.DOTALL)
         return actions[0]
     except Error:
-        logger.exception("Can't not retrive tools")
+        logger.exception("Can not retrive tools")
         raise
 
 werewolf_rule_v1 = LoadPrompt("werewolf_rule.txt")
@@ -120,7 +124,7 @@ player_tools = palyer_command
 
 template_wolf_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", wolf_tools)
 template_prophet_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
-template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_command)
+template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_tools)
 template_player_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
 
 template_assistant_role = LoadPrompt("template_assistant_role.txt").replace("{game_rule}", werewolf_rule_v1)
@@ -144,6 +148,7 @@ def LoadPlayerPrompts() -> str:
         else:
             player["prompt"] = ""
             pass
+        # print(player["prompt"])
         
     
 def SortedPlayersInNight(players):
