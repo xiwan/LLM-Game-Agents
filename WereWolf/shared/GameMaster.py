@@ -228,7 +228,17 @@ class GameMaster:
             for log in self.game_system_log[-1000:]:
                 memories.append(json.dumps(log, ensure_ascii=False))
             if len(memories) > 0:
-                output = self.assistant.DoAnswer(".".join(memories))
+                answer = self.assistant.DoAnswer(".".join(memories))
+                
+                output_message = {}
+                output_message["player_id"] = 1000
+                output_message["player_name"] = "game assistant"
+                output_message["message"] = answer[len(answer)-1]
+                output_message["is_day"] = self.isDay
+                output_message["round"] = self.round
+                output_message["current_time"] = self.current_time
+                output_message["type"] = 5
+                self.game_output_queue.put(output_message)
             pass
 
         return message

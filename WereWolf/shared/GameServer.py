@@ -89,7 +89,7 @@ def get_msg():
 class GameServer:
     
     def __init__(self):
-        self.GM = GameMaster(10, 10, False)
+        self.GM = GameMaster(20, 20, False)
         app.GM = self.GM
         app.GMrunning = False
         pass

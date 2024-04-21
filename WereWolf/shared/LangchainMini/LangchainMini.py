@@ -177,7 +177,7 @@ class AnthropicBedrock3(LLMProduct, LLMInterface):
                     system=self.system,
                     messages=messages
                 )
-                response = {"role": self.assistant, "content": message.content}
+                response = {"role": self.assistant, "content": message.content, "usage": message.usage}
         except Exception as e:
             logger.info(str(e))
             

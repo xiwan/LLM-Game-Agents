@@ -153,7 +153,7 @@ class GamePlayer:
             return []
         if self.questionTry == 0:
             return []
-            
+
         response = ParseJson(answer[len(answer)-1]["content"])
         if response is None:
             answer = self.DoAnswer(question)
@@ -206,7 +206,7 @@ class GamePlayer:
             memories.append(json.dumps(log, ensure_ascii=False))
 
         if len(memories) > 0:
-            Info(memories)
+            Debug(memories)
             summary = self._invokeAssistant(".".join(memories))
             _summary = summary[len(summary)-1]["content"]
             self.AddMemory(_summary)
