@@ -29,16 +29,18 @@ class GameMaster:
         self.current_time = ""
         self.game_memory_queue = queue.Queue(maxsize=self.queueSize)
         self.game_output_queue = queue.Queue(maxsize=self.queueSize)
+        # memory log array
         self.game_pulbic_log = []
         self.game_wolf_vote_log = []
         self.game_player_vote_log = []
         self.game_prophet_check_log = []
+        self.game_witch_potion_log = []
         self.game_player_action_log = []
         self.game_player_death_log = []
         self.game_system_log = []
 
         self.player_agents = []
-        self.winner = 0  # 0: 继续 1: 村民 2:狼人
+        self.winner = 0  # 0: 继续 1: 好人 2:坏人
         
         self.wolfvotes = []
         self.palyervotes = []
@@ -63,11 +65,13 @@ class GameMaster:
     def _checkWinner(self) -> str:
         """CheckWinner"""
         grouped_dict = GroupAllPlayers()
-        message = "\t时间{0},场上存活状态 狼人:{1} 村民:{2}".format(self.current_time, str(len(grouped_dict["狼人"])), str(len(grouped_dict["村民"])))
+        bad_party_size = len(grouped_dict["狼人"])
+        good_party_size = len(grouped_dict["村民"])+len(grouped_dict["预言家"])+len(grouped_dict["女巫"])
+        message = "\t时间{0},场上存活状态 狼人:{1} 好人:{2}".format(self.current_time, str(bad_party_size), str(good_party_size))
 
-        if len(grouped_dict["狼人"]) == 0 and len(grouped_dict["村民"]) > 0:
+        if bad_party_size == 0 and good_party_size > 0:
             return 1
-        if len(grouped_dict["狼人"]) > 0 and len(grouped_dict["村民"]) <= len(grouped_dict["狼人"]):
+        if bad_party_size > 0 and good_party_size <= bad_party_size:
             return 2 
         return 0
             
@@ -118,8 +122,8 @@ class GameMaster:
                 self.game_system_log.append(question)
                 player.AddMemory(question)
             return False
-                
-        Debug("\t player_vote_names: {0}".format(vote_names))
+
+        Info("\t player_vote_names: {0}".format(vote_names))
         vote_names_counter = Counter(vote_names)
         Debug("\t player_vote_names most_common: {0}\n".format(vote_names_counter.most_common(1)))
         elem, count = vote_names_counter.most_common(1)[0]
@@ -145,14 +149,25 @@ class GameMaster:
     def WolfVote(self, i) -> bool:
         # caculate the votes
         vote_names = []
+        # wolf vote caculate
         for vote in self.game_wolf_vote_log:
             if vote["time"] == self.current_time and vote["response"]["action"] == "WolfVote":
                 if vote["response"]["target"] != "" :
                     vote_names.append(vote["response"]["target"])
-                    
+        # potion vote caculate
+        for vote in self.game_witch_potion_log:
+            if vote["time"] == self.current_time and vote["response"]["action"] == "WitchPoision":
+                if vote["response"]["target"] != "" :
+                    vote_names.append(vote["response"]["target"])
+            if vote["time"] == self.current_time and vote["response"]["action"] == "WitchAntidote":
+                if vote["response"]["target"] != "" :
+                    to_remove = [vote["response"]["target"].lower()]
+                    vote_names = [item for item in vote_names if item.lower() not in [i.lower() for i in to_remove]]
+            pass
+
         if len(vote_names) == 0:
             return False
-        
+
         self.wolfvotes = FindMostFrequent(vote_names)
         # not on agreement, need to share memory
         if len(self.wolfvotes) != 1:
@@ -296,8 +311,10 @@ class GameMaster:
                 pass
             pass
         else:
-            # clean previous vote
+            # clean previous vote and potion log
             self.game_wolf_vote_log = []
+            self.game_witch_potion_log = []
+            
             sorted_players = SortedPlayersInNight(self.player_agents)
             for player in sorted_players:
                 if self.exit_flag:

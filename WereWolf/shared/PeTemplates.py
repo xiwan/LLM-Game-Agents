@@ -52,7 +52,7 @@ def GetAllWolvesName() -> str:
     return ",".join(wolves_name)
 
 def GroupAllPlayers() -> dict:
-    grouped_dict = {"狼人":[], "村民":[]}
+    grouped_dict = {"狼人":[], "村民":[], "预言家":[], "女巫":[]}
     for player in roles_dict["players"]:
         if player["status"] == 1:
             if player["role"] not in grouped_dict:
@@ -67,6 +67,7 @@ def ActionLog(prefix, current_time, agent, res_obj):
 
 def ReadableActionLog(prefix, current_time, agent, res_obj):
     action_log = "[玩家{0}于时间{1}, 执行动作为:{2}]".format(agent["name"],current_time, res_obj)
+    logger.debug("\n {0}={1}\n".format(prefix, action_log))
     return action_log
 
 def SystemLog(prefix, current_time, agent, res_obj):

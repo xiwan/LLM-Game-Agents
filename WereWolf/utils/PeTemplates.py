@@ -30,13 +30,12 @@ claude_instant_llm = Bedrock(
     model_kwargs=claude_inference_modifier,
 )
 
-claude3_Sonnet = Bedrock(
-    model_id="anthropic.claude-3-sonnet-20240229-v1:0",
-    streaming=True,
-    callbacks=[StreamingStdOutCallbackHandler()],
-    model_kwargs=claude_inference_modifier,
-)
-
+# claude3_Sonnet = Bedrock(
+#     model_id="anthropic.claude-3-sonnet-20240229-v1:0",
+#     streaming=True,
+#     callbacks=[StreamingStdOutCallbackHandler()],
+#     model_kwargs=claude_inference_modifier,
+# )
 
 llama2_inference_modifier = { 
     'max_gen_len': 512,

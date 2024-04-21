@@ -26,6 +26,13 @@ class GamePlayerProphet(GamePlayer):
         Info(self.checkList)
         return True
     
+    def DoMemory(self, memorysize=20, memories=[]):
+        for log in self.GM.game_prophet_check_log[-1*memorysize:]:
+            memories.append(json.dumps(log, ensure_ascii=False))
+
+        memories = super().DoMemory(memorysize, memories)
+        return memories
+
     def UsePlayerAbility(self, abilityName, target=None, item=None):
         log = super().UsePlayerAbility(abilityName, target, item)
         if self.GM.isDay:

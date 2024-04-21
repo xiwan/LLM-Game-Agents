@@ -18,7 +18,7 @@ class GamePlayer:
         #_template_role = template_role.replace("{nickname}", player["name"])
         #_template_role = _template_role.replace("{role}", player["role"])
         #_template_role = _template_role.replace("{character}", player["character"])
-        #print(_template_role)
+        # print(_template_role)
         logger.info("{0} is {1}".format(player["name"], player["role"]))
         
         self.template_role = LangchainMiniPromptTemplate(_template_role)
@@ -96,28 +96,31 @@ class GamePlayer:
             return 4
         return 5 # assistant
     
+    def UsePlayerValidate(self, abilityName, target=None, item=None):
+        pass
+    
     def UsePlayerAbility(self, abilityName, target=None, item=None):
         log = None
         if abilityName is None or target is None:
             return log
         
         if self.GM.isDay:
-            if res_obj["action"] == "PlayerVote":
+            if abilityName == "PlayerVote":
                 log = ActionLog("player_vote_log", self.GM.current_time, self.agent, item)
                 self.GM.game_player_vote_log.append(log)
                 log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent, item)
                 self.GM.game_pulbic_log.append(log)
                 pass
-            if res_obj["action"] == "PlayerDoubt":
+            if abilityName == "PlayerDoubt":
                 log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent, item)
                 self.GM.game_pulbic_log.append(log)
-            if res_obj["action"] == "Debate":
+            if abilityName == "Debate":
                 log = ActionLog("player_debate_log", self.GM.current_time, self.agent, item)
                 self.GM.game_player_action_log.append(log)
                 log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent, item)
                 self.GM.game_pulbic_log.append(log)
                 pass
-            if res_obj["action"] == "DeathWords":
+            if abilityName == "DeathWords":
                 log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
                 self.GM.game_player_action_log.append(log)
                 log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
@@ -147,10 +150,16 @@ class GamePlayer:
         Info("\t\t******** DoValidate {0} {1} {2}********".format(self.GM.current_time, self.GetName(), self.questionTry))
         self.questionTry = self.questionTry - 1
         if answer == "":
-            return None
+            return []
         if self.questionTry == 0:
-            return ""
-        
+            return []
+            
+        response = ParseJson(answer[len(answer)-1]["content"])
+        if response is None:
+            answer = self.DoAnswer(question)
+            response = self.DoValidate(self, question, answer)
+        Info("\t\t DoValidate: {0}".format(response))
+
         try:
             output_message = {}
             output_message["player_id"] = self.agent["id"]
@@ -164,13 +173,7 @@ class GamePlayer:
             self.GM.game_output_queue.put(output_message)
         except queue.Full:
             logger.exception('game_output_queue.Full')
-            
-        response = ParseJson(answer[len(answer)-1]["content"])
-        
-        if response is None:
-            answer = self.DoAnswer(question)
-            response = self.DoValidate(self, question, answer)
-        Info("\t\t DoValidate result: {0}".format(response))
+
         self.questionTry = 3
         return response
         
@@ -193,46 +196,26 @@ class GamePlayer:
             if not log is None: 
                 memories.append(log)
 
-        self.GM.game_system_log.append(SystemLog("[ROUND ACTION]", self.GM.current_time, self.agent, response))
+        self.GM.game_system_log.append(SystemLog("[ROUND ACTION]", self.GM.current_time, self.agent, response))           
         pass
         
-    def DoMemory(self, memorysize=20):
+    def DoMemory(self, memorysize=20, memories=[]):
         Info("\t\t******** DoMemory {0} {1} ********".format(self.GM.current_time, self.GetName()))
-        
-        memories = []
-        # only for worlf
-        if self.IsWolf():
-            for log in self.GM.game_wolf_vote_log[-1*memorysize:]:
-                memories.append(json.dumps(log, ensure_ascii=False))
-                pass
-        
-        # only for prophet
-        if self.IsProphet():
-            for log in self.GM.game_prophet_check_log[-1*memorysize:]:
-                memories.append(json.dumps(log, ensure_ascii=False))
-                pass
-            
-        # only for witch
-        if self.IsWitch():
-            pass
-            
+
         for log in self.GM.game_pulbic_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
-            pass
-        
+
         if len(memories) > 0:
             Info(memories)
             summary = self._invokeAssistant(".".join(memories))
             _summary = summary[len(summary)-1]["content"]
             self.AddMemory(_summary)
-        time.sleep(5)
-        pass
+        time.sleep(3)
+        return memories
     
     def AddMemory(self, memory):
         self.player_memory = memory
         self.agent["conversation"].addMemory(memory)
-        # output = game_config_dict["player"]["action_confirm"]
-        # self.agent["conversation"].memory.save_context({"input": memory}, {"ouput": output})
     
     def DoReflect(self, memorysize=20):
         if self.GM.quick:
