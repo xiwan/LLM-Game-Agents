@@ -18,7 +18,7 @@ class GamePlayer:
         #_template_role = template_role.replace("{nickname}", player["name"])
         #_template_role = _template_role.replace("{role}", player["role"])
         #_template_role = _template_role.replace("{character}", player["character"])
-        # print(_template_role)
+        #print(_template_role)
         logger.info("{0} is {1}".format(player["name"], player["role"]))
         
         self.template_role = LangchainMiniPromptTemplate(_template_role)

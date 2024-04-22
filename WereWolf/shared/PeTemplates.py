@@ -152,6 +152,14 @@ game_config = LoadConfig("game_config.txt")
 roles_dict = json.loads(roles)
 game_config_dict = json.loads(game_config)
 
+def ShufflePlayers():
+    roles = [player['role'] for player in roles_dict['players']]
+    # 打乱角色列表
+    random.shuffle(roles)
+    for i, player in enumerate(roles_dict['players']):
+        player['role'] = roles[i]
+    #print(roles_dict)
+
 def LoadPlayerPrompts() -> str:
     for player in roles_dict["players"]:
         if player["role"] == "狼人":

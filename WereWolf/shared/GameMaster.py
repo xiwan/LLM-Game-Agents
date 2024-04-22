@@ -459,6 +459,7 @@ class GameMaster:
         pass
     
     def RunGame(self): 
+        ShufflePlayers()
         Info("\t===== {0} RunGame =====".format(GetAllPlayersName()))
         i = 0
         while self.run and True:
