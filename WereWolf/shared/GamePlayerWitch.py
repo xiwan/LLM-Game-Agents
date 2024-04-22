@@ -7,14 +7,14 @@ class GamePlayerWitch(GamePlayer):
     
     def __init__(self, player, GM):
         super().__init__(player, GM)
-        self.inventory = []
+        self.inventory = [1, 1]# 0 poision 1 antidote
             
     def _getItem(self, idx):
         return self.inventory[idx]
             
     def _useItem(self, idx): 
         if self._getItem(idx) == 0:
-            Info("potion {idx} empty")
+            Info("potion {0} empty".format(idx))
             return False
         # assert self._getItem(idx) > 0, "item {0} empty".format(idx)
         # 0 poision 1 antidote
@@ -22,12 +22,9 @@ class GamePlayerWitch(GamePlayer):
         return True
     
     def _playerInfoBuilder(self):
-        extraInfo = "药水状态: 毒药{0},解药{1}. ".format(self._getItem(0), self._getItem(1))
+        extraInfo = "道具状态: 毒药{0},解药{1}".format(self._getItem(0), self._getItem(1))
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
-        return playerInfo 
-    
-    def RefreshInventory(self):
-        self.inventory = [1, 1] # 0 poision 1 antidote
+        return playerInfo
         
     def UsePoision(self):
         return self._useItem(0)
@@ -35,7 +32,7 @@ class GamePlayerWitch(GamePlayer):
     def UseAntidote(self):
         return self._useItem(1)
     
-    def DoMemory(self, memorysize=20, memories=[]):
+    def DoMemory(self, memorysize=10, memories=[]):
         for log in self.GM.game_witch_potion_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
 
@@ -44,18 +41,22 @@ class GamePlayerWitch(GamePlayer):
 
     def UsePlayerAbility(self, abilityName, target=None, item=None):
         log = super().UsePlayerAbility(abilityName, target, item)
-        if self.GM.isDay:
+        if self.GM.isDay or target is None:
             return None
         # Poision
         if abilityName == "WitchPoision":
             if self.UsePoision():
                 log = ActionLog("witch_poision_log", self.GM.current_time, self.agent, item)
                 self.GM.game_witch_potion_log.append(log)
-                log = ReadableActionLog("witch_poision_log", self.GM.current_time, self.agent, item)
+                player_log = "时间{0}, 玩家{1}被女巫毒死".format(self.GM.current_time, target)
+                log = ReadableActionLog("[WITCH POISION]", self.GM.current_time, target, player_log)
+                self.GM.game_public_log.append(log)
         # Antidote
         if abilityName == "WitchAntidote":
             if self.UseAntidote():
                 log = ActionLog("witch_antidote_log", self.GM.current_time, self.agent, item)
                 self.GM.game_witch_potion_log.append(log)
-                log = ReadableActionLog("witch_antidote_log", self.GM.current_time, self.agent, item)
+                player_log = "时间{0}, 玩家{1}被女巫救活".format(self.GM.current_time, target)
+                log = ReadableActionLog("[WITCH ANTIDOTE]", self.GM.current_time, target, player_log)
+                self.GM.game_public_log.append(log)
         return log

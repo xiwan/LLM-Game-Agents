@@ -26,7 +26,7 @@ class GamePlayerProphet(GamePlayer):
         Info(self.checkList)
         return True
     
-    def DoMemory(self, memorysize=20, memories=[]):
+    def DoMemory(self, memorysize=10, memories=[]):
         for log in self.GM.game_prophet_check_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
 
@@ -35,7 +35,7 @@ class GamePlayerProphet(GamePlayer):
 
     def UsePlayerAbility(self, abilityName, target=None, item=None):
         log = super().UsePlayerAbility(abilityName, target, item)
-        if self.GM.isDay:
+        if self.GM.isDay or target is None:
             return None
 
         if abilityName == "ProphetCheck":
@@ -47,7 +47,7 @@ class GamePlayerProphet(GamePlayer):
                 return log
             
             # self.checkList.append(checker)
-            checker = "{0}:{1}".format(name, role)
+            checker = "玩家{0}身份是{1}".format(name, role)
             self.GM.game_prophet_check_log.append(checker)
-            log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent, item)
+            log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent["name"], item)
         return log

@@ -30,7 +30,7 @@ class GameMaster:
         self.game_memory_queue = queue.Queue(maxsize=self.queueSize)
         self.game_output_queue = queue.Queue(maxsize=self.queueSize)
         # memory log array
-        self.game_pulbic_log = []
+        self.game_public_log = []
         self.game_wolf_vote_log = []
         self.game_player_vote_log = []
         self.game_prophet_check_log = []
@@ -64,7 +64,7 @@ class GameMaster:
             
     def _checkWinner(self) -> str:
         """CheckWinner"""
-        grouped_dict = GroupAllPlayers()
+        grouped_dict = GroupAlivePlayers()
         bad_party_size = len(grouped_dict["狼人"])
         good_party_size = len(grouped_dict["村民"])+len(grouped_dict["预言家"])+len(grouped_dict["女巫"])
         message = "\t时间{0},场上存活状态 狼人:{1} 好人:{2}".format(self.current_time, str(bad_party_size), str(good_party_size))
@@ -81,7 +81,6 @@ class GameMaster:
         for player in roles_dict["players"]:
             if player["role"] == "女巫":
                 _player = GamePlayerWitch(player, self)
-                _player.RefreshInventory()
             elif player["role"] == "狼人":
                 _player = GamePlayerWolf(player, self)
             elif player["role"] == "预言家":
@@ -98,7 +97,7 @@ class GameMaster:
             player["conversation"].clear()
         pass
     
-    def PlayerVote(self, i) -> bool:
+    def DayVote(self, i) -> bool:
         # caculate the votes
         vote_names = []
         for vote in self.game_player_vote_log:
@@ -113,13 +112,15 @@ class GameMaster:
         if len(self.palyervotes) != 1:
             for player in self.player_agents:
                 # if player.agent["role"] == "狼人":
-                question =""
-                if len(self.palyervotes) > 1:
-                    question = game_config_dict["system"]["player_vote_again"].format(",".join(self.palyervotes))
-                if len(self.palyervotes) == 0:
-                    question = game_config_dict["system"]["player_vote_again_2"].format(",".join(self.palyervotes))
+                qKey = "player_vote_again" if len(self.palyervotes) > 1 else "player_vote_again_2"
+                question = game_config_dict["system"][qKey].format(",".join(self.palyervotes))
+                # if len(self.palyervotes) > 1:
+                #     question = game_config_dict["system"]["player_vote_again"].format(",".join(self.palyervotes))
+                # if len(self.palyervotes) == 0:
+                #     question = game_config_dict["system"]["player_vote_again_2"].format(",".join(self.palyervotes))
                 Info(question)
                 self.game_system_log.append(question)
+                self.game_player_vote_log.append(question)
                 player.AddMemory(question)
             return False
 
@@ -130,39 +131,43 @@ class GameMaster:
         Info("\t [player_votes]: {0}, [player_vote_name]: {1}".format(self.palyervotes, vote_names_counter))
         
         # kill the player and log it
-        if elem != "":
-            for player in roles_dict["players"]:
-                Debug("\t player name: {0}".format(player["name"]))
-                if player["name"] == elem:
-                    player["status"] = 0 # death !!!!
-                    player_log = "玩家{0}于{1}被玩家投票而出局".format(elem, self.current_time)
-                    pub_log = ReadableActionLog("[PLAYER VOTE]", self.current_time, player, player_log)
-                    self.game_pulbic_log.append(pub_log)
-                    # for god
-                    self.game_memory_queue.put(pub_log)
-                    vote_log = SystemLog("[PLAYER VOTE]", self.current_time, player, player_log)
-                    self.game_system_log.append(vote_log)
-                    return True
+        for player in roles_dict["players"]:
+            if player["name"] == elem:
+                Info("\t Day Vote player name: {0}".format(player["name"]))
+                player["status"] = 0 # death !!!!
+                player_log = "玩家{0}与时间{1}被淘汰.".format(player["name"], self.current_time)
+                pub_log = ReadableActionLog("[DAY_VOTE]", self.current_time, elem, player_log)
+                self.game_public_log.append(pub_log)
+                # for god
+                self.game_memory_queue.put(pub_log)
+                vote_log = SystemLog("[DAY_VOTE]", self.current_time, player, player_log)
+                self.game_system_log.append(vote_log)
+                return True
                     
         return False
     
-    def WolfVote(self, i) -> bool:
+    def NightVote(self, i) -> bool:
         # caculate the votes
         vote_names = []
+        poision_names = []
+        
         # wolf vote caculate
         for vote in self.game_wolf_vote_log:
             if vote["time"] == self.current_time and vote["response"]["action"] == "WolfVote":
                 if vote["response"]["target"] != "" :
                     vote_names.append(vote["response"]["target"])
+                    
         # potion vote caculate
         for vote in self.game_witch_potion_log:
-            if vote["time"] == self.current_time and vote["response"]["action"] == "WitchPoision":
-                if vote["response"]["target"] != "" :
-                    vote_names.append(vote["response"]["target"])
+            # Witch Antidote
             if vote["time"] == self.current_time and vote["response"]["action"] == "WitchAntidote":
                 if vote["response"]["target"] != "" :
                     to_remove = [vote["response"]["target"].lower()]
                     vote_names = [item for item in vote_names if item.lower() not in [i.lower() for i in to_remove]]
+            # Witch Poision
+            if vote["time"] == self.current_time and vote["response"]["action"] == "WitchPoision":
+                if vote["response"]["target"] != "" :
+                    poision_names.append(vote["response"]["target"])
             pass
 
         if len(vote_names) == 0:
@@ -173,11 +178,12 @@ class GameMaster:
         if len(self.wolfvotes) != 1:
             for player in self.player_agents:
                 if player.IsWolf():
-                    question =""
-                    if len(self.wolfvotes) > 1:
-                        question = game_config_dict["system"]["wolf_vote_again"].format(",".join(self.wolfvotes))
-                    if len(self.wolfvotes) == 0:
-                        question = game_config_dict["system"]["wolf_vote_again_2"].format(",".join(self.wolfvotes))
+                    qKey = "wolf_vote_again" if len(self.wolfvotes) > 1 else "wolf_vote_again_2"
+                    question = game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
+                    # if len(self.wolfvotes) > 1:
+                    #     question = game_config_dict["system"]["wolf_vote_again"].format(",".join(self.wolfvotes))
+                    # if len(self.wolfvotes) == 0:
+                    #     question = game_config_dict["system"]["wolf_vote_again_2"].format(",".join(self.wolfvotes))
                     Info(question)
                     self.game_system_log.append(question)
                     self.game_wolf_vote_log.append(question)
@@ -187,24 +193,26 @@ class GameMaster:
         Debug("\t wolf_vote_names: {0}".format(vote_names))
         vote_names_counter = Counter(vote_names)
         Debug("\t wolf_vote_names most_common: {0}\n".format(vote_names_counter.most_common(1)))
-        elem, count = vote_names_counter.most_common(1)[0]
+        wolf_target, count = vote_names_counter.most_common(1)[0]
+        witch_target = "" if len(poision_names) == 0 else poision_names[0]
+        
         Info("\t [wolf_votes]: {0}, [player_vote_name]: {1}".format(self.wolfvotes, vote_names_counter))
+        Info("\t [witch_poisioin]: {0}".format(poision_names))
         
         # kill the player and log it
-        if elem != "":
-            for player in roles_dict["players"]:
-                Debug("\t player name: {0}".format(player["name"]))
-                if player["name"] == elem:
-                    player["status"] = 0 # death !!!!
-                    
-                    player_log = "玩家{0}于{1}被狼人投票而出局".format(elem, self.current_time)
-                    pub_log = ReadableActionLog("[WOLF VOTE]", self.current_time, player, player_log)
-                    self.game_pulbic_log.append(pub_log)
-                    # for god
-                    self.game_memory_queue.put(pub_log)
-                    sys_log = SystemLog("[WOLF VOTE]", self.current_time, player, player_log)
-                    self.game_system_log.append(sys_log)
-                    return True
+        for player in roles_dict["players"]:
+            if player["name"] == wolf_target or player["name"] == witch_target:
+                Debug("\t Night Vote player name: {0}".format(player["name"]))
+                player["status"] = 0 # death !!!!
+                player_log = "玩家{0}与时间{1}被淘汰.".format(player["name"], self.current_time)
+                pub_log = ReadableActionLog("[NIGHT_VOTE]", self.current_time, player["name"] , player_log)
+                self.game_public_log.append(pub_log)
+                # for god
+                self.game_memory_queue.put(pub_log)
+                sys_log = SystemLog("[NIGHT_VOTE]", self.current_time, player, player_log)
+                self.game_system_log.append(sys_log)
+                return True
+            
         return False
     
     def EndRoundCheck(self):
@@ -354,7 +362,7 @@ class GameMaster:
         
         if self.isDay:
             # calculate votes
-            while not self.PlayerVote(i):
+            while not self.DayVote(i):
                 if self.exit_flag:
                     self.run = False
                     return
@@ -378,11 +386,11 @@ class GameMaster:
                     pass
                 pass
                 
-                if self.PlayerVote(i):
+                if self.DayVote(i):
                     break
                 message = game_config_dict["system"]["player_vote_failed"].format(self.current_time, self.palyervotes)
                 Info("\t====== "+ message)
-                self.game_pulbic_log.append(message)
+                self.game_public_log.append(message)
                 pass
 
             # leave death words
@@ -405,7 +413,7 @@ class GameMaster:
                 pass
 
         else: # night post action
-            while not self.WolfVote(i):
+            while not self.NightVote(i):
                 if self.exit_flag:
                     self.run = False
                     return

@@ -13,6 +13,13 @@ def GetAllPlayersName() -> str:
         players_name.append(player["name"]+":"+status_str)
     return ",".join(players_name)
 
+def GetPartySize() -> str:
+    grouped_dict = GroupAllPlayers()
+    return "{0}狼人,{1}村民,{2}预言家,{3}女巫".format(len(grouped_dict["狼人"]),
+                                                len(grouped_dict["村民"]),
+                                                len(grouped_dict["预言家"]),
+                                                len(grouped_dict["女巫"]))
+
 def GetPlayer(players, role):
     for player in players:
         if player.GetRole() == role:
@@ -51,7 +58,7 @@ def GetAllWolvesName() -> str:
             wolves_name.append(player["name"])
     return ",".join(wolves_name)
 
-def GroupAllPlayers() -> dict:
+def GroupAlivePlayers() -> dict:
     grouped_dict = {"狼人":[], "村民":[], "预言家":[], "女巫":[]}
     for player in roles_dict["players"]:
         if player["status"] == 1:
@@ -59,21 +66,29 @@ def GroupAllPlayers() -> dict:
                 grouped_dict[player["role"]] = []
             grouped_dict[player["role"]].append(player)
     return grouped_dict
+
+def GroupAllPlayers() -> dict:
+    grouped_dict = {"狼人":[], "村民":[], "预言家":[], "女巫":[]}
+    for player in roles_dict["players"]:
+        if player["role"] not in grouped_dict:
+            grouped_dict[player["role"]] = []
+        grouped_dict[player["role"]].append(player)
+    return grouped_dict
     
 def ActionLog(prefix, current_time, agent, res_obj):
     action_log = {"time": current_time, "player": agent["name"], "status": agent['status'], "response": res_obj}
-    logger.debug("\n {0}={1}\n".format(prefix, action_log))
+    logger.debug("\n ActionLog: {0}={1}\n".format(prefix, action_log))
     return action_log
 
-def ReadableActionLog(prefix, current_time, agent, res_obj):
-    action_log = "[玩家{0}于时间{1}, 执行动作为:{2}]".format(agent["name"],current_time, res_obj)
-    logger.debug("\n {0}={1}\n".format(prefix, action_log))
+def ReadableActionLog(prefix, current_time, name, res_obj):
+    action_log = "时间:{0}, 玩家:{1},动作:{2}".format(current_time, name, res_obj)
+    logger.debug("\n ReadableActionLog: {0}={1}\n".format(prefix, action_log))
     return action_log
 
 def SystemLog(prefix, current_time, agent, res_obj):
     action_log = {"time": current_time, "player": agent["name"], "status": agent['status'], 
                       "role": agent["role"], "character": agent["character"], "response": res_obj}
-    logger.info("\n {0}={1}\n".format(prefix, action_log))
+    logger.info("\n SystemLog: {0}={1}\n".format(prefix, action_log))
     return action_log
 
 def ParseJson(text):
@@ -123,12 +138,13 @@ prophet_tools = prophet_command + palyer_command
 witch_tools = witch_command + palyer_command
 player_tools = palyer_command
 
+all_tools = wolf_command+prophet_command+witch_command+palyer_command
+
 template_wolf_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", wolf_tools)
 template_prophet_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
 template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_tools)
 template_player_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
-
-template_assistant_role = LoadPrompt("template_assistant_role.txt").replace("{game_rule}", werewolf_rule_v1)
+template_assistant_role = LoadPrompt("template_assistant_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
 
 roles = LoadConfig("roles.txt")
 game_config = LoadConfig("game_config.txt")

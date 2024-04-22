@@ -13,20 +13,19 @@ class GamePlayerWolf(GamePlayer):
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
     
-    def DoMemory(self, memorysize=20, memories=[]):
+    def DoMemory(self, memorysize=10, memories=[]):
         for log in self.GM.game_wolf_vote_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
-
         memories = super().DoMemory(memorysize, memories)
         return memories
     
     def UsePlayerAbility(self, abilityName, target=None, item=None):
         log = super().UsePlayerAbility(abilityName, target, item)
-        if self.GM.isDay:
+        if self.GM.isDay or target is None:
             return None
 
         if abilityName == "WolfVote":
             log = ActionLog("wolf_vote_log", self.GM.current_time, self.agent, item)
             self.GM.game_wolf_vote_log.append(log)
-            log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent, item)
+            log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent["name"], item)
         return log

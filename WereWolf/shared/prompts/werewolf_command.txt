@@ -17,7 +17,7 @@
   描述: agent(女巫)夜晚对target(目标)使用毒药
   参数: agent=执行玩家,target=存活玩家
   例子: {"action": "WitchPoision", "agent": "P6", "target": "P2"}
-- 方法: WitchAntidote: 夜晚女巫使用解药
+- 方法: WitchAntidote: 
   描述: agent(女巫)夜晚对target(目标)使用解药
   参数: agent=执行玩家,target=死亡玩家
   例子: {"action": "WitchAntidote", "agent": "P6", "target": "P2"}

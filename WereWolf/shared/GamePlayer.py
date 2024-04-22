@@ -14,7 +14,7 @@ class GamePlayer:
         self.player_memory = ""
         self.agent = player
         template_role = self.agent["prompt"]
-        _template_role = template_role
+        _template_role = template_role.replace("{formation}", GetPartySize())
         #_template_role = template_role.replace("{nickname}", player["name"])
         #_template_role = _template_role.replace("{role}", player["role"])
         #_template_role = _template_role.replace("{character}", player["character"])
@@ -37,7 +37,7 @@ class GamePlayer:
         pass
 
     def _stateInfoBuilder(self):
-        boardInfo = "目前场上玩家信息:{0}.".format(GetAllPlayersName())
+        boardInfo = "目前场上玩家:{0}.".format(GetAllPlayersName())
         return boardInfo
     
     def _playerInfoBuilder(self):
@@ -101,31 +101,30 @@ class GamePlayer:
     
     def UsePlayerAbility(self, abilityName, target=None, item=None):
         log = None
-        if abilityName is None or target is None:
+        if not self.GM.isDay:
             return log
         
-        if self.GM.isDay:
-            if abilityName == "PlayerVote":
-                log = ActionLog("player_vote_log", self.GM.current_time, self.agent, item)
-                self.GM.game_player_vote_log.append(log)
-                log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent, item)
-                self.GM.game_pulbic_log.append(log)
-                pass
-            if abilityName == "PlayerDoubt":
-                log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent, item)
-                self.GM.game_pulbic_log.append(log)
-            if abilityName == "Debate":
-                log = ActionLog("player_debate_log", self.GM.current_time, self.agent, item)
-                self.GM.game_player_action_log.append(log)
-                log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent, item)
-                self.GM.game_pulbic_log.append(log)
-                pass
-            if abilityName == "DeathWords":
-                log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
-                self.GM.game_player_action_log.append(log)
-                log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
-                self.GM.game_pulbic_log.append(log)
-                pass
+        if abilityName == "PlayerVote":
+            log = ActionLog("player_vote_log", self.GM.current_time, self.agent, item)
+            self.GM.game_player_vote_log.append(log)
+            log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent["name"], item)
+            self.GM.game_public_log.append(log)
+            pass
+        if abilityName == "PlayerDoubt":
+            log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent["name"], item)
+            self.GM.game_public_log.append(log)
+        if abilityName == "Debate":
+            log = ActionLog("player_debate_log", self.GM.current_time, self.agent, item)
+            self.GM.game_player_action_log.append(log)
+            log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent["name"], item)
+            self.GM.game_public_log.append(log)
+            pass
+        if abilityName == "DeathWords":
+            log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
+            self.GM.game_player_action_log.append(log)
+            log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent["name"], item)
+            self.GM.game_public_log.append(log)
+            pass
         return log
     
     def DoPlanning(self, question_template, idx):
@@ -199,15 +198,17 @@ class GamePlayer:
         self.GM.game_system_log.append(SystemLog("[ROUND ACTION]", self.GM.current_time, self.agent, response))           
         pass
         
-    def DoMemory(self, memorysize=20, memories=[]):
+    def DoMemory(self, memorysize=10, memories=[]):
         Info("\t\t******** DoMemory {0} {1} ********".format(self.GM.current_time, self.GetName()))
 
-        for log in self.GM.game_pulbic_log[-1*memorysize:]:
+        for log in self.GM.game_public_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
 
         if len(memories) > 0:
-            Debug(memories)
-            summary = self._invokeAssistant(".".join(memories))
+            # Info(memories)
+            logs = ".".join(memories)
+            # print("memories: " + logs)
+            summary = self._invokeAssistant(logs)
             _summary = summary[len(summary)-1]["content"]
             self.AddMemory(_summary)
         time.sleep(3)
