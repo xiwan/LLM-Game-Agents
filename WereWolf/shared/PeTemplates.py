@@ -158,7 +158,7 @@ def ShufflePlayers():
     random.shuffle(roles)
     for i, player in enumerate(roles_dict['players']):
         player['role'] = roles[i]
-    #print(roles_dict)
+    # print(roles_dict)
 
 def LoadPlayerPrompts() -> str:
     for player in roles_dict["players"]:

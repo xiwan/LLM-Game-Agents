@@ -22,7 +22,7 @@ class GamePlayerWitch(GamePlayer):
         return True
     
     def _playerInfoBuilder(self):
-        extraInfo = "道具状态: 毒药{0},解药{1}".format(self._getItem(0), self._getItem(1))
+        extraInfo = "阵营需要自己推理. 道具状态: 毒药{0},解药{1}".format(self._getItem(0), self._getItem(1))
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
         

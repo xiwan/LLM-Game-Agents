@@ -18,7 +18,7 @@ class GamePlayer:
         #_template_role = template_role.replace("{nickname}", player["name"])
         #_template_role = _template_role.replace("{role}", player["role"])
         #_template_role = _template_role.replace("{character}", player["character"])
-        #print(_template_role)
+        # print(_template_role)
         logger.info("{0} is {1}".format(player["name"], player["role"]))
         
         self.template_role = LangchainMiniPromptTemplate(_template_role)
@@ -41,7 +41,8 @@ class GamePlayer:
         return boardInfo
     
     def _playerInfoBuilder(self):
-        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), "")
+        extraInfo = "阵营需要自己推理"
+        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo 
     
     def _invoke(self, question):

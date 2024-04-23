@@ -9,7 +9,7 @@ class GamePlayerWolf(GamePlayer):
         super().__init__(player, GM)
 
     def _playerInfoBuilder(self):
-        extraInfo = "本阵营玩家为:{0}.".format(GetAllWolvesName())
+        extraInfo = "阵营{0}".format(GetAllWolvesName())
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
     

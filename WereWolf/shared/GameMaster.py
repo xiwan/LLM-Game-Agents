@@ -77,6 +77,8 @@ class GameMaster:
             
     ## setup Players
     def _setupPlayers(self):
+        ShufflePlayers()
+        LoadPlayerPrompts()
         # cache the player agents
         for player in roles_dict["players"]:
             if player["role"] == "女巫":
@@ -87,7 +89,6 @@ class GameMaster:
                 _player = GamePlayerProphet(player, self)
             else:
                 _player = GamePlayer(player, self)
-            
             self.player_agents.append(_player)
         pass
     
@@ -346,7 +347,7 @@ class GameMaster:
                     pass
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
-                    if not player.IsVillager():
+                    if not player.IsVillager() and not player.IsWitch():
                         question_template = game_config_dict["player"]["action_plan_night"]
                         player.DoPlanning(question_template, i)
                     pass
@@ -439,7 +440,6 @@ class GameMaster:
         pass
     
     def ResetGame(self):
-        LoadPlayerPrompts()
         self.start_time = time.time()
         Info("\t===== {0} ResetGame =====".format(GetAllPlayersName()))
          # prepare the envs
@@ -447,7 +447,6 @@ class GameMaster:
         self._reviveRoles()
         self._setupPlayers()
         self._clearPlayersMemory()
-
         pass
     
     def EndGame(self):
@@ -459,7 +458,6 @@ class GameMaster:
         pass
     
     def RunGame(self): 
-        ShufflePlayers()
         Info("\t===== {0} RunGame =====".format(GetAllPlayersName()))
         i = 0
         while self.run and True:
