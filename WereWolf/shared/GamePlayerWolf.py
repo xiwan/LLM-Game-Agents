@@ -9,7 +9,7 @@ class GamePlayerWolf(GamePlayer):
         super().__init__(player, GM)
 
     def _playerInfoBuilder(self):
-        extraInfo = "阵营{0}".format(GetAllWolvesName())
+        extraInfo = "阵营配置:{0}, 队友{1}".format(GetPartySize(), GetAllWolvesName())
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
     
@@ -24,7 +24,7 @@ class GamePlayerWolf(GamePlayer):
         if self.GM.isDay or target is None:
             return None
 
-        if abilityName == "WolfVote":
+        if abilityName.lower().startswith('wolfvote'):
             log = ActionLog("wolf_vote_log", self.GM.current_time, self.agent, item)
             self.GM.game_wolf_vote_log.append(log)
             log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent["name"], item)

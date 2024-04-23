@@ -1,5 +1,5 @@
 from . import *
-
+    
 # @tool
 def GetAllPlayersName() -> str:
     """GetAllPlayersName"""
@@ -100,6 +100,13 @@ def ParseJson(text):
     except Error:
         logger.exception("Cannot parse json")
     return None
+
+def IsValidJson(json_str):
+    try:
+        json.loads(json_str)
+    except ValueError as e:
+        return False
+    return True
 
 def FindMostFrequent(arr):
     freq = Counter(arr)

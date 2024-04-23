@@ -41,7 +41,7 @@ class GamePlayer:
         return boardInfo
     
     def _playerInfoBuilder(self):
-        extraInfo = "阵营需要自己推理"
+        extraInfo = "阵营配置:{0}, 队友需要自己推理".format(GetPartySize())
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo 
     
@@ -97,6 +97,9 @@ class GamePlayer:
             return 4
         return 0 # assistant
     
+    def InfoMessage(self, title):
+        Info("\t\t******** {0} {1} {2} {3}********".format(title, self.GM.current_time, self.GetName(), self.GetRole()))
+    
     def UsePlayerValidate(self, abilityName, target=None, item=None):
         pass
     
@@ -142,47 +145,36 @@ class GamePlayer:
 
     # answering question
     def DoAnswer(self, question):
-        Info("\t\t******** DoAnswer {0} {1} ********".format(self.GM.current_time, self.GetName()))
+        self.InfoMessage("DoAnswer")
         answer = self._invoke(question)
         return answer
 
     def DoValidate(self, question, answer):
-        Info("\t\t******** DoValidate {0} {1} {2}********".format(self.GM.current_time, self.GetName(), self.questionTry))
+        self.InfoMessage("DoValidate")
         self.questionTry = self.questionTry - 1
-        if answer == "":
-            return []
-        if self.questionTry == 0:
+        if answer == "" or self.questionTry == 0:
             return []
 
         response = ParseJson(answer[len(answer)-1]["content"])
-        if response is None:
+
+        validJsonFlag = True
+        for res in response:
+            if not IsValidJson(res):
+                validJsonFlag = False
+                break
+          
+        if response is None or not validJsonFlag:
+            Info("\t\t BAD RESPONSE: {0} {1}".format(response, self.questionTry))
             answer = self.DoAnswer(question)
             response = self.DoValidate(self, question, answer)
-        Info("\t\t DoValidate: {0}".format(response))
-        
-        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
-
-#         try:
-#             output_message = {}
-#             output_message["player_id"] = self.agent["id"]
-#             output_message["player_name"] = self.agent["name"]
-#             output_message["message"] = answer[len(answer)-1]
-#             output_message["is_day"] = self.GM.isDay
-#             output_message["round"] = self.GM.round
-#             output_message["current_time"] = self.GM.current_time
-#             output_message["type"] = self.MessageRoleType()
-#             output_message["stage"] = self.GM.stage
             
-#             self.GM.game_output_queue.put(output_message)
-#         except queue.Full:
-#             logger.exception('game_output_queue.Full')
-
+        Info("\t\t DoValidate: {0}".format(response))
+        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
         self.questionTry = 3
         return response
         
     def DoAction(self, response):
-        Info("\t\t******** DoAction {0} {1} ********".format(self.GM.current_time, self.GetName()))
-        
+        self.InfoMessage("DoAction")
         memories = []
         for res in response:
             res_obj = json.loads(res)
@@ -203,8 +195,7 @@ class GamePlayer:
         pass
         
     def DoMemory(self, memorysize=10, memories=[]):
-        Info("\t\t******** DoMemory {0} {1} ********".format(self.GM.current_time, self.GetName()))
-
+        self.InfoMessage("DoMemory")
         for log in self.GM.game_public_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
 

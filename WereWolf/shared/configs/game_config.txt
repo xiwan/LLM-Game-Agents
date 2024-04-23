@@ -1,10 +1,10 @@
 {
     "max_round": 10,
     "player": {
-        "action_plan_night": "{0}{1}现在是第{2}天夜晚，该如何行动?",
-        "action_plan_day": "{0}{1}现在是第{2}天白天的讨论环节，该如何行动?",
-        "action_plan_day_vote": "{0}{1}现在是第{2}天白天的投票环节，该如何行动?",
-        "action_plan_death": "{0}{1}现在是第{2}天白天，你已经死亡,有何遗言?",
+        "action_plan_night": "现在是第{2}天夜晚,{0}{1} 该如何行动?",
+        "action_plan_day": "现在是第{2}天白天的讨论环节,{0}{1} 该如何行动?",
+        "action_plan_day_vote": "现在是第{2}天白天的投票环节,{0}{1} 该如何行动?",
+        "action_plan_death": "现在是第{2}天白天,{0}{1} 你已经死亡,有何遗言?",
         "action_confirm": "ok",
         "action_villager_team": "未知,需要你推理发现.",
         "action_reflect": "{0}{1}.开始一步一步进行推理,为下一轮行动准备.",

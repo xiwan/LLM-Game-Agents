@@ -128,11 +128,7 @@ class GameMaster:
                 # if player.agent["role"] == "狼人":
                 qKey = "player_vote_again" if len(self.palyervotes) > 1 else "player_vote_again_2"
                 question = game_config_dict["system"][qKey].format(",".join(self.palyervotes))
-                # if len(self.palyervotes) > 1:
-                #     question = game_config_dict["system"]["player_vote_again"].format(",".join(self.palyervotes))
-                # if len(self.palyervotes) == 0:
-                #     question = game_config_dict["system"]["player_vote_again_2"].format(",".join(self.palyervotes))
-                Info(question)
+                Info("[DAY_VOTE_AGAIN]" + question)
                 self.game_system_log.append(question)
                 self.game_player_vote_log.append(question)
                 player.AddMemory(question)
@@ -167,7 +163,7 @@ class GameMaster:
         
         # wolf vote caculate
         for vote in self.game_wolf_vote_log:
-            if vote["time"] == self.current_time and vote["response"]["action"] == "WolfVote":
+            if vote["time"] == self.current_time and vote["response"]["action"].lower().startswith('wolfvote'):
                 if vote["response"]["target"] != "" :
                     vote_names.append(vote["response"]["target"])
                     
@@ -194,11 +190,7 @@ class GameMaster:
                 if player.IsWolf():
                     qKey = "wolf_vote_again" if len(self.wolfvotes) > 1 else "wolf_vote_again_2"
                     question = game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
-                    # if len(self.wolfvotes) > 1:
-                    #     question = game_config_dict["system"]["wolf_vote_again"].format(",".join(self.wolfvotes))
-                    # if len(self.wolfvotes) == 0:
-                    #     question = game_config_dict["system"]["wolf_vote_again_2"].format(",".join(self.wolfvotes))
-                    Info(question)
+                    Info("[NIGHT_VOTE_AGAIN]" + question)
                     self.game_system_log.append(question)
                     self.game_wolf_vote_log.append(question)
                     player.AddMemory(question)
@@ -448,7 +440,7 @@ class GameMaster:
             
             # witch action
             witch = GetPlayer(self.player_agents, "女巫")
-            if witch != None and witch.GetStatus() == 1: 
+            if witch != None and witch.GetStatus() >= 0: 
                 question_template = game_config_dict["player"]["action_plan_night"]
                 witch.DoPlanning(question_template, i)
             pass
