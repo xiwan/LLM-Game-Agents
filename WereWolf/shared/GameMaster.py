@@ -6,7 +6,19 @@ from .GamePlayerWolf import GamePlayerWolf
 from .GamePlayerProphet import GamePlayerProphet
 from .GameAssistant import GameAssistant
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
+from enum import Enum
 
+class GameStage(Enum):
+    Unknown = 0
+    NightWolf = 1
+    NightPropht = 2
+    NightWitch = 3
+    NightAction = 4
+    DeathWords = 5
+    DayDebate = 6
+    DayVote = 7
+    Assistant = 8
+    
 class GameMaster:
     
     global game_config_dict, roles_dict
@@ -26,6 +38,7 @@ class GameMaster:
         self.inGame = False
         self.round = 0
         self.isDay = False
+        self.stage = GameStage.Unknown.value
         self.current_time = ""
         self.game_memory_queue = queue.Queue(maxsize=self.queueSize)
         self.game_output_queue = queue.Queue(maxsize=self.queueSize)
@@ -268,6 +281,7 @@ class GameMaster:
         Info("\t===== {0} PreAction ======".format(self._current_time(i)))
         
         if self.isDay:
+            self.stage = GameStage.DeathWords.value
             for player in self.player_agents:
                 if self.exit_flag:
                     self.run = False
@@ -312,6 +326,7 @@ class GameMaster:
         Info("\t===== {0} DoAction ======".format(self._current_time(i)))
         
         if self.isDay:
+            self.stage = GameStage.DayDebate.value
             for player in self.player_agents:
                 if self.exit_flag:
                     self.run = False
@@ -334,6 +349,7 @@ class GameMaster:
             self.game_wolf_vote_log = []
             self.game_witch_potion_log = []
             
+            self.stage = GameStage.NightAction.value
             sorted_players = SortedPlayersInNight(self.player_agents)
             for player in sorted_players:
                 if self.exit_flag:
@@ -362,6 +378,7 @@ class GameMaster:
         Info("\t===== {0} PostAction ======".format(self._current_time(i)))
         
         if self.isDay:
+            self.stage = GameStage.DayVote.value
             # calculate votes
             while not self.DayVote(i):
                 if self.exit_flag:
@@ -414,6 +431,7 @@ class GameMaster:
                 pass
 
         else: # night post action
+            self.stage = GameStage.NightAction.value
             while not self.NightVote(i):
                 if self.exit_flag:
                     self.run = False

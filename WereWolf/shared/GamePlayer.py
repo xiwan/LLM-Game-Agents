@@ -95,7 +95,7 @@ class GamePlayer:
             return 3
         if self.IsWitch(): # witch
             return 4
-        return 5 # assistant
+        return 0 # assistant
     
     def UsePlayerValidate(self, abilityName, target=None, item=None):
         pass
@@ -159,20 +159,23 @@ class GamePlayer:
             answer = self.DoAnswer(question)
             response = self.DoValidate(self, question, answer)
         Info("\t\t DoValidate: {0}".format(response))
+        
+        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
 
-        try:
-            output_message = {}
-            output_message["player_id"] = self.agent["id"]
-            output_message["player_name"] = self.agent["name"]
-            output_message["message"] = answer[len(answer)-1]
-            output_message["is_day"] = self.GM.isDay
-            output_message["round"] = self.GM.round
-            output_message["current_time"] = self.GM.current_time
-            output_message["type"] = self.MessageRoleType()
+#         try:
+#             output_message = {}
+#             output_message["player_id"] = self.agent["id"]
+#             output_message["player_name"] = self.agent["name"]
+#             output_message["message"] = answer[len(answer)-1]
+#             output_message["is_day"] = self.GM.isDay
+#             output_message["round"] = self.GM.round
+#             output_message["current_time"] = self.GM.current_time
+#             output_message["type"] = self.MessageRoleType()
+#             output_message["stage"] = self.GM.stage
             
-            self.GM.game_output_queue.put(output_message)
-        except queue.Full:
-            logger.exception('game_output_queue.Full')
+#             self.GM.game_output_queue.put(output_message)
+#         except queue.Full:
+#             logger.exception('game_output_queue.Full')
 
         self.questionTry = 3
         return response
@@ -212,6 +215,8 @@ class GamePlayer:
             summary = self._invokeAssistant(logs)
             _summary = summary[len(summary)-1]["content"]
             self.AddMemory(_summary)
+            
+            self.BuildOutputMessage(summary[len(summary)-1], 0)
         time.sleep(3)
         return memories
     
@@ -223,3 +228,19 @@ class GamePlayer:
         if self.GM.quick:
             return
     
+    def BuildOutputMessage(self, message, messageType=0):
+        try:
+            output_message = {}
+            output_message["player_id"] = self.agent["id"]
+            output_message["player_name"] = self.agent["name"]
+            output_message["message"] = message
+            output_message["is_day"] = self.GM.isDay
+            output_message["round"] = self.GM.round
+            output_message["current_time"] = self.GM.current_time
+            output_message["type"] = messageType
+            output_message["stage"] = self.GM.stage
+            
+            self.GM.game_output_queue.put(output_message)
+        except queue.Full:
+            logger.exception('game_output_queue.Full')
+        pass
