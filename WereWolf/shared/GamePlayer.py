@@ -32,7 +32,7 @@ class GamePlayer:
             system=template_role)
         
         # assistant agent
-        _template_assistant_role = template_assistant_role.replace("{num}", "144")
+        _template_assistant_role = template_assistant_summarize_role.replace("{num}", "144")
         self.assistant = GameAssistant(_template_assistant_role, GM)
         pass
 
@@ -155,8 +155,9 @@ class GamePlayer:
         if answer == "" or self.questionTry == 0:
             return []
 
+        # Info(answer)
         response = ParseJson(answer[len(answer)-1]["content"])
-
+        # Info(response)
         validJsonFlag = True
         for res in response:
             if not IsValidJson(res):
@@ -166,7 +167,7 @@ class GamePlayer:
         if response is None or not validJsonFlag:
             Info("\t\t BAD RESPONSE: {0} {1}".format(response, self.questionTry))
             answer = self.DoAnswer(question)
-            response = self.DoValidate(self, question, answer)
+            return self.DoValidate(question, answer)
             
         Info("\t\t DoValidate: {0}".format(response))
         self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())

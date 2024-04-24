@@ -103,6 +103,7 @@ def ParseJson(text):
 
 def IsValidJson(json_str):
     try:
+        # print(json_str)
         json.loads(json_str)
     except ValueError as e:
         return False
@@ -151,7 +152,7 @@ template_wolf_role = LoadPrompt("template_player_role.txt").replace("{game_rule}
 template_prophet_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
 template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_tools)
 template_player_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
-template_assistant_role = LoadPrompt("template_assistant_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
+template_assistant_summarize_role = LoadPrompt("template_assistant_summarize_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
 
 roles = LoadConfig("roles.txt")
 game_config = LoadConfig("game_config.txt")

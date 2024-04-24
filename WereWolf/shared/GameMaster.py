@@ -235,7 +235,7 @@ class GameMaster:
             
             # assistant agent
             # summerize the game
-            _template_assistant_role = template_assistant_role.replace("{num}", "1000")
+            _template_assistant_role = template_assistant_summarize_role.replace("{num}", "1000")
             self.assistant = GameAssistant(_template_assistant_role, self)
             memories = []
             # system message

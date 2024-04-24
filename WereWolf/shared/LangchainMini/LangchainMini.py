@@ -6,6 +6,7 @@ import os
 import random
 import numpy as np
 import boto3
+import time
 from botocore.exceptions import ClientError
 from anthropic import Anthropic,AnthropicBedrock
 from abc import ABC, abstractmethod
@@ -53,7 +54,7 @@ class LangchainMiniMemory():
         content = self.historyStr()
         print(content)
         if len(content) > 0:
-            _template = LangchainMiniPromptTemplate("{content}. 自然语言简洁总结,不超过{num}字, 需要保留关键信息，比如玩家姓名.")
+            _template = LangchainMiniPromptTemplate("{content}. 自然语言简洁总结,不超过{num}字, 需要保留关键信息，比如时间，玩家和动作.")
             num = min(len(self.memories[-1*self.k:])*15, 100)
             prompt = _template.format(content=content, num=num)
             
@@ -116,10 +117,12 @@ class Anthropic3(LLMProduct, LLMInterface):
     
     def _system(self, system):
         pass
-        
+
+RETRY_NUM = 5
 class AnthropicBedrock3(LLMProduct, LLMInterface):
     role = "user"
     assistant = "assistant"
+    retry = RETRY_NUM
         
     def __init__(self, ak="", sk="", sts_token="", aws_region="us-east-1"):
         super().__init__("anthropic.claude-3-sonnet-20240229-v1:0")
@@ -145,6 +148,10 @@ class AnthropicBedrock3(LLMProduct, LLMInterface):
         pass
     
     def _invoke(self, prompt):
+        if self.retry <= 0:
+            logger.info("!!!retry failed!!!")
+            return None
+
         message = {"role": self.role, "content": prompt}
         qapair = [message]
         messages = [message]
@@ -152,10 +159,15 @@ class AnthropicBedrock3(LLMProduct, LLMInterface):
         if self.memory is None:
             messages = [message]
         else:
-            messages = self.memory._update(message)
+            if self.retry == RETRY_NUM:
+                messages = self.memory._update(message)
+            else:
+                messages = self.memory.memories
         
         response = None
         try:
+            # if  self.retry == 5:
+            #     raise Exception("exception...")
             if self.stream:
                 with self.client.messages.stream(
                     model=self.model_id,
@@ -180,11 +192,14 @@ class AnthropicBedrock3(LLMProduct, LLMInterface):
                 response = {"role": self.assistant, "content": message.content, "usage": message.usage}
         except Exception as e:
             logger.info(str(e))
+            time.sleep(3)
+            self.retry -= 1
+            return self._invoke(prompt)
             
         qapair.append(response)
         if (not self.memory is None) and (not response is None):
             self.memory._update(response)
-
+        self.retry = RETRY_NUM
         return qapair
         
 class LangchainMiniPromptTemplate():
