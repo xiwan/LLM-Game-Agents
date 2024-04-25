@@ -22,8 +22,8 @@ class GamePlayerWitch(GamePlayer):
         return True
     
     def _playerInfoBuilder(self):
-        extraInfo = "道具状态: 毒药{0},解药{1}.".format(self._getItem(0), self._getItem(1))
-        extraInfo += "阵营配置:{0},队友需要自己推理.".format(GetPartySize())
+        extraInfo = "药水情况: 毒药{0},解药{1}.每晚可以使用药水救人或者自救(时间:{2}淘汰的玩家),或者淘汰某玩家(时间:{2}存活的玩家).".format(self._getItem(0), self._getItem(1), self.GM.current_time)
+        extraInfo += "阵营为:{0}.本阵营队友未知.".format(GetPartySize())
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
         

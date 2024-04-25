@@ -9,7 +9,7 @@ class GamePlayerWolf(GamePlayer):
         super().__init__(player, GM)
 
     def _playerInfoBuilder(self):
-        extraInfo = "阵营配置:{0}, 队友{1}".format(GetPartySize(), GetAllWolvesName())
+        extraInfo = "阵营为:{0}.本阵营队友{1}.".format(GetPartySize(), GetAllWolvesName())
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
     
@@ -17,6 +17,7 @@ class GamePlayerWolf(GamePlayer):
         for log in self.GM.game_wolf_vote_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
         memories = super().DoMemory(memorysize, memories)
+        #print(memories)
         return memories
     
     def UsePlayerAbility(self, abilityName, target=None, item=None):

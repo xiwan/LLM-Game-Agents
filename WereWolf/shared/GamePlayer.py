@@ -14,12 +14,14 @@ class GamePlayer:
         self.player_memory = ""
         self.agent = player
         template_role = self.agent["prompt"]
+        
         _template_role = template_role.replace("{formation}", GetPartySize())
-        #_template_role = template_role.replace("{nickname}", player["name"])
-        #_template_role = _template_role.replace("{role}", player["role"])
-        #_template_role = _template_role.replace("{character}", player["character"])
-        # print(_template_role)
-        logger.info("{0} is {1}".format(player["name"], player["role"]))
+        # _template_role = _template_role.replace("{nickname}", player["name"])
+        # _template_role = _template_role.replace("{role}", player["role"])
+        # _template_role = _template_role.replace("{character}", player["character"])
+        
+        # Info(_template_role)
+        Info("{0} is {1}".format(player["name"], player["role"]))
         
         self.template_role = LangchainMiniPromptTemplate(_template_role)
 
@@ -32,16 +34,16 @@ class GamePlayer:
             system=template_role)
         
         # assistant agent
-        _template_assistant_role = template_assistant_summarize_role.replace("{num}", "144")
-        self.assistant = GameAssistant(_template_assistant_role, GM)
+        _template_assistant_summarize_role = template_assistant_summarize_role.replace("{num}", "144")
+        self.assistant = GameAssistant(_template_assistant_summarize_role, GM)
         pass
 
     def _stateInfoBuilder(self):
-        boardInfo = "目前场上玩家:{0}.".format(GetAllPlayersName())
+        boardInfo = "目前玩家状态:{0}.".format(GetAllPlayersName())
         return boardInfo
     
     def _playerInfoBuilder(self):
-        extraInfo = "阵营配置:{0}, 队友需要自己推理".format(GetPartySize())
+        extraInfo = "阵营为:{0}.本阵营队友未知".format(GetPartySize())
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo 
     

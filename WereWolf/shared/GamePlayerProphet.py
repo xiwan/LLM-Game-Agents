@@ -26,6 +26,11 @@ class GamePlayerProphet(GamePlayer):
         Info(self.checkList)
         return True
     
+    def _playerInfoBuilder(self):
+        extraInfo = "阵营为:{0}.本阵营队友未知".format(GetPartySize())
+        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        return playerInfo
+    
     def DoMemory(self, memorysize=10, memories=[]):
         for log in self.GM.game_prophet_check_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))

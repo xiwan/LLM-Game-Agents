@@ -1,47 +1,47 @@
 <wolf>
-- 描述: agent(狼人)夜晚对target(目标)投票, 并且提醒队友跟随
-  方法: WolfVote
+- 方法: WolfVote
+  描述: agent(狼人)夜晚对target(目标)投票, 并且提醒队友跟随
   参数: agent=执行玩家,target=存活玩家 
   例子: {"action": "WolfVote", "agent": "P1", "target": "P5"}
 </wolf>
 
 <prophet>
-- 描述: agent(预言家)夜晚查验对target(目标)身份, 同一个夜晚只能用一次
-  方法: ProphetCheck
+- 方法: ProphetCheck
+  描述: agent(预言家)夜晚查验对target(目标)身份, 同一个夜晚只能用一次
   参数: agent=执行玩家,target=存活玩家
   例子: {"action": "ProphetCheck", "agent": "P1", "target": "P2"}
 </prophet>
 
 <witch>
-- 描述: agent(女巫)夜晚对target(目标)使用毒药, 同一个夜晚只能用一次解药或者毒药
-  方法: WitchPoision
+- 方法: WitchPoision
+  描述: agent(女巫)夜晚对target(目标)使用毒药
   参数: agent=执行玩家,target=存活玩家
   例子: {"action": "WitchPoision", "agent": "P6", "target": "P2"}
-- 方法: WitchAntidote: 
-  描述: agent(女巫)夜晚对target(目标)使用解药, 同一个夜晚只能用一次解药或者毒药
+- 方法: WitchAntidote
+  描述: agent(女巫)夜晚对target(目标)使用解药
   参数: agent=执行玩家,target=死亡玩家
   例子: {"action": "WitchAntidote", "agent": "P6", "target": "P2"}
 </witch>
 
 <player>
-- 描述: agent(玩家)白天对target(目标)进行投票
-  方法: PlayerVote
+- 方法: PlayerVote
+  描述: agent(玩家)白天对target(目标)进行投票
   参数: agent=执行玩家,target=存活玩家
   例子: {"action": "PlayerVote", "agent": "P2", "target": "P4"}
-- 描述: agent(玩家)白天对target(目标)进行怀疑，但不会计入投票
-  方法: PlayerDoubt
+- 方法: PlayerDoubt
+  描述: agent(玩家)白天对target(目标)进行怀疑，但不会计入投票
   参数: agent=执行玩家,target=存活玩家,content=思考/理由(可选项)
   例子: {"action": "PlayerDoubt", "agent": "P2", "target": "P4", content="我对P4身份存疑，(给出原因)"}
-- 描述: agent(玩家)白天讨论
-  方法: Debate
+- 方法: Debate
+  描述: agent(玩家)白天讨论
   参数: agent=执行玩家, content=思考/理由
   例子: {"action": "Debate", "agent": "P2", "content": "我的推理为xx是狼，(给出原因)"}
-- 描述: agent(玩家)死亡遗言
-  方法: DeathWords
+- 方法: DeathWords
+  描述: agent(玩家)白天死亡遗言
   参数: agent=执行玩家, content=思考/理由
   例子: {"action": "DeathWords", "agent": "P2", "content": "我觉得xx有很大的嫌疑, (给出原因)"}
-- 描述: agent(玩家)行动弃权
-  方法: Pass
+- 方法: Pass
+  描述: agent(玩家)行动弃权
   参数: agent=执行玩家
   例子: {"action": "Pass", "agent": "P2"}
 </player>
