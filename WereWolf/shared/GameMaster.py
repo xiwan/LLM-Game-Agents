@@ -255,7 +255,7 @@ class GameMaster:
         if self.winner == 2:
             message = game_config_dict["system"]["win_wolf"].format(GetAllPlayersName())
    
-        if self.winner != 0:
+        if self.winner != 0 or not self.run:
             self.game_system_log.append(message)
             
             # assistant agent
@@ -289,6 +289,7 @@ class GameMaster:
         output = {}
         output['messages'] = messages
         output['end'] = not self.inGame
+        output['players'] = GetPlayerInfo()
         return output
 
     def PreAction(self, i):
