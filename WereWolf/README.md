@@ -2,6 +2,8 @@
 
 This is a social deduction game "Werewolf" driven by LLM models. It is mainly used to study whether mainstream LLM models can simulate human players to play the game.
 
+![gamescreentshot](./statics/gamescreentshot.png)
+
 ### How to Run
 
 Make sure you have Python 3.9.16 and pip 21.3.1
@@ -48,6 +50,8 @@ The player module is responsible for communicating with the LLM. Each interactio
 ## LLM-Werewolf-CN
 
 这个是基于LLM模型驱动的社交游戏《狼人杀》。主要用来研究主流LLM模型能否模拟人类玩家进行游戏。
+
+![gamescreentshot](./statics/gamescreentshot.png)
 
 ### 如何运行它
 
