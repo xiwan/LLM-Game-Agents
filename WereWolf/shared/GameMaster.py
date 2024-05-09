@@ -257,7 +257,7 @@ class GameMaster:
    
         if self.winner != 0 or not self.run:
             self.game_system_log.append(message)
-            
+            self.stage = GameStage.Assistant.value
             # assistant agent
             # summerize the game
             _template_assistant_role = template_assistant_summarize_role.replace("{num}", "1000")
@@ -276,7 +276,8 @@ class GameMaster:
                 output_message["is_day"] = self.isDay
                 output_message["round"] = self.round
                 output_message["current_time"] = self.current_time
-                output_message["type"] = 5
+                output_message["type"] = 0
+                output_message["stage"] = self.stage
                 self.game_output_queue.put(output_message)
             pass
 
@@ -291,6 +292,19 @@ class GameMaster:
         output['end'] = not self.inGame
         output['players'] = GetPlayerInfo()
         return output
+    
+    def FakeEnding(self):
+        self.stage = GameStage.Assistant.value
+        output_message = {}
+        output_message["player_id"] = 1000
+        output_message["player_name"] = "game assistant"
+        output_message["message"] = "FAKE ENDING"
+        output_message["is_day"] = self.isDay
+        output_message["round"] = self.round
+        output_message["current_time"] = self.current_time
+        output_message["type"] = 0
+        output_message["stage"] = self.stage
+        return output_message
 
     def PreAction(self, i):
         if self.winner != 0:

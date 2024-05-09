@@ -86,6 +86,11 @@ def get_msg():
     data = app.GM.GetMessages()
     return ReturnJson(data)
 
+@app.route('/fakeEnding')
+def def_fakeEnding():
+    data = app.GM.FakeEnding()
+    return ReturnJson(data)
+
 class GameServer:
     
     def __init__(self):
