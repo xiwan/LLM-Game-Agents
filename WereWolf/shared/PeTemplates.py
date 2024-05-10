@@ -41,7 +41,7 @@ def GetPlayerInfo() -> str:
         tmp_player["role"] = player["role"]
         tmp_player["character"] = player["character"]
         tmp_player["status"] = player["status"]
-        tmp_player["sex"] = player["sex"]
+        tmp_player["gender"] = player["gender"]
         player_info.append(tmp_player)
     return player_info
 
@@ -163,7 +163,7 @@ roles_dict = json.loads(roles)
 game_config_dict = json.loads(game_config)
 
 for player in roles_dict["players"]:
-    player["sex"] = random.choice([0,1])
+    player["gender"] = random.choice([0,1])
     
 def ShufflePlayers():
     roles = [player['role'] for player in roles_dict['players']]
