@@ -304,7 +304,12 @@ class GameMaster:
         output_message["current_time"] = self.current_time
         output_message["type"] = 0
         output_message["stage"] = self.stage
-        return output_message
+        
+        output = {}
+        output['messages'] = [output_message]
+        output['end'] = not self.inGame
+        output['players'] = GetPlayerInfo()
+        return output
 
     def PreAction(self, i):
         if self.winner != 0:
