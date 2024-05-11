@@ -147,7 +147,7 @@ class GameMaster:
         
         # kill the player and log it
         for player in roles_dict["players"]:
-            if player["name"] == elem:
+            if player["name"].strip() == elem.strip():
                 Info("\t Day Vote player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
                 player_log = "玩家{0}与时间{1}被淘汰.".format(player["name"], self.current_time)
@@ -190,10 +190,10 @@ class GameMaster:
         Debug("\t wolf_vote_names most_common: {0}\n".format(vote_names_counter.most_common(1)))
         wolf_target, count = vote_names_counter.most_common(1)[0]
  
-        Info("\t [wolf_votes]: {0}, [player_vote_name]: {1}".format(self.wolfvotes, vote_names_counter))
+        Info("\t [wolfvotes]: {0}, [vote_names_counter]: {1}, [wolf_target]: {2}".format(self.wolfvotes, vote_names_counter, wolf_target))
         # kill the player and log it
         for player in roles_dict["players"]:
-            if player["name"] == wolf_target:
+            if player["name"].strip() == wolf_target.strip():
                 Debug("\t Night Vote player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
                 player_log = "玩家{0}与时间{1}被淘汰.".format(player["name"], self.current_time)
@@ -225,7 +225,7 @@ class GameMaster:
         Info("\t [poision_target]: {0}".format(poision_target))
         Info("\t [antidote_target]: {0}".format(antidote_target))
         for player in roles_dict["players"]:
-            if player["name"] == poision_target and player["status"] == 1:
+            if player["name"].strip() == poision_target.strip():
                 Info("\t NightWitch Poision player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
                 player_log = "玩家{0}与时间{1}被毒杀.".format(player["name"], self.current_time)
@@ -235,7 +235,7 @@ class GameMaster:
                 self.game_system_log.append(sys_log)
                 pass
                 
-            elif player["name"] == antidote_target and player["status"] == 0:
+            elif player["name"].strip() == antidote_target.strip():
                 Info("\t NightWitch Antidote player name: {0}".format(player["name"]))
                 player["status"] = 1 # alive !!!!
                 player_log = "玩家{0}与时间{1}被救活.".format(player["name"], self.current_time)

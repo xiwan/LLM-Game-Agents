@@ -1,56 +1,56 @@
 {
   "players": [
     {
-      "name": "[亚历山大·格拉汉姆]",
+      "name": "Aiden",
       "id": 1001,
       "role": "预言家",
       "character": "有勇有谋",
       "status": 1
     },
     {
-      "name": "[伊丽莎白·库珀]",
+      "name": "Liam",
       "id": 1002,
       "role": "女巫", 
       "character": "独立思考",
       "status": 1
     },
     {
-      "name": "[马蒂奥·费拉里]",
+      "name": "Emma",
       "id": 1003,
       "role": "狼人",
       "character": "规矩型",
       "status": 1
     },
     {
-      "name": "[樱花·川崎]",
+      "name": "Olivia",
       "id": 1004,
       "role": "村民",
       "character": "组织者",
       "status": 1
     },
     {
-      "name": "[克里斯托弗·贝克汉姆]",
+      "name": "Sophia",
       "id": 1005,
       "role": "村民",
       "character": "话痨",
       "status": 1
     },
     {
-      "name": "[朱丽叶·拉费兰芝]",
+      "name": "Mason",
       "id": 1006,
       "role": "狼人",
       "character": "观察家", 
       "status": 1
     },
     {
-      "name": "[阿里·哈立德]",
+      "name": "Ethan",
       "id": 1007,
       "role": "村民",
       "character": "腼腆型", 
       "status": 1
     },
     {
-      "name": "[格蕾丝·李]",
+      "name": "Isabella",
       "id": 1008,
       "role": "村民",
       "character": "互动达人", 
