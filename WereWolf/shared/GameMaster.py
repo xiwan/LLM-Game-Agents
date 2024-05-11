@@ -298,7 +298,19 @@ class GameMaster:
         output_message = {}
         output_message["player_id"] = 1000
         output_message["player_name"] = "game assistant"
-        output_message["message"] = "FAKE ENDING"
+        output_message["message"] = {}
+        output_message["message"]["role"] = "assistant"
+        output_message["message"]["content"] = '''
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
+        '''
         output_message["is_day"] = self.isDay
         output_message["round"] = self.round
         output_message["current_time"] = self.current_time
