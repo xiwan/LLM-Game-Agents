@@ -153,8 +153,9 @@ template_wolf_role = LoadPrompt("template_player_role.txt").replace("{game_rule}
 template_prophet_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
 template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_tools)
 template_player_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
+
 template_assistant_summarize_role = LoadPrompt("template_assistant_summarize_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
-template_assistant_recommend_role = LoadPrompt("template_assistant_recommend_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
+template_assistant_recommend_role = LoadPrompt("template_assistant_recommend_role.txt").replace("{game_rule}", werewolf_rule_v1)
 
 roles = LoadConfig("roles.txt")
 game_config = LoadConfig("game_config.txt")
@@ -175,18 +176,23 @@ def ShufflePlayers():
 
 def LoadPlayerPrompts() -> str:
     for player in roles_dict["players"]:
-        player["reflect_prompt"] = template_assistant_recommend_role
+        # player["reflect_prompt"] = template_assistant_recommend_role
         player["summary_prompt"] = template_assistant_summarize_role
         if player["role"] == "狼人":
             player["action_prompt"] = template_wolf_role
+            player["reflect_prompt"] = template_assistant_recommend_role.replace("{commands}", wolf_tools)
         elif player["role"] == "村民":
             player["action_prompt"] = template_player_role
+            player["reflect_prompt"] = template_assistant_recommend_role.replace("{commands}", player_tools)
         elif player["role"] == "预言家":
             player["action_prompt"] = template_prophet_role
+            player["reflect_prompt"] = template_assistant_recommend_role.replace("{commands}", prophet_tools)
         elif player["role"] == "女巫":
             player["action_prompt"] = template_witch_role
+            player["reflect_prompt"] = template_assistant_recommend_role.replace("{commands}", witch_tools)
         else:
             player["action_prompt"] = ""
+            player["reflect_prompt"] = ""
             pass
         # print(player["prompt"])
         

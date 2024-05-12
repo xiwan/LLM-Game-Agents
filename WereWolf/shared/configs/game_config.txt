@@ -1,14 +1,15 @@
 {
     "max_round": 10,
+    "reflect_treshhold": 4,
     "player": {
-        "action_plan_night": "{0}{1} 时间:第{2}天夜晚.该如何行动?记住,夜晚的行动不是公开的",
+        "action_plan_night": "{0}{1} 时间:第{2}天夜晚.该如何行动?",
         "action_plan_day": "{0}{1} 时间:第{2}天白天的讨论环节.该如何行动?",
         "action_plan_day_vote": "{0}{1} 时间:第{2}天白天的投票环节.该如何行动?",
         "action_plan_death": "{0}{1} 时间:第{2}天白天.你已经死亡,有何遗言?",
         "action_confirm": "ok",
         "action_villager_team": "未知,需要你推理发现.",
         "action_reflect": "{0}{1}.开始一步一步进行推理,为下一轮行动准备.",
-        "action_prefix":"记住，你支持的玩家是{0},身份{1},性格{2}.{3}. 首先你需要理解当前的游戏进度，提取有用的信息,然后进行一步一步思考.",
+        "action_prefix":"记住，你支持的玩家是{0},身份{1},性格{2}.{3}.请提取有用的信息,然后进行一步一步思考.",
         "action_plan_test": "现在全场几人活着几人淘汰?"
     },
     "god": {

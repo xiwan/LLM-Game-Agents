@@ -94,7 +94,7 @@ def def_fakeEnding():
 class GameServer:
     
     def __init__(self):
-        self.GM = GameMaster(20, 100, False)
+        self.GM = GameMaster(50, 50, False)
         app.GM = self.GM
         app.GMrunning = False
         pass

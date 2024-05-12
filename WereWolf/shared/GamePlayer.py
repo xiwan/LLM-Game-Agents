@@ -13,6 +13,8 @@ class GamePlayer:
         self.GM = GM
         self.player_memory = ""
         self.agent = player
+        self.reflectTimes = 0
+        self.reflectScore = 0
         
         Info("name: {0} role: {1} gender: {2}".format(player["name"], player["role"], player["gender"]))
 
@@ -25,9 +27,6 @@ class GamePlayer:
         # reflect agent
         reflect_role = self.agent["reflect_prompt"]
         _reflect_role = reflect_role.replace("{formation}", GetPartySize())
-        _reflect_role = _reflect_role.replace("{nickname}", player["name"])
-        _reflect_role = _reflect_role.replace("{role}", player["role"])
-        _reflect_role = _reflect_role.replace("{character}", player["character"])
         player["reflector"] = GameAssistant(_reflect_role, GM, 5)
         
         # assistant agent
@@ -37,33 +36,16 @@ class GamePlayer:
         pass
 
     def _stateInfoBuilder(self):
-        boardInfo = "目前玩家状态:{0}.".format(GetAllPlayersName())
+        boardInfo = ""
+        if self.reflectScore > 0:
+            boardInfo += "上轮决策评分:{0}.".format(self.reflectScore)
+        boardInfo += "目前玩家状态:{0}.".format(GetAllPlayersName())
         return boardInfo
     
     def _playerInfoBuilder(self):
         extraInfo = "阵营为:{0}.本阵营队友未知".format(GetPartySize())
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo 
-    
-    def _invokeActor(self, question, reflect=False):
-        logger.info("\tACTOR QUESTION: " + question)
-        _question = question
-        #print(_question)
-        answer = self.agent["actor"].DoAnswer(_question)
-        return answer
-    
-    def _invokeReflector(self, question, reflect=False):
-        logger.info("\tREFLECT QUESTION: " + question)
-        _question = question
-        #print(_question)
-        answer = self.agent["reflector"].DoAnswer(_question)
-        return answer
-    
-    def _invokeAssistant(self, question):
-        _question = self._stateInfoBuilder() + question
-        logger.debug("\tASSISTANT QUESTION : " + _question)
-        #print(_question)
-        return self.agent["assistant"].DoAnswer(question)
     
     def Die(self):
         self.agent["status"] = -1
@@ -137,28 +119,71 @@ class GamePlayer:
             pass
         return log
     
+    def _invokeActor(self, question, reflect=False):
+        logger.info("\tACTOR QUESTION: " + question)
+        _question = question
+        #print(_question)
+        answer = self.agent["actor"].DoAnswer(_question)
+        return answer
+    
+    def _invokeReflector(self, question, reflect=False):
+        logger.info("\tREFLECT QUESTION: " + question)
+        _question = question
+        #print(_question)
+        answer = self.agent["reflector"].DoAnswer(_question)
+        return answer
+    
+    def _invokeAssistant(self, question):
+        _question = self._stateInfoBuilder() + question
+        logger.debug("\tASSISTANT QUESTION : " + _question)
+        #print(_question)
+        return self.agent["assistant"].DoAnswer(question)
+
     def DoPlanning(self, question_template, idx):
         if self.GM.exit_flag:
             return
         self.DoMemory()
         question = question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), idx)
         answer = self.DoAnswer(question)
-        answer = self.DoReflect(answer)
-        response = self.DoValidate(question, answer)
-        self.DoAction(response)
+        self.DoAction(answer)
         time.sleep(3)
         pass
-
+    
     # answering question
     def DoAnswer(self, question):
         self.InfoMessage("DoAnswer")
         answer = self._invokeActor(question)
+        answer = self.DoReflect(question, answer)
+        answer = self.DoValidate(question, answer)
         return answer
 
-    def DoReflect(self, answer):
+    def DoReflect(self, question, answer):
+        # Info(answer)
         if self.GM.quick:
             return answer
+        self.InfoMessage("DoReflect")
+        response = ParseJson(answer[len(answer)-1]["content"])
+
+        relfect_question = "游戏进度:{1}.玩家信息:{2}. 时间:{0}.玩家决策:{3}.".format(
+            self.GM.current_time, 
+            self._stateInfoBuilder(), 
+            self._playerInfoBuilder(), 
+            json.dumps(response,  ensure_ascii=False))
+        reflect = self._invokeReflector(relfect_question)
         
+        reflectResponse = ParseJson(reflect[len(answer)-1]["content"])
+        for res in reflectResponse:
+            res_obj = json.loads(res)
+            if not "score" in res_obj:
+                res_obj["score"] = game_config_dict["reflect_treshhold"] - 1
+            if res_obj["score"] < game_config_dict["reflect_treshhold"] and self.reflectTimes < 3:
+                self.reflectTimes += 1
+                self.reflectScore = res_obj["score"]
+                return self.DoAnswer(question)
+        
+        Info("\t\t DoReflect: {0}".format(reflectResponse))
+        self.BuildOutputMessage(reflect[len(reflect)-1], self.MessageRoleType()) 
+        self.reflectScore = 0
         return answer
     
     def DoValidate(self, question, answer):
@@ -178,11 +203,10 @@ class GamePlayer:
           
         if response is None or not validJsonFlag:
             Info("\t\t BAD RESPONSE: {0} {1}".format(response, self.questionTry))
-            answer = self.DoAnswer(question)
-            return self.DoValidate(question, answer)
+            return self.DoAnswer(question)
             
         Info("\t\t DoValidate: {0}".format(response))
-        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
+        self.BuildOutputMessage(answer[len(answer)-1], 0)
         self.questionTry = 3
         return response
         
@@ -240,6 +264,7 @@ class GamePlayer:
             output_message["type"] = messageType
             output_message["stage"] = self.GM.stage
             
+            # Info("\t\t BuildOutputMessage: {0}".format(output_message))
             self.GM.game_output_queue.put(output_message)
         except queue.Full:
             logger.exception('game_output_queue.Full')
