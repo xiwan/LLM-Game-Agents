@@ -151,7 +151,7 @@ class AnthropicBedrock3(LLMProduct, LLMInterface):
         if self.retry <= 0:
             logger.info("!!!retry failed!!!")
             return None
-
+        # print(self.system)
         message = {"role": self.role, "content": prompt}
         qapair = [message]
         messages = [message]

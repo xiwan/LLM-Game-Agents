@@ -113,7 +113,9 @@ class GameMaster:
     ## clear Players Memory  
     def _clearPlayersMemory(self):
         for player in roles_dict["players"]:
-            player["conversation"].clear()
+            player["actor"].Clear()
+            player["reflector"].Clear()
+            player["assistant"].Clear()
         pass
     
     def DayVote(self, i) -> bool:
@@ -300,17 +302,8 @@ class GameMaster:
         output_message["player_name"] = "game assistant"
         output_message["message"] = {}
         output_message["message"]["role"] = "assistant"
-        output_message["message"]["content"] = '''
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        这是一段非常长的对话,这是一段非常长的对话,这是一段非常长的对话,
-        '''
+        output_message["message"]["content"] = "这是一段非常长的对话,"*20
+        
         output_message["is_day"] = self.isDay
         output_message["round"] = self.round
         output_message["current_time"] = self.current_time

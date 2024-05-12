@@ -175,16 +175,18 @@ def ShufflePlayers():
 
 def LoadPlayerPrompts() -> str:
     for player in roles_dict["players"]:
+        player["reflect_prompt"] = template_assistant_recommend_role
+        player["summary_prompt"] = template_assistant_summarize_role
         if player["role"] == "狼人":
-            player["prompt"] = template_wolf_role
+            player["action_prompt"] = template_wolf_role
         elif player["role"] == "村民":
-            player["prompt"] = template_player_role
+            player["action_prompt"] = template_player_role
         elif player["role"] == "预言家":
-            player["prompt"] = template_prophet_role
+            player["action_prompt"] = template_prophet_role
         elif player["role"] == "女巫":
-            player["prompt"] = template_witch_role
+            player["action_prompt"] = template_witch_role
         else:
-            player["prompt"] = ""
+            player["action_prompt"] = ""
             pass
         # print(player["prompt"])
         

@@ -13,29 +13,27 @@ class GamePlayer:
         self.GM = GM
         self.player_memory = ""
         self.agent = player
-        template_role = self.agent["prompt"]
         
-        _template_role = template_role.replace("{formation}", GetPartySize())
-        # _template_role = _template_role.replace("{nickname}", player["name"])
-        # _template_role = _template_role.replace("{role}", player["role"])
-        # _template_role = _template_role.replace("{character}", player["character"])
-        
-        # Info(_template_role)
         Info("name: {0} role: {1} gender: {2}".format(player["name"], player["role"], player["gender"]))
-        
-        self.template_role = LangchainMiniPromptTemplate(_template_role)
 
         # player agent
-        role_memory = LangchainMiniMemory(k=10)
-        player["conversation"] = LangchainMini(
-            model_id="anthropic.claude-3-sonnet-20240229-v1:0", 
-            stream=True, 
-            memory=role_memory, 
-            system=template_role)
+        action_role = self.agent["action_prompt"]
+        _action_role = action_role.replace("{formation}", GetPartySize())
+        # Info(_action_role)
+        player["actor"] = GameAssistant(_action_role, GM, 10)
+
+        # reflect agent
+        reflect_role = self.agent["reflect_prompt"]
+        _reflect_role = reflect_role.replace("{formation}", GetPartySize())
+        _reflect_role = _reflect_role.replace("{nickname}", player["name"])
+        _reflect_role = _reflect_role.replace("{role}", player["role"])
+        _reflect_role = _reflect_role.replace("{character}", player["character"])
+        player["reflector"] = GameAssistant(_reflect_role, GM, 5)
         
         # assistant agent
-        _template_assistant_summarize_role = template_assistant_summarize_role.replace("{num}", "144")
-        self.assistant = GameAssistant(_template_assistant_summarize_role, GM)
+        summary_role = self.agent["summary_prompt"]
+        _summary_role = summary_role.replace("{num}", "144")
+        player["assistant"] = GameAssistant(_summary_role, GM)
         pass
 
     def _stateInfoBuilder(self):
@@ -47,19 +45,25 @@ class GamePlayer:
         playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo 
     
-    def _invoke(self, question):
-        logger.info("\tQUESTION: " + question)
+    def _invokeActor(self, question, reflect=False):
+        logger.info("\tACTOR QUESTION: " + question)
         _question = question
-        #_question = self.template_role.format(input=question)
         #print(_question)
-        answer = self.agent["conversation"].invoke(_question)
+        answer = self.agent["actor"].DoAnswer(_question)
+        return answer
+    
+    def _invokeReflector(self, question, reflect=False):
+        logger.info("\tREFLECT QUESTION: " + question)
+        _question = question
+        #print(_question)
+        answer = self.agent["reflector"].DoAnswer(_question)
         return answer
     
     def _invokeAssistant(self, question):
         _question = self._stateInfoBuilder() + question
         logger.debug("\tASSISTANT QUESTION : " + _question)
         #print(_question)
-        return self.assistant.DoAnswer(question)
+        return self.agent["assistant"].DoAnswer(question)
     
     def Die(self):
         self.agent["status"] = -1
@@ -137,9 +141,9 @@ class GamePlayer:
         if self.GM.exit_flag:
             return
         self.DoMemory()
-        self.DoReflect()
         question = question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), idx)
         answer = self.DoAnswer(question)
+        answer = self.DoReflect(answer)
         response = self.DoValidate(question, answer)
         self.DoAction(response)
         time.sleep(3)
@@ -148,9 +152,15 @@ class GamePlayer:
     # answering question
     def DoAnswer(self, question):
         self.InfoMessage("DoAnswer")
-        answer = self._invoke(question)
+        answer = self._invokeActor(question)
         return answer
 
+    def DoReflect(self, answer):
+        if self.GM.quick:
+            return answer
+        
+        return answer
+    
     def DoValidate(self, question, answer):
         self.InfoMessage("DoValidate")
         self.questionTry = self.questionTry - 1
@@ -216,12 +226,8 @@ class GamePlayer:
     
     def AddMemory(self, memory):
         self.player_memory = memory
-        self.agent["conversation"].addMemory(memory)
-    
-    def DoReflect(self, memorysize=20):
-        if self.GM.quick:
-            return
-    
+        self.agent["actor"].AddMemory(memory)
+
     def BuildOutputMessage(self, message, messageType=0):
         try:
             output_message = {}
