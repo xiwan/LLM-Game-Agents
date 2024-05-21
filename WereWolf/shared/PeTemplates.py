@@ -92,6 +92,16 @@ def SystemLog(prefix, current_time, agent, res_obj):
     logger.info("\n SystemLog: {0}={1}\n".format(prefix, action_log))
     return action_log
 
+def ConvertToJson(data):
+    try:
+        if isinstance(data, str):
+            return json.loads(data)
+        else:
+            return data
+    except json.JSONDecodeError:
+        print("Invalid JSON string")
+        return data
+    
 def ParseJson(text):
     try:
         # 使用正则表达式查找 {} 之间的内容
@@ -133,15 +143,6 @@ def RetriveTools(text: str, tag_name: str) -> str:
     except Error:
         logger.exception("Can not retrive tools")
         raise
-
-# game_config = LoadConfig("game_config.txt")
-# game_config_dict = json.loads(game_config)
-
-# roles = LoadConfig("roles.txt")
-# roles_dict = json.loads(roles)
-
-# for player in roles_dict["players"]:
-#     player["gender"] = random.choice([0,1])
     
 def InitGlobals():
     game_config = LoadConfig("game_config.txt")

@@ -35,8 +35,8 @@ class GamePlayer:
 
     def _stateInfoBuilder(self):
         boardInfo = ""
-        if self.reflectScore > 0:
-            boardInfo += "上轮决策评分:{0}.".format(self.reflectScore)
+        #if self.reflectScore > 0:
+        #    boardInfo += "上轮决策评分:{0}.".format(self.reflectScore)
         boardInfo += "目前玩家状态:{0}.".format(GetAllPlayersName())
         return boardInfo
     
@@ -119,9 +119,8 @@ class GamePlayer:
     
     def _invokeActor(self, question, reflect=False):
         logger.info("\tACTOR QUESTION: " + question)
-        _question = question
         #print(_question)
-        answer = self.agent["actor"].DoAnswer(_question)
+        answer = self.agent["actor"].DoAnswer(question)
         return answer
     
     def _invokeReflector(self, question, reflect=False):
@@ -132,17 +131,20 @@ class GamePlayer:
         return answer
     
     def _invokeAssistant(self, question):
-        _question = self._stateInfoBuilder() + question
+        _question = question
         logger.debug("\tASSISTANT QUESTION : " + _question)
         #print(_question)
         return self.agent["assistant"].DoAnswer(question)
 
     def DoPlanning(self, question_template, idx):
+        self.idx = idx
+        self.question_template = question_template
         if self.GM.exit_flag:
             return
         self.DoMemory(memories=[])
-        question = question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), idx)
+        question = self.question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), self.idx)
         answer = self.DoAnswer(question)
+        answer = self.DoValidate(question, answer)
         self.DoAction(answer)
         time.sleep(3)
         pass
@@ -150,9 +152,11 @@ class GamePlayer:
     # answering question
     def DoAnswer(self, question):
         self.InfoMessage("DoAnswer")
+        if self.reflectScore > 0:
+            question = self.question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), self.idx)
+            question = "上轮决策评分:{0}.建议调整策略.".format(self.reflectScore) + question
         answer = self._invokeActor(question)
         answer = self.DoReflect(question, answer)
-        answer = self.DoValidate(question, answer)
         return answer
 
     def DoReflect(self, question, answer):
@@ -160,6 +164,7 @@ class GamePlayer:
         if self.GM.quick:
             return answer
         self.InfoMessage("DoReflect")
+        answer = [ConvertToJson(answer[len(answer)-1])]
         response = ParseJson(answer[len(answer)-1]["content"])
 
         relfect_question = "游戏进度:{1}.玩家信息:{2}. 时间:{0}.玩家决策:{3}.".format(
@@ -169,7 +174,8 @@ class GamePlayer:
             json.dumps(response,  ensure_ascii=False))
         reflect = self._invokeReflector(relfect_question)
         
-        reflectResponse = ParseJson(reflect[len(answer)-1]["content"])
+        reflect = [ConvertToJson(reflect[len(reflect)-1])]
+        reflectResponse = ParseJson(reflect[len(reflect)-1]["content"])
         for res in reflectResponse:
             res_obj = json.loads(res)
             if not "score" in res_obj:
@@ -187,11 +193,16 @@ class GamePlayer:
     def DoValidate(self, question, answer):
         self.InfoMessage("DoValidate")
         self.questionTry = self.questionTry - 1
-        if answer == "" or self.questionTry == 0:
+        if answer == "" or len(answer) == 0 or self.questionTry == 0:
             return []
 
-        # Info(answer)
-        response = ParseJson(answer[len(answer)-1]["content"])
+        #Info(answer)
+        answer = [ConvertToJson(answer[len(answer)-1])]
+        response = {}
+        if 'content' in answer[len(answer)-1] and answer[len(answer)-1]['content']:
+            response = ParseJson(answer[len(answer)-1]["content"])
+        else:
+            response = answer[len(answer)-1]
         # Info(response)
         validJsonFlag = True
         for res in response:
@@ -200,8 +211,8 @@ class GamePlayer:
                 break
           
         if response is None or not validJsonFlag:
-            Info("\t\t BAD RESPONSE: {0} {1}".format(response, self.questionTry))
-            return self.DoAnswer(question)
+            Info("\t\t BAD RESPONSE AND PASS: {0} {1}".format(response, self.questionTry))
+            return {}
             
         Info("\t\t DoValidate: {0}".format(response))
         self.BuildOutputMessage(answer[len(answer)-1], 0)

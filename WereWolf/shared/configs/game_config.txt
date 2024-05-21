@@ -1,6 +1,6 @@
 {
     "max_round": 10,
-    "reflect_treshhold": 4,
+    "reflect_treshhold": 6,
     "player": {
         "action_plan_night": "{0}{1} 时间:第{2}天夜晚.该如何行动?",
         "action_plan_day": "{0}{1} 时间:第{2}天白天的讨论环节.该如何行动?",
