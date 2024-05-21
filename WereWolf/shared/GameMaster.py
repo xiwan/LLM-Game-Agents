@@ -18,8 +18,9 @@ class GameStage(Enum):
     DayDebate = 6
     DayVote = 7
     Assistant = 8
-    
-class GameMaster:
+
+@singleton
+class GameMaster(object):
     
     global game_config_dict, roles_dict
     
@@ -47,6 +48,7 @@ class GameMaster:
         self.current_time = ""
         self.game_memory_queue = queue.Queue(maxsize=self.queueSize)
         self.game_output_queue = queue.Queue(maxsize=self.queueSize)
+        
         # memory log array
         self.game_public_log = []
         self.game_wolf_vote_log = []
@@ -112,10 +114,8 @@ class GameMaster:
     
     ## clear Players Memory  
     def _clearPlayersMemory(self):
-        for player in roles_dict["players"]:
-            player["actor"].Clear()
-            player["reflector"].Clear()
-            player["assistant"].Clear()
+        for player in self.player_agents:
+            player.ClearMemory()
         pass
     
     def DayVote(self, i) -> bool:
@@ -503,7 +503,9 @@ class GameMaster:
     
     def ResetGame(self):
         self.start_time = time.time()
+        roles_dict,game_config_dict = InitGlobals()
         Info("\t===== {0} ResetGame =====".format(GetAllPlayersName()))
+        
          # prepare the envs
         self._resetGlobal()
         self._reviveRoles()

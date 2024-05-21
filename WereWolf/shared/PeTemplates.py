@@ -134,37 +134,26 @@ def RetriveTools(text: str, tag_name: str) -> str:
         logger.exception("Can not retrive tools")
         raise
 
-werewolf_rule_v1 = LoadPrompt("werewolf_rule.txt")
-werewolf_command_v1 = LoadPrompt("werewolf_command.txt")
+# game_config = LoadConfig("game_config.txt")
+# game_config_dict = json.loads(game_config)
 
-wolf_command = RetriveTools(werewolf_command_v1, "wolf").rstrip("\n")
-prophet_command = RetriveTools(werewolf_command_v1, "prophet").rstrip("\n")
-witch_command = RetriveTools(werewolf_command_v1, "witch").rstrip("\n")
-palyer_command = RetriveTools(werewolf_command_v1, "player").rstrip("\n")
+# roles = LoadConfig("roles.txt")
+# roles_dict = json.loads(roles)
 
-wolf_tools = wolf_command + palyer_command
-prophet_tools = prophet_command + palyer_command
-witch_tools = witch_command + palyer_command
-player_tools = palyer_command
+# for player in roles_dict["players"]:
+#     player["gender"] = random.choice([0,1])
+    
+def InitGlobals():
+    game_config = LoadConfig("game_config.txt")
+    game_config_dict = json.loads(game_config)
 
-all_tools = wolf_command+prophet_command+witch_command+palyer_command
+    roles = LoadConfig("roles.txt")
+    roles_dict = json.loads(roles)
 
-template_wolf_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", wolf_tools)
-template_prophet_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
-template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_tools)
-template_player_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
-
-template_assistant_summarize_role = LoadPrompt("template_assistant_summarize_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
-template_assistant_recommend_role = LoadPrompt("template_assistant_recommend_role.txt").replace("{game_rule}", werewolf_rule_v1)
-
-roles = LoadConfig("roles.txt")
-game_config = LoadConfig("game_config.txt")
-
-roles_dict = json.loads(roles)
-game_config_dict = json.loads(game_config)
-
-for player in roles_dict["players"]:
-    player["gender"] = random.choice([0,1])
+    for player in roles_dict["players"]:
+        player["gender"] = random.choice([0,1])
+        
+    return (roles_dict, game_config_dict) 
     
 def ShufflePlayers():
     roles = [player['role'] for player in roles_dict['players']]
@@ -209,3 +198,29 @@ def SortedPlayersInNight(players):
     sorted_players = sorted(players, key=lambda player: role_priorities.get(player.GetRole(), 5))
 
     return sorted_players
+
+
+werewolf_rule_v1 = LoadPrompt("werewolf_rule.txt")
+werewolf_command_v1 = LoadPrompt("werewolf_command.txt")
+
+wolf_command = RetriveTools(werewolf_command_v1, "wolf").rstrip("\n")
+prophet_command = RetriveTools(werewolf_command_v1, "prophet").rstrip("\n")
+witch_command = RetriveTools(werewolf_command_v1, "witch").rstrip("\n")
+palyer_command = RetriveTools(werewolf_command_v1, "player").rstrip("\n")
+
+wolf_tools = wolf_command + palyer_command
+prophet_tools = prophet_command + palyer_command
+witch_tools = witch_command + palyer_command
+player_tools = palyer_command
+
+all_tools = wolf_command+prophet_command+witch_command+palyer_command
+
+template_wolf_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", wolf_tools)
+template_prophet_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
+template_witch_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_tools)
+template_player_role = LoadPrompt("template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
+
+template_assistant_summarize_role = LoadPrompt("template_assistant_summarize_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
+template_assistant_recommend_role = LoadPrompt("template_assistant_recommend_role.txt").replace("{game_rule}", werewolf_rule_v1)
+
+roles_dict,game_config_dict = InitGlobals()

@@ -17,7 +17,7 @@ class GamePlayerWolf(GamePlayer):
         for log in self.GM.game_wolf_vote_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
         memories = super().DoMemory(memorysize, memories)
-        #print(memories)
+
         return memories
     
     def UsePlayerAbility(self, abilityName, target=None, item=None):

@@ -31,4 +31,12 @@ def Error(text):
     
 def Print(text):
     print(text)
+    
+def singleton(cls):
+    instances = {}
+    def get_instance(*args, **kw):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kw)
+        return instances[cls]
+    return get_instance
 

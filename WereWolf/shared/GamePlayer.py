@@ -1,11 +1,9 @@
 from . import *
 from .PeTemplates import *
 from .GameAssistant import GameAssistant
-
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
 
 class GamePlayer:
-    
     global game_config_dict, roles_dict
     
     def __init__(self, player, GM):
@@ -142,7 +140,7 @@ class GamePlayer:
     def DoPlanning(self, question_template, idx):
         if self.GM.exit_flag:
             return
-        self.DoMemory()
+        self.DoMemory(memories=[])
         question = question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), idx)
         answer = self.DoAnswer(question)
         self.DoAction(answer)
@@ -251,6 +249,13 @@ class GamePlayer:
     def AddMemory(self, memory):
         self.player_memory = memory
         self.agent["actor"].AddMemory(memory)
+        
+    def ClearMemory(self):
+        self.InfoMessage("ClearMemory")
+        self.player_memory = ""
+        self.agent["actor"].Clear()
+        self.agent["reflector"].Clear()
+        self.agent["assistant"].Clear()
 
     def BuildOutputMessage(self, message, messageType=0):
         try:

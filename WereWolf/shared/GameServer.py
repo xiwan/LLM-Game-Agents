@@ -91,7 +91,8 @@ def def_fakeEnding():
     data = app.GM.FakeEnding()
     return ReturnJson(data)
 
-class GameServer:
+@singleton
+class GameServer(object):
     
     def __init__(self):
         self.GM = GameMaster(50, 50, False)
