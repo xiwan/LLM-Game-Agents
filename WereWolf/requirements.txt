@@ -41,6 +41,12 @@ jsonpointer==2.0
 jsonschema==3.2.0
 libcomps==0.1.20
 lockfile==0.12.2
+langchain==0.2.0
+langchain-aws==0.1.5
+langchain-community==0.2.0
+langchain-core==0.2.1
+langchain-text-splitters==0.2.0
+langchainhub==0.1.15
 MarkupSafe==2.1.5
 netifaces==0.10.6
 numpy==1.26.4
