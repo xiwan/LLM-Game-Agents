@@ -278,7 +278,7 @@ class GamePlayer:
         self.agent["reflector"].Clear()
         self.agent["assistant"].Clear()
 
-    def BuildOutputMessage(self, message, messageType=0):
+    def BuildOutputMessage(self, message, messageType=0, model_id=""):
         try:
             output_message = {}
             output_message["player_id"] = self.agent["id"]

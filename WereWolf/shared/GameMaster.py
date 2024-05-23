@@ -325,7 +325,7 @@ class GameMaster(object):
         output = {}
         output['messages'] = [output_message]
         output['end'] = not self.inGame
-        output['players'] = GetPlayerInfo(self.roles_dict)
+        output['players'] = GetPlayerInfo(self.roles_dict, self.lang)
         return output
 
     def PreAction(self, i):
