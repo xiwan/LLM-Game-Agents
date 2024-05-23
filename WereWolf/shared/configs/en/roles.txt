@@ -5,6 +5,9 @@
       "id": 1001,
       "role": "prophet",
       "character": "Courageous and Resourceful",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "mistral.mixtral-8x7b-instruct-v0:1",
       "status": 1
     },
     {
@@ -12,6 +15,9 @@
       "id": 1002,
       "role": "witch", 
       "character": "Independent Thinker",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "meta.llama3-8b-instruct-v1:0",
       "status": 1
     },
     {
@@ -19,6 +25,9 @@
       "id": 1003,
       "role": "wolf",
       "character": "Rule-Follower",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "mistral.mixtral-8x7b-instruct-v0:1",
       "status": 1
     },
     {
@@ -26,6 +35,9 @@
       "id": 1004,
       "role": "villager",
       "character": "Organizer",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "meta.llama3-8b-instruct-v1:0",
       "status": 1
     },
     {
@@ -33,6 +45,9 @@
       "id": 1005,
       "role": "villager",
       "character": "Talkative",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "mistral.mixtral-8x7b-instruct-v0:1",
       "status": 1
     },
     {
@@ -40,6 +55,9 @@
       "id": 1006,
       "role": "wolf",
       "character": "Observer", 
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "meta.llama3-8b-instruct-v1:0",
       "status": 1
     },
     {
@@ -47,6 +65,9 @@
       "id": 1007,
       "role": "villager",
       "character": "Shy", 
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "mistral.mixtral-8x7b-instruct-v0:1",
       "status": 1
     },
     {
@@ -54,6 +75,9 @@
       "id": 1008,
       "role": "villager",
       "character": "Social Butterfly", 
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "meta.llama3-8b-instruct-v1:0",
       "status": 1
     }
   ]

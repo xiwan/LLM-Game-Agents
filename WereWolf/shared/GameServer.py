@@ -17,7 +17,7 @@ class CustomThread(threading.Thread):
     def run(self):
         while not self._stop_event.is_set():
             print('Thread is running...')
-            self.app.GM.ResetGame()
+            self.app.GM.ResetGame(self.app.uselang)
             self.app.GM.RunGame()
             self.app.GM.EndGame()
             time.sleep(1)
@@ -36,6 +36,7 @@ def generateShortUuid():
     return uuid.uuid4().hex[:8]
 
 app = Flask(__name__)
+app.uselang = "en"
 
 @app.after_request
 def after_request(response):
@@ -48,15 +49,18 @@ def hello_world():
 
 @app.route('/getPlayer')
 def get_player():
-    data = GetPlayerInfo()
+    data = GetPlayerInfo(app.GM.roles_dict, app.GM.lang)
     return ReturnJson(data)
 
 @app.route('/startGame')
 def start_game():
     if app.GMrunning:
         return app.sessionId
-        
+
+    uselang=request.args["lang"]
+    
     app.GMrunning = True
+    app.uselang = "en" if uselang == "en" else "cn"
     app.sessionId = generateShortUuid()
     app.server_thread = CustomThread(app)
     app.server_thread.start()

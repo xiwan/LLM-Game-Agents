@@ -22,11 +22,17 @@ class LangchainMini():
                 self.llm = Anthropic2Bedrock()
             elif model_id == "anthropic.claude-3-sonnet-20240229-v1:0":
                 if platform == "bedrock":
-                    self.llm = Anthropic3Bedrock(aws_region="us-east-1")
+                    self.llm = Anthropic3Bedrock(aws_region="us-east-1", model_id=model_id)
                 else:
                     self.llm = Anthropic3(api_key="")
-            elif model_id == "mistral.mistral-7b-instruct-v0:2":
+            elif model_id == "mistral.mixtral-8x7b-instruct-v0:1":
+                self.llm = Mistral7BBedrock(aws_region="us-east-1", model_id=model_id)
+            elif model_id == "meta.llama3-8b-instruct-v1:0":
+                self.llm = Llama8BBedrock(aws_region="us-east-1", model_id=model_id)
+            # elif model_id == "mistral.mistral-7b-instruct-v0:2":
+            #     self.llm = Mistral7BBedrock(aws_region="us-east-1")
                 pass
+            
         except ClientError:
             logger.exception("Couldn't invoke model %s", model_id)
             raise

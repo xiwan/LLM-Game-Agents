@@ -14,23 +14,23 @@ class GamePlayer:
         self.reflectTimes = 0
         self.reflectScore = 0
         
-        Info("name: {0} role: {1} gender: {2}".format(player["name"], player["role"], player["gender"]))
+        Info("NAME: {0} ROLE: {1} GENER: {2}".format(player["name"], player["role"], player["gender"]))
 
         # player agent
         action_role = self.agent["action_prompt"]
         _action_role = action_role.replace("{formation}", GetPartySize(self.GM.roles_dict, self.GM.lang))
         # Info(_action_role)
-        player["actor"] = GameAssistant(_action_role, GM, 10)
+        player["actor"] = GameAssistant(_action_role, GM, 10, player["actor"])
 
         # reflect agent
         reflect_role = self.agent["reflect_prompt"]
         _reflect_role = reflect_role.replace("{formation}", GetPartySize(self.GM.roles_dict, self.GM.lang))
-        player["reflector"] = GameAssistant(_reflect_role, GM, 5)
+        player["reflector"] = GameAssistant(_reflect_role, GM, 5, player["revisor"])
         
         # assistant agent
         summary_role = self.agent["summary_prompt"]
         _summary_role = summary_role.replace("{num}", "144")
-        player["assistant"] = GameAssistant(_summary_role, GM)
+        player["assistant"] = GameAssistant(_summary_role, GM, 1, player["summary"])
         pass
 
     def _stateInfoBuilder(self):
@@ -58,6 +58,9 @@ class GamePlayer:
 
     def GetRole(self):
         return self.agent["role"]
+    
+    def GetModel(self):
+        return self.agent["model"]
     
     def GetCharacter(self):
         return self.agent["character"]
@@ -87,8 +90,12 @@ class GamePlayer:
         return 0 # assistant
     
     def InfoMessage(self, title):
-        Info("\t\t******** {0} {1} {2} {3}********".format(title, self.GM.current_time, self.GetName(), self.GetRole()))
-    
+        Info("\t--------- TIME: {1} ACTION: {0} ---------".format(title, self.GM.current_time, ))
+        Info("\t\t******** PALYER: {0} ROLE: {1} ********".format(self.GetName(), self.GetRole()))
+        Info("\t\t******** ACTOR: {0}********".format(self.agent["actor"].model_id))
+        Info("\t\t******** REVISOR: {0}********".format(self.agent["reflector"].model_id))
+        Info("\t\t******** SUMMERY: {0}********".format(self.agent["assistant"].model_id))
+        
     def UsePlayerValidate(self, abilityName, target=None, item=None):
         pass
     

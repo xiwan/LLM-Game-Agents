@@ -275,7 +275,7 @@ class GameMaster(object):
             # assistant agent
             # summerize the game
             _template_assistant_role = template_assistant_summarize_role.replace("{num}", "1000")
-            self.assistant = GameAssistant(_template_assistant_role, self)
+            self.assistant = GameAssistant(_template_assistant_role, self, 1)
             memories = []
             # system message
             for log in self.game_system_log[-1000:]:
@@ -304,7 +304,7 @@ class GameMaster(object):
         output = {}
         output['messages'] = messages
         output['end'] = not self.inGame
-        output['players'] = GetPlayerInfo(self.roles_dict)
+        output['players'] = GetPlayerInfo(self.roles_dict, self.lang)
         return output
     
     def FakeEnding(self):

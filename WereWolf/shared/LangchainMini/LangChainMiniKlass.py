@@ -107,7 +107,7 @@ class LLMProduct(LLMInterface):
         pass
     
     def display(self):
-        logger.info(f"model_id: {self.model_id}, max_tokens:{self.max_tokens}, temperature:{self.temperature}")
+        logger.info(f"\t MODEL: {self.model_id}, MAX_TOKENS:{self.max_tokens}, TEMP:{self.temperature}")
         
     def _system(self, system):
         self.system = system

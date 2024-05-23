@@ -4,19 +4,23 @@ from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, Lan
 class GameAssistant:
     global game_config_dict, roles_dict
     
-    def __init__(self, template_role, GM, msize=1):
+    def __init__(self, 
+                 template_role, 
+                 GM, 
+                 msize=1, 
+                 model_id="anthropic.claude-3-sonnet-20240229-v1:0"):
         self.GM = GM
         # logger.info(msize)
         # logger.info(template_role)
         self.template_role = LangchainMiniPromptTemplate(template_role)
-        
+        self.model_id = model_id
         role_memory = LangchainMiniMemory(k=msize)
         self.agent = LangchainMini(
-            model_id="anthropic.claude-3-sonnet-20240229-v1:0", 
+            model_id=self.model_id, 
             stream=True, 
             memory=role_memory,
             system=template_role)
-
+        # Info(f"MODEL: {self.model_id}")
         pass
     
     def _invoke(self, question):
