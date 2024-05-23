@@ -1,8 +1,9 @@
-from .LangchainMiniBase import *
+from .LangChainMiniKlass import *
+from anthropic import Anthropic,AnthropicBedrock
 
 class Anthropic2Bedrock(LLMProduct):
-    def __init__(self):
-        super().__init__("anthropic.claude-v2")
+    def __init__(self,  model_id="anthropic.claude-v2"):
+        super().__init__(model_id)
         pass 
     
     def _invoke(self, prompt):
@@ -24,8 +25,11 @@ class Anthropic3Bedrock(LLMProduct):
     role = "user"
     assistant = "assistant"
 
-    def __init__(self, ak="", sk="", sts_token="", aws_region="us-east-1", model_id="anthropic.claude-3-sonnet-20240229-v1:0"):
-        super().__init__(model_id)
+    def __init__(self, 
+                 ak="", sk="", sts_token="", aws_region="us-east-1", 
+                 model_id="anthropic.claude-3-sonnet-20240229-v1:0", 
+                 max_tokens=2048, temperature=0.8):
+        super().__init__(model_id,max_tokens,temperature)
         self.client = AnthropicBedrock(
             # Authenticate by either providing the keys below or use the default AWS credential providers, such as
             # using ~/.aws/credentials or the "AWS_SECRET_ACCESS_KEY" and "AWS_ACCESS_KEY_ID" environment variables.
@@ -44,21 +48,18 @@ class Anthropic3Bedrock(LLMProduct):
             logger.error("!!!retry failed!!!")
             return None
         # print(self.system)
-        message = {"role": self.role, "content": prompt}
-        qapair = [message]
-        messages = [message]
+        question = {"role": self.role, "content": prompt}
+        messages = [question]
 
         if self.memory is None:
-            messages = [message]
+            messages = [question]
         else:
             if self.retry == RETRY_NUM:
-                self._update(message)
+                self._update(question)
             messages = self._recall()
         
         response = None
         try:
-            # if  self.retry == 5:
-            #     raise Exception("exception...")
             if self.stream:
                 with self.client.messages.stream(
                     model=self.model_id,
@@ -82,12 +83,11 @@ class Anthropic3Bedrock(LLMProduct):
                 )
                 response = {"role": self.assistant, "content": message.content, "usage": message.usage}
         except Exception as e:
-            logger.info(str(e))
+            logger.error(str(e))
             time.sleep(3)
             self.retry -= 1
             return self._invoke(prompt)
 
         self._update(response)
-        qapair.append(response)
         self.retry = RETRY_NUM
-        return qapair
+        return [question, response]

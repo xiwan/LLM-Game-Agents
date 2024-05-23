@@ -1,0 +1,35 @@
+{
+    "max_round": 10,
+    "reflect_treshhold": 6,
+    "player": {
+        "action_plan_night": "{0}{1} Time: Night of Day {2}. How should you act?",
+        "action_plan_day": "{0}{1} Time: Day {2} discussion phase. How should you act?",
+        "action_plan_day_vote": "{0}{1} Time: Day {2} voting phase. How should you act?",
+        "action_plan_death": "{0}{1} Time: Day {2}. You have died, any last words?",
+        "action_confirm": "ok",
+        "action_villager_team": "Unknown, you need to deduce it.",
+        "action_reflect": "{0}{1}. Start reasoning step-by-step to prepare for the next round of action.",
+        "action_prefix":"Remember, the player you support is {0}, identity {1}, personality {2}. {3}. Please extract useful information, then think through step-by-step.",
+        "action_plan_test": "Currently how many players are alive and how many are eliminated?"
+    },
+    "god": {
+        "action_plan_night": "{0}Now it's night of Day {1}, how should you act?",
+        "action_plan_day": "{0}Now it's Day {1}, how should you act?",
+        "action_plan_death": "Now player {0} is eliminated, how should you act?",
+        "action_plan_test": "Currently how many players are alive and how many are eliminated?"
+    },
+    "system": {
+        "death_night": "Last night, player {0} was eliminated by the werewolves, last words: {1}.",
+        "death_day": "Today, player {0} was eliminated by players, last words: {1}.",
+        "wolf_vote_failed": "Time {0}, the werewolves did not reach a consensus, a player must be voted out at night.",
+        "wolf_vote_again": "The previous vote failed, this time you can only vote for one of the {0} players",
+        "wolf_vote_again_2": "The previous vote failed, you must vote for a player",
+        "player_vote_failed": "Time {0}, the players did not reach a consensus. Players re-vote to suspect one of {1}!",
+        "player_vote_again": "The previous vote failed, this time you can only vote for one of the {0} players",
+        "player_vote_again_2": "The previous vote failed, you must vote for a player",
+        "win_wolf": "Werewolves win! Current player survival status: {0}",
+        "win_villager": "Villagers win! Current player survival status: {0}",
+        "win_none": "Game continues. Current player survival status: {0}",
+        "board": "Current player survival status: {0}"
+    }
+}

@@ -4,7 +4,7 @@ from .GameAssistant import GameAssistant
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
 
 class GamePlayer:
-    global game_config_dict, roles_dict
+    # global game_config_dict, roles_dict
     
     def __init__(self, player, GM):
         self.questionTry = 3
@@ -18,13 +18,13 @@ class GamePlayer:
 
         # player agent
         action_role = self.agent["action_prompt"]
-        _action_role = action_role.replace("{formation}", GetPartySize())
+        _action_role = action_role.replace("{formation}", GetPartySize(self.GM.roles_dict, self.GM.lang))
         # Info(_action_role)
         player["actor"] = GameAssistant(_action_role, GM, 10)
 
         # reflect agent
         reflect_role = self.agent["reflect_prompt"]
-        _reflect_role = reflect_role.replace("{formation}", GetPartySize())
+        _reflect_role = reflect_role.replace("{formation}", GetPartySize(self.GM.roles_dict, self.GM.lang))
         player["reflector"] = GameAssistant(_reflect_role, GM, 5)
         
         # assistant agent
@@ -37,12 +37,14 @@ class GamePlayer:
         boardInfo = ""
         #if self.reflectScore > 0:
         #    boardInfo += "上轮决策评分:{0}.".format(self.reflectScore)
-        boardInfo += "目前玩家状态:{0}.".format(GetAllPlayersName())
+        #boardInfo += "目前玩家状态:{0}.".format(GetAllPlayersName(self.GM.roles_dict))
+        boardInfo += self.GM.Lang("playerStateInfoBuilder").format(GetAllPlayersName(self.GM.roles_dict, self.GM.lang))
         return boardInfo
     
     def _playerInfoBuilder(self):
-        extraInfo = "阵营为:{0}.本阵营队友未知".format(GetPartySize())
-        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        #extraInfo = "阵营为:{0}.本阵营队友未知".format(GetPartySize(self.GM.roles_dict))
+        extraInfo = self.GM.Lang("playerInfoBuilder").format(GetPartySize(self.GM.roles_dict, self.GM.lang))
+        playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo 
     
     def Die(self):
@@ -61,16 +63,17 @@ class GamePlayer:
         return self.agent["character"]
     
     def IsWolf(self):
-        return self.GetRole() == "狼人"
+        return EqualIgnoreCase(self.GetRole(), self.GM.Lang("wolf"))
     
     def IsVillager(self):
-        return self.GetRole() == "村民"
+        return EqualIgnoreCase(self.GetRole(), self.GM.Lang("villager"))
     
     def IsProphet(self):
-        return self.GetRole() == "预言家"
+        return EqualIgnoreCase(self.GetRole(), self.GM.Lang("prophet"))
     
     def IsWitch(self):
-        return self.GetRole() == "女巫"
+        # print(EqualIgnoreCase(self.GetRole(), self.GM.Lang("witch")))
+        return EqualIgnoreCase(self.GetRole(), self.GM.Lang("witch"))
     
     def MessageRoleType(self):
         if self.IsVillager(): # villager
@@ -94,22 +97,22 @@ class GamePlayer:
         if not self.GM.isDay:
             return log
         
-        if abilityName == "PlayerVote":
+        if EqualIgnoreCase(abilityName, "PlayerVote"):
             log = ActionLog("player_vote_log", self.GM.current_time, self.agent, item)
             self.GM.game_player_vote_log.append(log)
             log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent["name"], item)
             self.GM.game_public_log.append(log)
             pass
-        if abilityName == "PlayerDoubt":
+        if EqualIgnoreCase(abilityName, "PlayerDoubt"):
             log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent["name"], item)
             self.GM.game_public_log.append(log)
-        if abilityName == "Debate":
+        if EqualIgnoreCase(abilityName, "Debate"):
             log = ActionLog("player_debate_log", self.GM.current_time, self.agent, item)
             self.GM.game_player_action_log.append(log)
             log = ReadableActionLog("player_debate_log", self.GM.current_time, self.agent["name"], item)
             self.GM.game_public_log.append(log)
             pass
-        if abilityName == "DeathWords":
+        if EqualIgnoreCase(abilityName, "DeathWords"):
             log = ActionLog("player_deathwords_log", self.GM.current_time, self.agent, item)
             self.GM.game_player_action_log.append(log)
             log = ReadableActionLog("player_deathwords_log", self.GM.current_time, self.agent["name"], item)
@@ -154,7 +157,7 @@ class GamePlayer:
         self.InfoMessage("DoAnswer")
         if self.reflectScore > 0:
             question = self.question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), self.idx)
-            question = "上轮决策评分:{0}.建议调整策略.".format(self.reflectScore) + question
+            question = self.GM.Lang("playerDoAnswer").format(self.reflectScore) + question
         answer = self._invokeActor(question)
         answer = self.DoReflect(question, answer)
         return answer
@@ -167,7 +170,7 @@ class GamePlayer:
         answer = [ConvertToJson(answer[len(answer)-1])]
         response = ParseJson(answer[len(answer)-1]["content"])
 
-        relfect_question = "游戏进度:{1}.玩家信息:{2}. 时间:{0}.玩家决策:{3}.".format(
+        relfect_question = self.GM.Lang("playerDoReflect").format(
             self.GM.current_time, 
             self._stateInfoBuilder(), 
             self._playerInfoBuilder(), 
@@ -179,8 +182,8 @@ class GamePlayer:
         for res in reflectResponse:
             res_obj = json.loads(res)
             if not "score" in res_obj:
-                res_obj["score"] = game_config_dict["reflect_treshhold"] - 1
-            if res_obj["score"] < game_config_dict["reflect_treshhold"] and self.reflectTimes < 3:
+                res_obj["score"] = self.GM.game_config_dict["reflect_treshhold"] - 1
+            if res_obj["score"] < self.GM.game_config_dict["reflect_treshhold"] and self.reflectTimes < 3:
                 self.reflectTimes += 1
                 self.reflectScore = res_obj["score"]
                 return self.DoAnswer(question)

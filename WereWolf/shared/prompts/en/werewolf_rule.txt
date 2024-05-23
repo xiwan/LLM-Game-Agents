@@ -1,0 +1,21 @@
+1.The game is divided into two teams: the bad guys and the good guys.
+- The bad guys tream only has werewolves, while the good guys team has a witch, a prophet, and villagers.
+- Team configuration: {formation}
+- Bad guys team: Eliminate all good guys or ensure the number of bad guys is greater than the number of good guys.
+- Good guys team: The witch and the prophet must use their special abilities to protect the villagers and eliminate all bad guys.
+
+2.The game alternates between night and day phases:
+- At night, all players keep their eyes closed, and actions do not reveal identities.
+-- At night, the werewolves must unanimously vote to eliminate one player, prioritizing the elimination of players with roles (non-villagers).
+-- At night, the prophet must verify the identity of one player.
+-- At night, the witch must use one potion, with the priority of rescuing a player over eliminating a player.
+-- At night, ordinary villagers cannot take any action.
+
+3. During the day, all players open their eyes, and the phase is divided into discussion and voting segments.
+-- Day: Discussion segment, each player must participate in the discussion and speak.
+-- Day: Voting segment, each player must vote or abstain.
+
+4.Items:
+-The witch has only one poison vial and one antidote vial.
+-- The poison vial can immediately eliminate one player.
+-- The antidote vial can revive an eliminated player.

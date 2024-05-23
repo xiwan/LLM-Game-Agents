@@ -22,9 +22,9 @@ class GamePlayerWitch(GamePlayer):
         return True
     
     def _playerInfoBuilder(self):
-        extraInfo = "药水情况: 毒药{0},解药{1}.每晚可以使用药水救人或者自救(时间:{2}淘汰的玩家),或者淘汰某玩家(时间:{2}存活的玩家).".format(self._getItem(0), self._getItem(1), self.GM.current_time)
-        extraInfo += "阵营为:{0}.本阵营队友未知.".format(GetPartySize())
-        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        extraInfo = self.GM.Lang("witchInfoBuilder").format(self._getItem(0), self._getItem(1), self.GM.current_time)
+        extraInfo += self.GM.Lang("playerInfoBuilder").format(GetPartySize(self.GM.roles_dict, self.GM.lang))
+        playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
         
     def UsePoision(self):
@@ -49,7 +49,7 @@ class GamePlayerWitch(GamePlayer):
             if self.UsePoision():
                 log = ActionLog("witch_poision_log", self.GM.current_time, self.agent, item)
                 self.GM.game_witch_potion_log.append(log)
-                player_log = "时间{0}, 玩家{1}被女巫毒死".format(self.GM.current_time, target)
+                player_log =  self.GM.Lang("WitchPoision").format(self.GM.current_time, target)
                 log = ReadableActionLog("[WITCH POISION]", self.GM.current_time, target, player_log)
                 self.GM.game_public_log.append(log)
         # Antidote
@@ -57,7 +57,7 @@ class GamePlayerWitch(GamePlayer):
             if self.UseAntidote():
                 log = ActionLog("witch_antidote_log", self.GM.current_time, self.agent, item)
                 self.GM.game_witch_potion_log.append(log)
-                player_log = "时间{0}, 玩家{1}被女巫救活".format(self.GM.current_time, target)
+                player_log =  self.GM.Lang("WitchAntidote").format(self.GM.current_time, target)
                 log = ReadableActionLog("[WITCH ANTIDOTE]", self.GM.current_time, target, player_log)
                 self.GM.game_public_log.append(log)
         return log

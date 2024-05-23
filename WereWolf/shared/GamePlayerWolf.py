@@ -9,8 +9,10 @@ class GamePlayerWolf(GamePlayer):
         super().__init__(player, GM)
 
     def _playerInfoBuilder(self):
-        extraInfo = "阵营为:{0}.本阵营队友{1}.".format(GetPartySize(), GetAllWolvesName())
-        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        extraInfo = self.GM.Lang("wolfInfoBuilder").format(
+            GetPartySize(self.GM.roles_dict, self.GM.lang), 
+            GetAllWolvesName(self.GM.roles_dict, self.GM.lang))
+        playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
     
     def DoMemory(self, memorysize=10, memories=[]):

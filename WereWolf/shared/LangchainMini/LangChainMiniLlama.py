@@ -1,1 +1,1 @@
-from .LangchainMiniBase import *
+from .LangChainMiniKlass import *

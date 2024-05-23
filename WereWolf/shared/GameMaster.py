@@ -22,15 +22,14 @@ class GameStage(Enum):
 @singleton
 class GameMaster(object):
     
-    global game_config_dict, roles_dict
-    
-    def __init__(self, num=10, queueSize=10, quick=False) -> None:
+    def __init__(self, num=10, queueSize=10, quick=False, lang="cn") -> None:
         self.quick = quick
         self.queueSize = queueSize
+        self.lang = lang
+        LANG = self.lang
+        self.num = num
         self._resetGlobal()
-        
-        game_config_dict["max_round"] = num
-        
+ 
         # assistant agent
         # _template_assistant_recommend_role = template_assistant_recommend_role.replace("{num}", "144")
         # self.assistant = GameAssistant(_template_assistant_recommend_role, GM)
@@ -39,6 +38,12 @@ class GameMaster(object):
         
         
     def _resetGlobal(self):
+        self.roles_dict=[]
+        self.game_config_dict=[]
+        self.roles_dict,self.game_config_dict = InitGlobals(self.lang)
+        
+        self.game_config_dict["max_round"] = self.num
+        
         self.run = True
         self.exit_flag = False
         self.inGame = False
@@ -79,15 +84,16 @@ class GameMaster(object):
         return self.current_time
     
     def _reviveRoles(self):
-        for player in roles_dict["players"]:
+        for player in self.roles_dict["players"]:
             player["status"] = 1
             
     def _checkWinner(self) -> str:
         """CheckWinner"""
-        grouped_dict = GroupAlivePlayers()
-        bad_party_size = len(grouped_dict["狼人"])
-        good_party_size = len(grouped_dict["村民"])+len(grouped_dict["预言家"])+len(grouped_dict["女巫"])
-        message = "\t时间{0},场上存活状态 狼人:{1} 好人:{2}".format(self.current_time, str(bad_party_size), str(good_party_size))
+        grouped_dict = GroupAlivePlayers(self.roles_dict, self.lang)
+        bad_party_size = len(grouped_dict[self.Lang("wolf")])
+        good_party_size = len(grouped_dict[self.Lang("villager")])+len(grouped_dict[self.Lang("prophet")])+len(grouped_dict[self.Lang("witch")])
+        
+        message = self.Lang("MasterCheckWinner").format(self.current_time, str(bad_party_size), str(good_party_size))
 
         if bad_party_size == 0 and good_party_size > 0:
             return 1
@@ -97,18 +103,21 @@ class GameMaster(object):
             
     ## setup Players
     def _setupPlayers(self):
-        ShufflePlayers()
-        LoadPlayerPrompts()
+        ShufflePlayers(self.roles_dict)
+        LoadPlayerPrompts(self.lang, self.roles_dict)
         # cache the player agents
-        for player in roles_dict["players"]:
-            if player["role"] == "女巫":
+        for player in self.roles_dict["players"]:
+            _palyer = None
+            if EqualIgnoreCase(player["role"], self.Lang("witch")):
                 _player = GamePlayerWitch(player, self)
-            elif player["role"] == "狼人":
+            elif EqualIgnoreCase(player["role"], self.Lang("wolf")):
                 _player = GamePlayerWolf(player, self)
-            elif player["role"] == "预言家":
+            elif EqualIgnoreCase(player["role"], self.Lang("prophet")):
                 _player = GamePlayerProphet(player, self)
-            else:
+            elif EqualIgnoreCase(player["role"], self.Lang("villager")):
                 _player = GamePlayer(player, self)
+            else:
+                _player = None
             self.player_agents.append(_player)
         pass
     
@@ -117,6 +126,9 @@ class GameMaster(object):
         for player in self.player_agents:
             player.ClearMemory()
         pass
+    
+    def Lang(self, key:str):
+        return mappings[key].get(self.lang)
     
     def DayVote(self, i) -> bool:
         # caculate the votes
@@ -134,7 +146,7 @@ class GameMaster(object):
             for player in self.player_agents:
                 # if player.agent["role"] == "狼人":
                 qKey = "player_vote_again" if len(self.palyervotes) > 1 else "player_vote_again_2"
-                question = game_config_dict["system"][qKey].format(",".join(self.palyervotes))
+                question = self.game_config_dict["system"][qKey].format(",".join(self.palyervotes))
                 Info("[DAY_VOTE_AGAIN]" + question)
                 self.game_system_log.append(question)
                 self.game_player_vote_log.append(question)
@@ -148,11 +160,11 @@ class GameMaster(object):
         Info("\t [player_votes]: {0}, [player_vote_name]: {1}".format(self.palyervotes, vote_names_counter))
         
         # kill the player and log it
-        for player in roles_dict["players"]:
+        for player in self.roles_dict["players"]:
             if player["name"].strip() == elem.strip():
                 Info("\t Day Vote player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
-                player_log = "玩家{0}与时间{1}被淘汰.".format(player["name"], self.current_time)
+                player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
                 pub_log = ReadableActionLog("[DAY_VOTE]", self.current_time, elem, player_log)
                 self.game_public_log.append(pub_log)
                 vote_log = SystemLog("[DAY_VOTE]", self.current_time, player, player_log)
@@ -180,7 +192,7 @@ class GameMaster(object):
             for player in self.player_agents:
                 if player.IsWolf():
                     qKey = "wolf_vote_again" if len(self.wolfvotes) > 1 else "wolf_vote_again_2"
-                    question = game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
+                    question = self.game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
                     Info("[NIGHT_VOTE_AGAIN]" + question)
                     self.game_system_log.append(question)
                     self.game_wolf_vote_log.append(question)
@@ -194,11 +206,11 @@ class GameMaster(object):
  
         Info("\t [wolfvotes]: {0}, [vote_names_counter]: {1}, [wolf_target]: {2}".format(self.wolfvotes, vote_names_counter, wolf_target))
         # kill the player and log it
-        for player in roles_dict["players"]:
+        for player in self.roles_dict["players"]:
             if player["name"].strip() == wolf_target.strip():
                 Debug("\t Night Vote player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
-                player_log = "玩家{0}与时间{1}被淘汰.".format(player["name"], self.current_time)
+                player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
                 pub_log = ReadableActionLog("[NIGHT_VOTE]", self.current_time, player["name"] , player_log)
                 self.game_public_log.append(pub_log)
                 sys_log = SystemLog("[NIGHT_VOTE]", self.current_time, player, player_log)
@@ -226,11 +238,11 @@ class GameMaster(object):
         antidote_target = "" if len(antidote_names) == 0 else antidote_names[0]
         Info("\t [poision_target]: {0}".format(poision_target))
         Info("\t [antidote_target]: {0}".format(antidote_target))
-        for player in roles_dict["players"]:
+        for player in self.roles_dict["players"]:
             if player["name"].strip() == poision_target.strip():
                 Info("\t NightWitch Poision player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
-                player_log = "玩家{0}与时间{1}被毒杀.".format(player["name"], self.current_time)
+                player_log = self.Lang("WitchPoision").format(self.current_time, player["name"])
                 pub_log = ReadableActionLog("[NIGHT_WITCH]", self.current_time, player["name"] , player_log)
                 self.game_public_log.append(pub_log)
                 sys_log = SystemLog("[NIGHT_WITCH]", self.current_time, player, player_log)
@@ -240,7 +252,7 @@ class GameMaster(object):
             elif player["name"].strip() == antidote_target.strip():
                 Info("\t NightWitch Antidote player name: {0}".format(player["name"]))
                 player["status"] = 1 # alive !!!!
-                player_log = "玩家{0}与时间{1}被救活.".format(player["name"], self.current_time)
+                player_log = self.Lang("WitchAntidote").format(self.current_time, player["name"])
                 pub_log = ReadableActionLog("[NIGHT_WITCH]", self.current_time, player["name"] , player_log)
                 self.game_public_log.append(pub_log)
                 sys_log = SystemLog("[NIGHT_WITCH]", self.current_time, player, player_log)
@@ -251,11 +263,11 @@ class GameMaster(object):
     def EndRoundCheck(self):
         self.winner = self._checkWinner()
 
-        message = game_config_dict["system"]["win_none"].format(GetAllPlayersName())
+        message = self.game_config_dict["system"]["win_none"].format(GetAllPlayersName(self.roles_dict, self.lang))
         if self.winner == 1:
-            message = game_config_dict["system"]["win_villager"].format(GetAllPlayersName())
+            message = self.game_config_dict["system"]["win_villager"].format(GetAllPlayersName(self.roles_dict, self.lang))
         if self.winner == 2:
-            message = game_config_dict["system"]["win_wolf"].format(GetAllPlayersName())
+            message = self.game_config_dict["system"]["win_wolf"].format(GetAllPlayersName(self.roles_dict, self.lang))
    
         if self.winner != 0 or not self.run:
             self.game_system_log.append(message)
@@ -292,7 +304,7 @@ class GameMaster(object):
         output = {}
         output['messages'] = messages
         output['end'] = not self.inGame
-        output['players'] = GetPlayerInfo()
+        output['players'] = GetPlayerInfo(self.roles_dict)
         return output
     
     def FakeEnding(self):
@@ -313,7 +325,7 @@ class GameMaster(object):
         output = {}
         output['messages'] = [output_message]
         output['end'] = not self.inGame
-        output['players'] = GetPlayerInfo()
+        output['players'] = GetPlayerInfo(self.roles_dict)
         return output
 
     def PreAction(self, i):
@@ -333,7 +345,7 @@ class GameMaster(object):
                     pass
                 # 如果玩家是遗言状态
                 if player.GetStatus() == 0:
-                    question_template = game_config_dict["player"]["action_plan_death"]
+                    question_template = self.game_config_dict["player"]["action_plan_death"]
                     player.DoPlanning(question_template, i)
                     player.Die() ### never talk
                     pass
@@ -343,7 +355,7 @@ class GameMaster(object):
                 pass
             pass
         else:
-            sorted_players = SortedPlayersInNight(self.player_agents)
+            sorted_players = SortedPlayersInNight(self.player_agents, self.lang)
             for player in sorted_players:
                 if self.exit_flag:
                     self.run = False
@@ -381,7 +393,7 @@ class GameMaster(object):
                     pass
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
-                    question_template = game_config_dict["player"]["action_plan_day"]
+                    question_template = self.game_config_dict["player"]["action_plan_day"]
                     player.DoPlanning(question_template, i)
                     pass
                 pass
@@ -392,7 +404,7 @@ class GameMaster(object):
             self.game_witch_potion_log = []
             
             self.stage = GameStage.NightAction.value
-            sorted_players = SortedPlayersInNight(self.player_agents)
+            sorted_players = SortedPlayersInNight(self.player_agents, self.lang)
             for player in sorted_players:
                 if self.exit_flag:
                     self.run = False
@@ -406,7 +418,7 @@ class GameMaster(object):
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
                     if not player.IsVillager() and not player.IsWitch():
-                        question_template = game_config_dict["player"]["action_plan_night"]
+                        question_template = self.game_config_dict["player"]["action_plan_night"]
                         player.DoPlanning(question_template, i)
                     pass
                 pass
@@ -440,7 +452,7 @@ class GameMaster(object):
                         pass
                     # 如果玩家是存活状态
                     if player.GetStatus() == 1: 
-                        question_template = game_config_dict["player"]["action_plan_day_vote"]
+                        question_template = self.game_config_dict["player"]["action_plan_day_vote"]
                         player.DoPlanning(question_template, i)
                         pass
                     pass
@@ -448,7 +460,7 @@ class GameMaster(object):
                 
                 if self.DayVote(i):
                     break
-                message = game_config_dict["system"]["player_vote_failed"].format(self.current_time, self.palyervotes)
+                message = self.game_config_dict["system"]["player_vote_failed"].format(self.current_time, self.palyervotes)
                 Info("\t====== "+ message)
                 self.game_public_log.append(message)
                 pass
@@ -463,7 +475,7 @@ class GameMaster(object):
                     pass
                 # 如果玩家是遗言状态
                 if player.GetStatus() == 0:
-                    question_template = game_config_dict["player"]["action_plan_death"]
+                    question_template = self.game_config_dict["player"]["action_plan_death"]
                     player.DoPlanning(question_template, i)
                     player.Die() ### never talk
                     pass
@@ -478,7 +490,7 @@ class GameMaster(object):
                 if self.exit_flag:
                     self.run = False
                     return
-                message = game_config_dict["system"]["wolf_vote_failed"].format(self.current_time)
+                message = self.game_config_dict["system"]["wolf_vote_failed"].format(self.current_time)
                 Info("\t====== "+ message)
                 # self.game_wolf_vote_log.append(message)
                 # reset votes
@@ -489,9 +501,9 @@ class GameMaster(object):
                 pass
             
             # witch action
-            witch = GetPlayer(self.player_agents, "女巫")
+            witch = GetPlayer(self.player_agents, self.Lang("witch"))
             if witch != None and witch.GetStatus() >= 0: 
-                question_template = game_config_dict["player"]["action_plan_night"]
+                question_template = self.game_config_dict["player"]["action_plan_night"]
                 witch.DoPlanning(question_template, i)
                 
                 self.NightWitch(i)
@@ -501,28 +513,28 @@ class GameMaster(object):
         Info(message)
         pass
     
-    def ResetGame(self):
-        self.start_time = time.time()
-        roles_dict,game_config_dict = InitGlobals()
-        Info("\t===== {0} ResetGame =====".format(GetAllPlayersName()))
-        
+    def ResetGame(self, lang="cn"):
+        self.lang = lang
+        LANG = self.lang
          # prepare the envs
         self._resetGlobal()
         self._reviveRoles()
         self._setupPlayers()
         self._clearPlayersMemory()
+        self.start_time = time.time()
+        Info("\t===== {0} ResetGame =====".format(GetAllPlayersName(self.roles_dict, self.lang)))
         pass
     
     def EndGame(self):
         self.end_time = time.time()
         self.elapsed_time = self.end_time - self.start_time
-        Info("===== {0} EndGame =====".format(GetAllPlayersName()))
+        Info("===== {0} EndGame =====".format(GetAllPlayersName(self.roles_dict, self.lang)))
         Info("\t===== input_tokens: {0} output_tokens {1} ======".format(self.input_tokens, self.output_tokens))
         Info("\t===== elapsed_time: {0} ======".format(self.elapsed_time))
         pass
     
     def RunGame(self): 
-        Info("\t===== {0} RunGame =====".format(GetAllPlayersName()))
+        Info("\t===== {0} RunGame =====".format(GetAllPlayersName(self.roles_dict, self.lang)))
         i = 0
         while self.run and True:
             self.inGame = True
@@ -531,8 +543,8 @@ class GameMaster(object):
             self.elapsed_time = self.end_time - self.start_time
             Info("\t===== elapsed_time: {0} ======".format(self.elapsed_time))
             # escape condition
-            if i >= game_config_dict["max_round"]:
-                Info("游戏结束.")
+            if i >= self.game_config_dict["max_round"]:
+                Info("\t===== GAME OVER  =====")
                 break
             # round increment   
             i = i+1
@@ -545,7 +557,7 @@ class GameMaster(object):
                 self.DoAction(i)
                 self.PostAction(i)
                 if self.winner != 0:
-                    Info("游戏结束.")
+                    Info("\t===== GAME OVER  =====")
                     break
                     
             # night round
@@ -555,6 +567,6 @@ class GameMaster(object):
             self.PostAction(i)
 
             if self.winner != 0:
-                Info("游戏结束.")
+                Info("\t===== GAME OVER  =====")
                 break
         self.inGame = False

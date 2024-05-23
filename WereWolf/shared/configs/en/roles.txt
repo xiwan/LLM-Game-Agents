@@ -1,0 +1,60 @@
+{
+  "players": [
+    {
+      "name": "Adam",
+      "id": 1001,
+      "role": "prophet",
+      "character": "Courageous and Resourceful",
+      "status": 1
+    },
+    {
+      "name": "Bella",
+      "id": 1002,
+      "role": "witch", 
+      "character": "Independent Thinker",
+      "status": 1
+    },
+    {
+      "name": "Charles",
+      "id": 1003,
+      "role": "wolf",
+      "character": "Rule-Follower",
+      "status": 1
+    },
+    {
+      "name": "Daphne",
+      "id": 1004,
+      "role": "villager",
+      "character": "Organizer",
+      "status": 1
+    },
+    {
+      "name": "Ethan",
+      "id": 1005,
+      "role": "villager",
+      "character": "Talkative",
+      "status": 1
+    },
+    {
+      "name": "Fiona",
+      "id": 1006,
+      "role": "wolf",
+      "character": "Observer", 
+      "status": 1
+    },
+    {
+      "name": "Gabriel",
+      "id": 1007,
+      "role": "villager",
+      "character": "Shy", 
+      "status": 1
+    },
+    {
+      "name": "Haley",
+      "id": 1008,
+      "role": "villager",
+      "character": "Social Butterfly", 
+      "status": 1
+    }
+  ]
+}

@@ -10,7 +10,7 @@ class GamePlayerProphet(GamePlayer):
         self.checkList = {}
 
     def _getPlayerRole(self, name) -> str:
-        for player in roles_dict["players"]:
+        for player in self.GM.roles_dict["players"]:
             if player["name"] == name:
                 return (name, player["role"])
                 # return "{0}:{1}".format(name, player["role"])
@@ -27,8 +27,8 @@ class GamePlayerProphet(GamePlayer):
         return True
     
     def _playerInfoBuilder(self):
-        extraInfo = "阵营为:{0}.本阵营队友未知".format(GetPartySize())
-        playerInfo = game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        extraInfo = self.GM.Lang("playerInfoBuilder").format(GetPartySize(self.GM.roles_dict, self.GM.lang))
+        playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
     
     def DoMemory(self, memorysize=10, memories=[]):
@@ -52,7 +52,7 @@ class GamePlayerProphet(GamePlayer):
                 return log
             
             # self.checkList.append(checker)
-            checker = "玩家{0}身份是{1}".format(name, role)
+            checker = self.GM.Lang("prophetUseAbility").format(name, role)
             self.GM.game_prophet_check_log.append(checker)
             log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent["name"], item)
         return log

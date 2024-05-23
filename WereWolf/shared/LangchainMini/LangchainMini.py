@@ -1,5 +1,5 @@
-from .LangChainMiniMemory import *
 from .LangchainMiniBase import *
+from .LangChainMiniKlass import *
 from .LangChainMiniClaude import *
 from .LangChainMiniMistral import *
 from .LangChainMiniLlama import *
@@ -11,6 +11,8 @@ class LangchainMini():
                  stream:bool=True, 
                  memory:LangchainMiniMemory=None,
                  message:bool=True,
+                 maxtoken:int=2048,
+                 termperature:float=0.8,
                  system:str=None):
         self.llm = None
         try:

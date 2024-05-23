@@ -1,0 +1,47 @@
+<wolf>
+- Action: WolfVote
+  Description: The agent (werewolf) votes for the target at night, and reminds their teammates to follow
+  Parameter: agent=executing player,target=good player Name
+  Example: {"action": "WolfVote", "agent": "P1", "target": "Mike"}
+</wolf>
+
+<prophet>
+- Action: ProphetCheck
+  Description: The agent (prophet) checks the identity of the target at night, and can only do this once per night.
+  Parameter: agent=executing player,target=bad player Name
+  Example: {"action": "ProphetCheck", "agent": "Ben", "target": "John"}
+</prophet>
+
+<witch>
+- Action: WitchPoision
+  Description: The agent (witch) uses poison on the target at night. 
+  Parameter: agent=executing player,target=bad player Name
+  Example: {"action": "WitchPoision", "agent": "P6", "target": "P2"}
+- Action: WitchAntidote
+  Description: The agent (witch) uses the antidote on the target at night.
+  Parameter: agent=executing player,target=good player Name
+  Example: {"action": "WitchAntidote", "agent": "Lisa", "target": "Chirs"}
+</witch>
+
+<player>
+- Action: PlayerVote
+  Description: The agent (player) votes for the target during the day. 
+  Parameter: agent=executing player,target=player Name
+  Example: {"action": "PlayerVote", "agent": "P2", "target": "P4"}
+- Action: PlayerDoubt
+  Description: The agent (player) expresses doubt about the target during the day, but it does not count as a vote. 
+  Parameter: agent=executing player,target=player Name,content=thoughts/reasons (optional)
+  Example: {"action": "PlayerDoubt", "agent": "P2", "target": "P4", content="I have doubts about P4's identity, (provide reasons)"}
+- Action: Debate
+  Description: The agent (player) engages in discussion during the day. 
+  Parameter: agent=executing player, content=thoughts/reasons
+  Example: {"action": "Debate", "agent": "P2", "content": "My reasoning is that xx is the werewolf, (provide reasons)"}
+- Action: DeathWords
+  Description: The agent (player) gives their final words upon being eliminated during the day.
+  Parameter: agent=executing player, content=thoughts/reasons
+  Example: {"action": "DeathWords", "agent": "P2", "content": "I think xx is highly suspicious, (provide reasons)"}
+- Action: Pass
+  Description: The agent (player) abstains from taking action. 
+  Parameter: agent=executing player
+  Example: {"action": "Pass", "agent": "P2"}
+</player>
