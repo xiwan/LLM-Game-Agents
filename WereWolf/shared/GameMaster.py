@@ -119,6 +119,7 @@ class GameMaster(object):
             else:
                 _player = None
             self.player_agents.append(_player)
+            #print(self.player_agents[0].agent["summary_prompt"])
         pass
     
     ## clear Players Memory  
@@ -293,7 +294,7 @@ class GameMaster(object):
             self.stage = GameStage.Assistant.value
             # assistant agent
             # summerize the game
-            _template_assistant_role = template_assistant_summarize_role.replace("{num}", "1000")
+            _template_assistant_role = self.player_agents[0].agent["summary_prompt"].replace("{num}", "1000")
             self.assistant = GameAssistant(_template_assistant_role, self, 1)
             memories = []
             # system message
