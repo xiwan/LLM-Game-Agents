@@ -7,7 +7,7 @@
       "character": "有勇有谋",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -17,7 +17,7 @@
       "character": "独立思考",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -27,7 +27,7 @@
       "character": "规矩型",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -37,7 +37,7 @@
       "character": "组织者",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -47,7 +47,7 @@
       "character": "话痨",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -57,7 +57,7 @@
       "character": "观察家", 
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -67,7 +67,7 @@
       "character": "腼腆型",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -77,7 +77,7 @@
       "character": "互动达人", 
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     }
   ]

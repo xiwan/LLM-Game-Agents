@@ -17,7 +17,7 @@
       "character": "Independent Thinker",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "meta.llama3-8b-instruct-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -57,7 +57,7 @@
       "character": "Observer", 
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "meta.llama3-8b-instruct-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
