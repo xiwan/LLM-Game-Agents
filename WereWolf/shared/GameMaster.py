@@ -439,6 +439,11 @@ class GameMaster(object):
                     pass
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
+                    if player.IsWolf():
+                        self.stage = GameStage.NightWolf.value
+                    if player.IsProphet():
+                        self.stage = GameStage.NightPropht.value
+                        
                     if not player.IsVillager() and not player.IsWitch():
                         #question_template = self.game_config_dict["player"]["action_plan_night"]
                         question_template = self.Lang("player.action_plan_night")
@@ -531,6 +536,7 @@ class GameMaster(object):
             # witch action
             witch = GetPlayer(self.player_agents, self.Lang("witch"))
             if witch != None and witch.GetStatus() >= 0: 
+                self.stage = GameStage.NightWitch.value
                 #question_template = self.game_config_dict["player"]["action_plan_night"]
                 question_template = self.Lang("player.action_plan_night")
                 witch.DoPlanning(question_template, i)
