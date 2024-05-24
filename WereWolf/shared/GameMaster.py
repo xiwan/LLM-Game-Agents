@@ -127,8 +127,18 @@ class GameMaster(object):
             player.ClearMemory()
         pass
     
-    def Lang(self, key:str):
-        return mappings[key].get(self.lang)
+    def Lang(self, key_path: str):
+        keys = key_path.split(".")
+        value = mappings
+        for key in keys:
+            if isinstance(value, dict):
+                value = value.get(key)
+                if value is None:
+                    break
+            else:
+                raise TypeError(f"Cannot access key '{key}' from non-dictionary object")
+        return value.get(self.lang)
+
     
     def DayVote(self, i) -> bool:
         # caculate the votes
@@ -145,8 +155,9 @@ class GameMaster(object):
         if len(self.palyervotes) != 1:
             for player in self.player_agents:
                 # if player.agent["role"] == "狼人":
-                qKey = "player_vote_again" if len(self.palyervotes) > 1 else "player_vote_again_2"
-                question = self.game_config_dict["system"][qKey].format(",".join(self.palyervotes))
+                #qKey = "player_vote_again" if len(self.palyervotes) > 1 else "player_vote_again_2"
+                #question = self.game_config_dict["system"][qKey].format(",".join(self.palyervotes))
+                question = self.Lang("system.player_vote_again").format(",".join(self.palyervotes))
                 Info("[DAY_VOTE_AGAIN]" + question)
                 self.game_system_log.append(question)
                 self.game_player_vote_log.append(question)
@@ -191,8 +202,10 @@ class GameMaster(object):
         if len(self.wolfvotes) != 1:
             for player in self.player_agents:
                 if player.IsWolf():
-                    qKey = "wolf_vote_again" if len(self.wolfvotes) > 1 else "wolf_vote_again_2"
-                    question = self.game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
+                    #qKey = "wolf_vote_again" if len(self.wolfvotes) > 1 else "wolf_vote_again_2"
+                    #question = self.game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
+                    
+                    question = self.Lang("system.wolf_vote_again").format(",".join(self.wolfvotes))
                     Info("[NIGHT_VOTE_AGAIN]" + question)
                     self.game_system_log.append(question)
                     self.game_wolf_vote_log.append(question)
@@ -263,12 +276,18 @@ class GameMaster(object):
     def EndRoundCheck(self):
         self.winner = self._checkWinner()
 
-        message = self.game_config_dict["system"]["win_none"].format(GetAllPlayersName(self.roles_dict, self.lang))
+        # message = self.game_config_dict["system"]["win_none"].format(GetAllPlayersName(self.roles_dict, self.lang))
+        # if self.winner == 1:
+        #     message = self.game_config_dict["system"]["win_villager"].format(GetAllPlayersName(self.roles_dict, self.lang))
+        # if self.winner == 2:
+        #     message = self.game_config_dict["system"]["win_wolf"].format(GetAllPlayersName(self.roles_dict, self.lang))
+            
+        message = self.Lang("system.win_none").format(GetAllPlayersName(self.roles_dict, self.lang))
         if self.winner == 1:
-            message = self.game_config_dict["system"]["win_villager"].format(GetAllPlayersName(self.roles_dict, self.lang))
+            message = self.Lang("system.win_villager").format(GetAllPlayersName(self.roles_dict, self.lang))
         if self.winner == 2:
-            message = self.game_config_dict["system"]["win_wolf"].format(GetAllPlayersName(self.roles_dict, self.lang))
-   
+            message = self.Lang("system.win_wolf").format(GetAllPlayersName(self.roles_dict, self.lang))
+        
         if self.winner != 0 or not self.run:
             self.game_system_log.append(message)
             self.stage = GameStage.Assistant.value
@@ -345,7 +364,8 @@ class GameMaster(object):
                     pass
                 # 如果玩家是遗言状态
                 if player.GetStatus() == 0:
-                    question_template = self.game_config_dict["player"]["action_plan_death"]
+                    #question_template = self.game_config_dict["player"]["action_plan_death"]
+                    question_template = self.Lang("player.action_plan_death")
                     player.DoPlanning(question_template, i)
                     player.Die() ### never talk
                     pass
@@ -393,7 +413,8 @@ class GameMaster(object):
                     pass
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
-                    question_template = self.game_config_dict["player"]["action_plan_day"]
+                    #question_template = self.game_config_dict["player"]["action_plan_day"]
+                    question_template = self.Lang("player.action_plan_day")
                     player.DoPlanning(question_template, i)
                     pass
                 pass
@@ -418,7 +439,8 @@ class GameMaster(object):
                 # 如果玩家是存活状态
                 if player.GetStatus() == 1: 
                     if not player.IsVillager() and not player.IsWitch():
-                        question_template = self.game_config_dict["player"]["action_plan_night"]
+                        #question_template = self.game_config_dict["player"]["action_plan_night"]
+                        question_template = self.Lang("player.action_plan_night")
                         player.DoPlanning(question_template, i)
                     pass
                 pass
@@ -452,7 +474,8 @@ class GameMaster(object):
                         pass
                     # 如果玩家是存活状态
                     if player.GetStatus() == 1: 
-                        question_template = self.game_config_dict["player"]["action_plan_day_vote"]
+                        #question_template = self.game_config_dict["player"]["action_plan_day_vote"]
+                        question_template = self.Lang("player.action_plan_day_vote")
                         player.DoPlanning(question_template, i)
                         pass
                     pass
@@ -460,7 +483,9 @@ class GameMaster(object):
                 
                 if self.DayVote(i):
                     break
-                message = self.game_config_dict["system"]["player_vote_failed"].format(self.current_time, self.palyervotes)
+                #message = self.game_config_dict["system"]["player_vote_failed"].format(self.current_time, self.palyervotes)
+                
+                message = self.Lang("system.player_vote_failed").format(self.current_time, self.palyervotes)
                 Info("\t====== "+ message)
                 self.game_public_log.append(message)
                 pass
@@ -475,7 +500,8 @@ class GameMaster(object):
                     pass
                 # 如果玩家是遗言状态
                 if player.GetStatus() == 0:
-                    question_template = self.game_config_dict["player"]["action_plan_death"]
+                    #question_template = self.game_config_dict["player"]["action_plan_death"]
+                    question_template = self.Lang("player.action_plan_death")
                     player.DoPlanning(question_template, i)
                     player.Die() ### never talk
                     pass
@@ -490,7 +516,8 @@ class GameMaster(object):
                 if self.exit_flag:
                     self.run = False
                     return
-                message = self.game_config_dict["system"]["wolf_vote_failed"].format(self.current_time)
+                #message = self.game_config_dict["system"]["wolf_vote_failed"].format(self.current_time)
+                message = self.Lang("system.wolf_vote_failed").format(self.current_time)
                 Info("\t====== "+ message)
                 # self.game_wolf_vote_log.append(message)
                 # reset votes
@@ -503,7 +530,8 @@ class GameMaster(object):
             # witch action
             witch = GetPlayer(self.player_agents, self.Lang("witch"))
             if witch != None and witch.GetStatus() >= 0: 
-                question_template = self.game_config_dict["player"]["action_plan_night"]
+                #question_template = self.game_config_dict["player"]["action_plan_night"]
+                question_template = self.Lang("player.action_plan_night")
                 witch.DoPlanning(question_template, i)
                 
                 self.NightWitch(i)

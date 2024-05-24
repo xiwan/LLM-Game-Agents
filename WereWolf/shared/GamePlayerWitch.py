@@ -24,7 +24,8 @@ class GamePlayerWitch(GamePlayer):
     def _playerInfoBuilder(self):
         extraInfo = self.GM.Lang("witchInfoBuilder").format(self._getItem(0), self._getItem(1), self.GM.current_time)
         extraInfo += self.GM.Lang("playerInfoBuilder").format(GetPartySize(self.GM.roles_dict, self.GM.lang))
-        playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        #playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        playerInfo = self.GM.Lang("player.action_prefix").format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo
         
     def UsePoision(self):

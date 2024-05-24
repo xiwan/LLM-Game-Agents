@@ -21,6 +21,8 @@ class GameAssistant:
             memory=role_memory,
             system=template_role)
         # Info(f"MODEL: {self.model_id}")
+        
+        #print(template_role)
         pass
     
     def _invoke(self, question):

@@ -44,7 +44,8 @@ class GamePlayer:
     def _playerInfoBuilder(self):
         #extraInfo = "阵营为:{0}.本阵营队友未知".format(GetPartySize(self.GM.roles_dict))
         extraInfo = self.GM.Lang("playerInfoBuilder").format(GetPartySize(self.GM.roles_dict, self.GM.lang))
-        playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        playerInfo = self.GM.Lang("player.action_prefix").format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
+        #playerInfo = self.GM.game_config_dict["player"]["action_prefix"].format(self.GetName(), self.GetRole(), self.GetCharacter(), extraInfo)
         return playerInfo 
     
     def Die(self):

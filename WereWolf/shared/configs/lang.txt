@@ -1,0 +1,123 @@
+{
+    "wolf": {"en": "wolf","cn": "狼人"},
+    "witch": {"en": "witch","cn": "女巫"},
+    "prophet": {"en": "prophet","cn": "预言家"},
+    "villager": {"en": "villager","cn": "村民"},
+    "status_alive":  {"en": "alive","cn": "存活"},
+    "status_eliminated":  {"en": "eliminated","cn": "淘汰"},
+    "playerInfoBuilder": {"en": "Team: {0}. Teammates Unknown.", "cn": "阵营为:{0}.本阵营队友未知."},
+    "playerStateInfoBuilder": {
+        "en": "Current state:{0}.", 
+        "cn": "目前玩家状态:{0}."},
+    "playerDoAnswer": {
+        "en": "Score from the previous round of decision-making: {0}. It is recommended to adjust the strategy.", 
+        "cn": "上轮决策评分:{0}.建议调整策略."},
+    "playerDoReflect": {
+        "en": "Game progress: {1}. Player information: {2}. Time: {0}. Player decision: {3}.", 
+        "cn": "游戏进度:{1}.玩家信息:{2}. 时间:{0}.玩家决策:{3}."},
+    "prophetUseAbility": {
+        "en": "Player {0} role/identity is {1}.", 
+        "cn": "玩家{0}身份是{1}."},
+    "wolfInfoBuilder": {
+        "en": "Team: {0}. Teammates: {1}.", 
+        "cn": "阵营为:{0}.本阵营队友{1}."},
+    "witchInfoBuilder": {
+        "en": "Potion status: Poison {0}, Antidote {1}. Each night you can use a potion to save someone or save yourself (time: {2} eliminated players), or eliminate a player (time: {2} surviving players).", 
+        "cn": "药水情况: 毒药{0},解药{1}.每晚可以使用药水救人或者自救(时间:{2}淘汰的玩家),或者淘汰某玩家(时间:{2}存活的玩家)."},
+    "WitchPoision": {
+        "en": "Time {0}, Player {1} was poisoned to death by the Witch.", 
+        "cn": "时间{0}, 玩家{1}被女巫毒死."
+    },
+    "WitchAntidote": {
+        "en": "Time {0}, Player {1} was revived by the Witch.", 
+        "cn": "时间{0}, 玩家{1}被女巫救活"
+    },
+    "MasterVote": {
+        "en": "Time {0}, Player {1} was eliminated.",
+        "cn": "时间{0},玩家{1}被淘汰."
+    },
+    "MasterCheckWinner": {
+        "en": "Time {0}, Survival status: Bad: {1}, Good: {2}.",
+        "cn": "时间{0},场上存活状态 坏人:{1} 好人:{2}."
+    },
+    "player": {
+        "action_plan_night": {
+            "en": "{0}{1} Time: Night of Day {2}. How should you act?",
+            "cn": "{0}{1} 时间:第{2}天夜晚.该如何行动?"
+        },
+        "action_plan_day": {
+            "en": "{0}{1} Time: Day {2} discussion phase. How should you act?",
+            "cn": "{0}{1} 时间:第{2}天白天的讨论环节.该如何行动?"
+        },
+        "action_plan_day_vote": {
+            "en": "{0}{1} Time: Day {2} voting phase. How should you act?",
+            "cn": "{0}{1} 时间:第{2}天白天的投票环节.该如何行动?"
+        },
+        "action_plan_death": {
+            "en": "{0}{1} Time: Day {2}. You have died, any last words?",
+            "cn": "{0}{1} 时间:第{2}天白天.你已经死亡,有何遗言?"
+        },
+        "action_confirm": {
+            "en": "OK",
+            "cn": "确认"
+        },
+        "action_villager_team": {
+            "en": "Unknown, you need to deduce it.",
+            "cn": "未知,需要你推理发现."
+        },
+        "action_reflect": {
+            "en": "{0}{1}. Start reasoning step-by-step to prepare for the next round of action.",
+            "cn": "{0}{1}.开始一步一步进行推理,为下一轮行动准备."
+        },
+        "action_prefix": {
+            "en": "Remember, the player you support is {0}, identity {1}, personality {2}. {3}. Please extract useful information, then think through step-by-step.",
+            "cn": "记住，你支持的玩家是{0},身份{1},性格{2}.{3}.请提取有用的信息,然后进行一步一步思考."
+        },
+        "action_plan_test": {
+            "en": "Currently how many players are alive and how many are eliminated?",
+            "cn": "现在全场几人活着几人淘汰?"
+        }
+    },
+    "system": {
+        "death_night": {
+            "en": "Last night, player {0} was eliminated by the werewolves, last words: {1}.",
+            "cn": "昨晚, 玩家{0}被狼人淘汰, 遗言为:{1}."
+        },
+        "death_day": {
+            "en": "Today, player {0} was eliminated by players, last words: {1}.",
+            "cn": "今天, 玩家{0}被玩家淘汰, 遗言为:{1}."
+        },
+        "wolf_vote_failed": {
+            "en": "Time {0}, the werewolves did not reach a consensus, a player must be voted out at night.",
+            "cn": "时间{0}, 狼人没有统一选择, 夜晚必须要投出一名玩家."
+        },
+        "wolf_vote_again": {
+            "en": "The previous vote failed, you must vote for a player.",
+            "cn": "上轮投票失败，投票必须选一名玩家."
+        },
+        "player_vote_failed": {
+            "en": "Time {0}, the players did not reach a consensus. Players re-vote to suspect one of {1}!",
+            "cn": "时间{0}, 玩家没有统一选择.玩家重新在{1}中选择嫌疑人投票!"
+        },
+        "player_vote_again": {
+            "en": "The previous vote failed, you must vote for a player.",
+            "cn": "上轮投票失败，投票必须选一名玩家."
+        },
+        "win_wolf": {
+            "en": "Werewolves win! Current player survival status: {0}.",
+            "cn": "狼人胜利! 目前玩家存活情况:{0}."
+        },
+        "win_villager": {
+            "en": "Villagers win! Current player survival status: {0}.",
+            "cn": "好人胜利! 目前玩家存活情况:{0}."
+        },
+        "win_none": {
+            "en": "Game continues. Current player survival status: {0}.",
+            "cn": "游戏继续. 目前玩家存活情况:{0}."
+        },
+        "board": {
+            "en": "Current player survival status: {0}.",
+            "cn": "现在玩家存活情况:{0}"
+        }
+    } 
+}
