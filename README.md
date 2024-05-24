@@ -24,7 +24,7 @@ Among these, Prompt Engineering has the best cost-performance ratio. Here we wil
 ### [LLM-werewolf-cn](./WereWolf/README-cn.md)
 ### [LLM-werewolf-en](./WereWolf/README-en.md)
 
-![gamescreentshot](./WereWolf/statics/gamescreentshot-2.png)
+![gamescreentshot](./WereWolf/statics/gamescreenshot-2.png)
 
 This social game with LLM(ClaudeV2) demostrates the following capabilities:
 
