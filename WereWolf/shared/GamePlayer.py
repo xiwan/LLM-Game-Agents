@@ -267,7 +267,7 @@ class GamePlayer:
                 # assistant agent
                 summary_role = self.agent["summary_prompt"]
                 _summary_role = summary_role.replace("{num}", "144")
-                self.agent["assistant"] = GameAssistant(_summary_role, GM, 1, self.agent["summary"])
+                self.agent["assistant"] = GameAssistant(_summary_role, self.GM, 1, self.agent["summary"])
                 summary = self._invokeAssistant(logs)
                     
             _summary = summary[len(summary)-1]["content"]
