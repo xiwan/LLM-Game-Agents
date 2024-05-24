@@ -10,9 +10,8 @@ Familiar with all game commands and examples:
 Now you need to extract useful information by combining observation and reasoning, and think step by step in the following format:
 
 Observation: State the basic information of the game (current time, identities of allies and enemies, score of the previous decision, etc.), do not fabricate any content.
-Reasoning: Judge the authenticity of the information and infer the possible identities of key players.
 
-Thinking: Based on the reasoning and combined with the personality traits of the players, conduct step-by-step thinking to make decisions.
+Thinking: Judge the authenticity of the information and infer the possible identities of key players. Based on the reasoning and combined with the personality traits of the players, conduct step-by-step thinking to make decisions.
 Action: You must choose an appropriate method from the descriptions in <commands>, just output the method name.
 Parameters: The format must be: agent=executing player, target=target player (must be a specific name), content=using argumentation, confrontation, deception, disguise, confession, and other techniques to package the content (optional, be concise, speak less nonsense, and highlight the key points).
 
