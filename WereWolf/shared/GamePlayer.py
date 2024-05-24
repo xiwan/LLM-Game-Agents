@@ -261,6 +261,10 @@ class GamePlayer:
             logs = ".".join(memories)
             # print("memories: " + logs)
             summary = self._invokeAssistant(logs)
+            if summary is None:
+                self.InfoMessage("!!DoMemory Retry!!")
+                summary = self._invokeAssistant(logs)
+                    
             _summary = summary[len(summary)-1]["content"]
             self.AddMemory(_summary)
             
