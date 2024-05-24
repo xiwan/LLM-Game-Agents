@@ -46,12 +46,12 @@
             "cn": "{0}{1} 时间:第{2}天夜晚.该如何行动?"
         },
         "action_plan_day": {
-            "en": "{0}{1} Time: Day {2} discussion phase. How should you act?",
-            "cn": "{0}{1} 时间:第{2}天白天的讨论环节.该如何行动?"
+            "en": "{0}{1} Time: Day {2} discussion phase. Start discussion.",
+            "cn": "{0}{1} 时间:第{2}天白天的讨论环节.开始讨论."
         },
         "action_plan_day_vote": {
-            "en": "{0}{1} Time: Day {2} voting phase. How should you act?",
-            "cn": "{0}{1} 时间:第{2}天白天的投票环节.该如何行动?"
+            "en": "{0}{1} Time: Day {2} voting phase. Start voting.",
+            "cn": "{0}{1} 时间:第{2}天白天的投票环节.开始投票."
         },
         "action_plan_death": {
             "en": "{0}{1} Time: Day {2}. You have died, any last words?",

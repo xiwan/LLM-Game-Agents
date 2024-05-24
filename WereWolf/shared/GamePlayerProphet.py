@@ -11,7 +11,7 @@ class GamePlayerProphet(GamePlayer):
 
     def _getPlayerRole(self, name) -> str:
         for player in self.GM.roles_dict["players"]:
-            if player["name"] == name:
+            if EqualIgnoreCase(player["name"],name):
                 return (name, player["role"])
                 # return "{0}:{1}".format(name, player["role"])
         return (None, None)
@@ -44,7 +44,7 @@ class GamePlayerProphet(GamePlayer):
         if self.GM.isDay or target is None:
             return None
 
-        if abilityName == "ProphetCheck":
+        if EqualIgnoreCase(abilityName, "ProphetCheck"):
             name, role= self._getPlayerRole(target)
             if name is None or role is None:
                 return log

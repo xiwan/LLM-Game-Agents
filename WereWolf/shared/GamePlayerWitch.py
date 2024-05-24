@@ -46,7 +46,7 @@ class GamePlayerWitch(GamePlayer):
         if self.GM.isDay or target is None:
             return None
         # Poision
-        if abilityName == "WitchPoision":
+        if EqualIgnoreCase(abilityName, "WitchPoision"):
             if self.UsePoision():
                 log = ActionLog("witch_poision_log", self.GM.current_time, self.agent, item)
                 self.GM.game_witch_potion_log.append(log)
@@ -54,7 +54,7 @@ class GamePlayerWitch(GamePlayer):
                 log = ReadableActionLog("[WITCH POISION]", self.GM.current_time, target, player_log)
                 self.GM.game_public_log.append(log)
         # Antidote
-        if abilityName == "WitchAntidote":
+        if EqualIgnoreCase(abilityName, "WitchAntidote"):
             if self.UseAntidote():
                 log = ActionLog("witch_antidote_log", self.GM.current_time, self.agent, item)
                 self.GM.game_witch_potion_log.append(log)

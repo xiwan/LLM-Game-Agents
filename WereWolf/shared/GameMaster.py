@@ -11,7 +11,7 @@ from enum import Enum
 class GameStage(Enum):
     Unknown = 0
     NightWolf = 1
-    NightPropht = 2
+    NightProphet = 2
     NightWitch = 3
     NightAction = 4
     DeathWords = 5
@@ -145,7 +145,7 @@ class GameMaster(object):
         # caculate the votes
         vote_names = []
         for vote in self.game_player_vote_log:
-            if vote["time"] == self.current_time and vote["response"]["action"] == "PlayerVote":
+            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "PlayerVote"):
                 if vote["response"]["target"] != "" :
                     vote_names.append(vote["response"]["target"])
                     
@@ -173,7 +173,7 @@ class GameMaster(object):
         
         # kill the player and log it
         for player in self.roles_dict["players"]:
-            if player["name"].strip() == elem.strip():
+            if EqualIgnoreCase(player["name"],elem.strip()):
                 Info("\t Day Vote player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
                 player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
@@ -191,7 +191,7 @@ class GameMaster(object):
         # print(self.game_wolf_vote_log)
         # wolf vote caculate
         for vote in self.game_wolf_vote_log:
-            if vote["time"] == self.current_time and vote["response"]["action"].lower().startswith('wolfvote'):
+            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "wolfvote"):
                 if vote["response"]["target"] != "" :
                     vote_names.append(vote["response"]["target"])
 
@@ -221,7 +221,7 @@ class GameMaster(object):
         Info("\t [wolfvotes]: {0}, [vote_names_counter]: {1}, [wolf_target]: {2}".format(self.wolfvotes, vote_names_counter, wolf_target))
         # kill the player and log it
         for player in self.roles_dict["players"]:
-            if player["name"].strip() == wolf_target.strip():
+            if EqualIgnoreCase(player["name"], wolf_target):
                 Debug("\t Night Vote player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
                 player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
@@ -239,11 +239,11 @@ class GameMaster(object):
         # potion vote caculate
         for vote in self.game_witch_potion_log:
             # Witch Antidote
-            if vote["time"] == self.current_time and vote["response"]["action"] == "WitchAntidote":
+            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchAntidote"):
                 if vote["response"]["target"] != "" :
                     antidote_names.append(vote["response"]["target"])
             # Witch Poision
-            if vote["time"] == self.current_time and vote["response"]["action"] == "WitchPoision":
+            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchPoision"):
                 if vote["response"]["target"] != "" :
                     poision_names.append(vote["response"]["target"])
             pass
@@ -253,7 +253,7 @@ class GameMaster(object):
         Info("\t [poision_target]: {0}".format(poision_target))
         Info("\t [antidote_target]: {0}".format(antidote_target))
         for player in self.roles_dict["players"]:
-            if player["name"].strip() == poision_target.strip():
+            if EqualIgnoreCase(player["name"], poision_target):
                 Info("\t NightWitch Poision player name: {0}".format(player["name"]))
                 player["status"] = 0 # death !!!!
                 player_log = self.Lang("WitchPoision").format(self.current_time, player["name"])
@@ -263,7 +263,7 @@ class GameMaster(object):
                 self.game_system_log.append(sys_log)
                 pass
                 
-            elif player["name"].strip() == antidote_target.strip():
+            elif EqualIgnoreCase(player["name"], antidote_target):
                 Info("\t NightWitch Antidote player name: {0}".format(player["name"]))
                 player["status"] = 1 # alive !!!!
                 player_log = self.Lang("WitchAntidote").format(self.current_time, player["name"])
@@ -442,7 +442,7 @@ class GameMaster(object):
                     if player.IsWolf():
                         self.stage = GameStage.NightWolf.value
                     if player.IsProphet():
-                        self.stage = GameStage.NightPropht.value
+                        self.stage = GameStage.NightProphet.value
                         
                     if not player.IsVillager() and not player.IsWitch():
                         #question_template = self.game_config_dict["player"]["action_plan_night"]
