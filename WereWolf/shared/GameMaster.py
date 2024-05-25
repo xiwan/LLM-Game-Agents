@@ -145,7 +145,7 @@ class GameMaster(object):
         # caculate the votes
         vote_names = []
         for vote in self.game_player_vote_log:
-            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "PlayerVote"):
+            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "PlayerVote"):
                 if vote["response"]["target"] != "" :
                     vote_names.append(vote["response"]["target"])
                     
@@ -191,7 +191,7 @@ class GameMaster(object):
         # print(self.game_wolf_vote_log)
         # wolf vote caculate
         for vote in self.game_wolf_vote_log:
-            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "wolfvote"):
+            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "wolfvote"):
                 if vote["response"]["target"] != "" :
                     vote_names.append(vote["response"]["target"])
 
@@ -239,11 +239,11 @@ class GameMaster(object):
         # potion vote caculate
         for vote in self.game_witch_potion_log:
             # Witch Antidote
-            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchAntidote"):
+            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchAntidote"):
                 if vote["response"]["target"] != "" :
                     antidote_names.append(vote["response"]["target"])
             # Witch Poision
-            if vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchPoision"):
+            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchPoision"):
                 if vote["response"]["target"] != "" :
                     poision_names.append(vote["response"]["target"])
             pass
