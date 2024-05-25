@@ -3,7 +3,7 @@
     {
       "name": "Adam",
       "id": 1001,
-      "role": "预言家",
+      "role": "女巫",
       "character": "有勇有谋",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
@@ -13,7 +13,7 @@
     {
       "name": "Bella",
       "id": 1002,
-      "role": "女巫", 
+      "role": "预言家", 
       "character": "独立思考",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
       "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",

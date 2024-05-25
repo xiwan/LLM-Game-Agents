@@ -17,10 +17,9 @@ class GamePlayerWolf(GamePlayer):
         return playerInfo
     
     def DoMemory(self, memorysize=10, memories=[]):
-        for log in self.GM.game_wolf_vote_log[-1*memorysize:]:
+        for log in self.GM.game_wolf_share_vote_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
         memories = super().DoMemory(memorysize, memories)
-
         return memories
     
     def UsePlayerAbility(self, abilityName, target=None, item=None):
@@ -32,4 +31,6 @@ class GamePlayerWolf(GamePlayer):
             log = ActionLog("wolf_vote_log", self.GM.current_time, self.agent, item)
             self.GM.game_wolf_vote_log.append(log)
             log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent["name"], item)
+            self.GM.game_wolf_share_vote_log.append(log)
+            self.AddMemory(log)
         return log

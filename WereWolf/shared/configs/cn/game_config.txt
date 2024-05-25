@@ -1,4 +1,4 @@
 {
     "max_round": 10,
-    "reflect_treshhold": 6
+    "reflect_treshhold": 5
 }

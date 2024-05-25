@@ -5,6 +5,7 @@ from .GamePlayerWitch import GamePlayerWitch
 from .GamePlayerWolf import GamePlayerWolf
 from .GamePlayerProphet import GamePlayerProphet
 from .GameAssistant import GameAssistant
+from .GameCandidates import GameCandidates, GameVotes
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
 from enum import Enum
 
@@ -29,6 +30,7 @@ class GameMaster(object):
         LANG = self.lang
         self.num = num
         self._resetGlobal()
+        self.voter = GameVotes(self)
  
         # assistant agent
         # _template_assistant_recommend_role = template_assistant_recommend_role.replace("{num}", "144")
@@ -55,13 +57,15 @@ class GameMaster(object):
         self.game_output_queue = queue.Queue(maxsize=self.queueSize)
         
         # memory log array
-        self.game_public_log = []
         self.game_wolf_vote_log = []
+        self.game_wolf_share_vote_log = []
         self.game_player_vote_log = []
         self.game_prophet_check_log = []
         self.game_witch_potion_log = []
         self.game_player_action_log = []
         self.game_player_death_log = []
+
+        self.game_public_log = []
         self.game_system_log = []
 
         self.player_agents = []
@@ -69,6 +73,14 @@ class GameMaster(object):
         
         self.wolfvotes = []
         self.palyervotes = []
+        self.antidotes = []
+        self.poisions = []
+        
+        self.nightVotes = []
+        self.dayVotes= []
+        self.witchAntiDoteVotes = []
+        self.witchPoisionVotes = []
+        
         self.input_tokens = 0
         self.output_tokens = 0
         self.god_instruct = ""
@@ -141,148 +153,145 @@ class GameMaster(object):
         return value.get(self.lang)
 
     
-    def DayVote(self, i) -> bool:
-        # caculate the votes
-        vote_names = []
-        for vote in self.game_player_vote_log:
-            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "PlayerVote"):
-                if vote["response"]["target"] != "" :
-                    vote_names.append(vote["response"]["target"])
+#     def DayVote(self, i) -> bool:
+#         # caculate the votes
+#         day_vote_names = []
+#         for vote in self.game_player_vote_log:
+#             if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "PlayerVote"):
+#                 if vote["response"]["target"] != "" :
+#                     day_vote_names.append(vote["response"]["target"])
                     
-        if len(vote_names) == 0:
-            return False
+#         if len(day_vote_names) == 0:
+#             return False
         
-        self.palyervotes = FindMostFrequent(vote_names)
-        if len(self.palyervotes) != 1:
-            for player in self.player_agents:
-                # if player.agent["role"] == "狼人":
-                #qKey = "player_vote_again" if len(self.palyervotes) > 1 else "player_vote_again_2"
-                #question = self.game_config_dict["system"][qKey].format(",".join(self.palyervotes))
-                question = self.Lang("system.player_vote_again").format(",".join(self.palyervotes))
-                Info("[DAY_VOTE_AGAIN]" + question)
-                self.game_system_log.append(question)
-                self.game_player_vote_log.append(question)
-                player.AddMemory(question)
-            return False
+#         self.palyervotes = FindMostFrequent(day_vote_names)
+#         if len(self.palyervotes) != 1:
+#             for player in self.player_agents:
+#                 # if player.agent["role"] == "狼人":
+#                 #qKey = "player_vote_again" if len(self.palyervotes) > 1 else "player_vote_again_2"
+#                 #question = self.game_config_dict["system"][qKey].format(",".join(self.palyervotes))
+#                 question = self.Lang("system.player_vote_again").format(",".join(self.palyervotes))
+#                 Info("[DAY_VOTE_AGAIN]" + question)
+#                 self.game_system_log.append(question)
+#                 self.game_player_vote_log.append(question)
+#                 player.AddMemory(question)
+#             return False
 
-        Info("\t player_vote_names: {0}".format(vote_names))
-        vote_names_counter = Counter(vote_names)
-        Debug("\t player_vote_names most_common: {0}\n".format(vote_names_counter.most_common(1)))
-        elem, count = vote_names_counter.most_common(1)[0]
-        Info("\t [player_votes]: {0}, [player_vote_name]: {1}".format(self.palyervotes, vote_names_counter))
+#         Info("\t player_day_vote_names: {0}".format(day_vote_names))
+#         day_vote_names_counter = Counter(day_vote_names)
+#         Debug("\t player_day_vote_names most_common: {0}\n".format(day_vote_names.most_common(1)))
+#         elem, count = day_vote_names_counter.most_common(1)[0]
+#         Info("\t [player_votes]: {0}, [player_vote_name]: {1}".format(self.palyervotes, day_vote_names_counter))
         
-        # kill the player and log it
-        for player in self.roles_dict["players"]:
-            if EqualIgnoreCase(player["name"],elem.strip()):
-                Info("\t Day Vote player name: {0}".format(player["name"]))
-                player["status"] = 0 # death !!!!
-                player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
-                pub_log = ReadableActionLog("[DAY_VOTE]", self.current_time, elem, player_log)
-                self.game_public_log.append(pub_log)
-                vote_log = SystemLog("[DAY_VOTE]", self.current_time, player, player_log)
-                self.game_system_log.append(vote_log)
-                return True
+#         # kill the player and log it
+#         for player in self.roles_dict["players"]:
+#             if EqualIgnoreCase(player["name"],elem.strip()):
+#                 Info("\t Day Vote player name: {0}".format(player["name"]))
+#                 player["status"] = 0 # death !!!!
+#                 player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
+#                 pub_log = ReadableActionLog("[DAY_VOTE]", self.current_time, elem, player_log)
+#                 self.game_public_log.append(pub_log)
+#                 vote_log = SystemLog("[DAY_VOTE]", self.current_time, player, player_log)
+#                 self.game_system_log.append(vote_log)
+#                 return True
                     
-        return False
+#         return False
     
-    def NightVote(self, i) -> bool:
-        # caculate the votes
-        vote_names = []
-        # print(self.game_wolf_vote_log)
-        # wolf vote caculate
-        for vote in self.game_wolf_vote_log:
-            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "wolfvote"):
-                if vote["response"]["target"] != "" :
-                    vote_names.append(vote["response"]["target"])
+#     def NightVote(self, i) -> bool:
+#         # caculate the votes
+#         night_vote_names = []
+#         # print(self.game_wolf_vote_log)
+#         # wolf vote caculate
+#         for vote in self.game_wolf_vote_log:
+#             if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "wolfvote"):
+#                 if vote["response"]["target"] != "" :
+#                     night_vote_names.append(vote["response"]["target"])
 
-        if len(vote_names) == 0:
-            return False
+#         if len(night_vote_names) == 0:
+#             return False
 
-        self.wolfvotes = FindMostFrequent(vote_names)
-        # not on agreement, need to share memory
-        if len(self.wolfvotes) != 1:
-            for player in self.player_agents:
-                if player.IsWolf():
-                    #qKey = "wolf_vote_again" if len(self.wolfvotes) > 1 else "wolf_vote_again_2"
-                    #question = self.game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
+#         self.wolfvotes = FindMostFrequent(night_vote_names)
+#         # not on agreement, need to share memory
+#         if len(self.wolfvotes) != 1:
+#             for player in self.player_agents:
+#                 if player.IsWolf():
+#                     #qKey = "wolf_vote_again" if len(self.wolfvotes) > 1 else "wolf_vote_again_2"
+#                     #question = self.game_config_dict["system"][qKey].format(",".join(self.wolfvotes))
                     
-                    question = self.Lang("system.wolf_vote_again").format(",".join(self.wolfvotes))
-                    Info("[NIGHT_VOTE_AGAIN]" + question)
-                    self.game_system_log.append(question)
-                    self.game_wolf_vote_log.append(question)
-                    player.AddMemory(question)
-            return False
+#                     question = self.Lang("system.wolf_vote_again").format(",".join(self.wolfvotes))
+#                     Info("[NIGHT_VOTE_AGAIN]" + question)
+#                     self.game_system_log.append(question)
+#                     self.game_wolf_vote_log.append(question)
+#                     player.AddMemory(question)
+#             return False
         
-        Debug("\t wolf_vote_names: {0}".format(vote_names))
-        vote_names_counter = Counter(vote_names)
-        Debug("\t wolf_vote_names most_common: {0}\n".format(vote_names_counter.most_common(1)))
-        wolf_target, count = vote_names_counter.most_common(1)[0]
+#         Debug("\t wolf_night_vote_names: {0}".format(night_vote_names))
+#         night_vote_names_counter = Counter(night_vote_names)
+#         Debug("\t wolf_night_vote_names most_common: {0}\n".format(night_vote_names_counter.most_common(1)))
+#         wolf_target, count = night_vote_names_counter.most_common(1)[0]
  
-        Info("\t [wolfvotes]: {0}, [vote_names_counter]: {1}, [wolf_target]: {2}".format(self.wolfvotes, vote_names_counter, wolf_target))
-        # kill the player and log it
-        for player in self.roles_dict["players"]:
-            if EqualIgnoreCase(player["name"], wolf_target):
-                Debug("\t Night Vote player name: {0}".format(player["name"]))
-                player["status"] = 0 # death !!!!
-                player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
-                pub_log = ReadableActionLog("[NIGHT_VOTE]", self.current_time, player["name"] , player_log)
-                self.game_public_log.append(pub_log)
-                sys_log = SystemLog("[NIGHT_VOTE]", self.current_time, player, player_log)
-                self.game_system_log.append(sys_log)
-                return True
+#         Info("\t [wolfvotes]: {0}, [night_vote_names_counter]: {1}, [wolf_target]: {2}".format(self.wolfvotes, night_vote_names_counter, wolf_target))
+#         # kill the player and log it
+#         for player in self.roles_dict["players"]:
+#             if EqualIgnoreCase(player["name"], wolf_target):
+#                 Debug("\t Night Vote player name: {0}".format(player["name"]))
+#                 player["status"] = 0 # death !!!!
+#                 player_log = self.Lang("MasterVote").format(self.current_time, player["name"])
+#                 pub_log = ReadableActionLog("[NIGHT_VOTE]", self.current_time, player["name"] , player_log)
+#                 self.game_public_log.append(pub_log)
+#                 sys_log = SystemLog("[NIGHT_VOTE]", self.current_time, player, player_log)
+#                 self.game_system_log.append(sys_log)
+#                 return True
             
-        return False
+#         return False
     
-    def NightWitch(self, i):
-        poision_names = []
-        antidote_names = []
-        # potion vote caculate
-        for vote in self.game_witch_potion_log:
-            # Witch Antidote
-            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchAntidote"):
-                if vote["response"]["target"] != "" :
-                    antidote_names.append(vote["response"]["target"])
-            # Witch Poision
-            if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchPoision"):
-                if vote["response"]["target"] != "" :
-                    poision_names.append(vote["response"]["target"])
-            pass
+#     def NightWitch(self, i):
+#         poision_names = []
+#         antidote_names = []
+#         # potion vote caculate
+#         for vote in self.game_witch_potion_log:
+#             # Witch Antidote
+#             if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchAntidote"):
+#                 if vote["response"]["target"] != "" :
+#                     antidote_names.append(vote["response"]["target"])
+#             # Witch Poision
+#             if (not isinstance(vote, str)) and vote["time"] == self.current_time and EqualIgnoreCase(vote["response"]["action"], "WitchPoision"):
+#                 if vote["response"]["target"] != "" :
+#                     poision_names.append(vote["response"]["target"])
+#             pass
         
-        poision_target = "" if len(poision_names) == 0 else poision_names[0]
-        antidote_target = "" if len(antidote_names) == 0 else antidote_names[0]
-        Info("\t [poision_target]: {0}".format(poision_target))
-        Info("\t [antidote_target]: {0}".format(antidote_target))
-        for player in self.roles_dict["players"]:
-            if EqualIgnoreCase(player["name"], poision_target):
-                Info("\t NightWitch Poision player name: {0}".format(player["name"]))
-                player["status"] = 0 # death !!!!
-                player_log = self.Lang("WitchPoision").format(self.current_time, player["name"])
-                pub_log = ReadableActionLog("[NIGHT_WITCH]", self.current_time, player["name"] , player_log)
-                self.game_public_log.append(pub_log)
-                sys_log = SystemLog("[NIGHT_WITCH]", self.current_time, player, player_log)
-                self.game_system_log.append(sys_log)
-                pass
+#         poision_target = "" if len(poision_names) == 0 else poision_names[0]
+#         antidote_target = "" if len(antidote_names) == 0 else antidote_names[0]
+#         Info("\t [poision_target]: {0}".format(poision_target))
+#         Info("\t [antidote_target]: {0}".format(antidote_target))
+#         self.poisions = [poision_target]
+#         self.antidotes = [antidote_target]
+        
+#         for player in self.roles_dict["players"]:
+#             if EqualIgnoreCase(player["name"], poision_target):
+#                 Info("\t NightWitch Poision player name: {0}".format(player["name"]))
+#                 player["status"] = 0 # death !!!!
+#                 player_log = self.Lang("WitchPoision").format(self.current_time, player["name"])
+#                 pub_log = ReadableActionLog("[NIGHT_WITCH]", self.current_time, player["name"] , player_log)
+#                 self.game_public_log.append(pub_log)
+#                 sys_log = SystemLog("[NIGHT_WITCH]", self.current_time, player, player_log)
+#                 self.game_system_log.append(sys_log)
+#                 pass
                 
-            elif EqualIgnoreCase(player["name"], antidote_target):
-                Info("\t NightWitch Antidote player name: {0}".format(player["name"]))
-                player["status"] = 1 # alive !!!!
-                player_log = self.Lang("WitchAntidote").format(self.current_time, player["name"])
-                pub_log = ReadableActionLog("[NIGHT_WITCH]", self.current_time, player["name"] , player_log)
-                self.game_public_log.append(pub_log)
-                sys_log = SystemLog("[NIGHT_WITCH]", self.current_time, player, player_log)
-                self.game_system_log.append(sys_log)
-                pass
-        pass
+#             elif EqualIgnoreCase(player["name"], antidote_target):
+#                 Info("\t NightWitch Antidote player name: {0}".format(player["name"]))
+#                 player["status"] = 1 # alive !!!!
+#                 player_log = self.Lang("WitchAntidote").format(self.current_time, player["name"])
+#                 pub_log = ReadableActionLog("[NIGHT_WITCH]", self.current_time, player["name"] , player_log)
+#                 self.game_public_log.append(pub_log)
+#                 sys_log = SystemLog("[NIGHT_WITCH]", self.current_time, player, player_log)
+#                 self.game_system_log.append(sys_log)
+#                 pass
+#         pass
     
     def EndRoundCheck(self):
         self.winner = self._checkWinner()
 
-        # message = self.game_config_dict["system"]["win_none"].format(GetAllPlayersName(self.roles_dict, self.lang))
-        # if self.winner == 1:
-        #     message = self.game_config_dict["system"]["win_villager"].format(GetAllPlayersName(self.roles_dict, self.lang))
-        # if self.winner == 2:
-        #     message = self.game_config_dict["system"]["win_wolf"].format(GetAllPlayersName(self.roles_dict, self.lang))
-            
         message = self.Lang("system.win_none").format(GetAllPlayersName(self.roles_dict, self.lang))
         if self.winner == 1:
             message = self.Lang("system.win_villager").format(GetAllPlayersName(self.roles_dict, self.lang))
@@ -325,6 +334,11 @@ class GameMaster(object):
         output['messages'] = messages
         output['end'] = not self.inGame
         output['players'] = GetPlayerInfo(self.roles_dict, self.lang)
+        output['votes'] = {}
+        output['votes']['wolf_votes'] = self.wolfvotes
+        output['votes']['player_votes'] = self.palyervotes
+        output['votes']['witch_antidotes'] = self.antidotes
+        output['votes']['witch_poisions'] = self.poisions
         return output
     
     def FakeEnding(self):
@@ -334,7 +348,17 @@ class GameMaster(object):
         output_message["player_name"] = "game assistant"
         output_message["message"] = {}
         output_message["message"]["role"] = "assistant"
-        output_message["message"]["content"] = "这是一段非常长的对话,"*20
+        output_message["message"]["content"] = """
+这是一局狼人杀游戏的过程记录。游戏分为夜晚和白天两个阶段进行。
+
+夜晚阶段:
+- 第一夜,狼人Ethan和Haley投票淘汰了预言家Fiona。预言家Fiona查验了Bella的身份。女巫Adam放弃行动。
+- 第二夜,狼人Ethan和Haley投票淘汰了村民Gabriel。女巫Adam使用毒药毒死了村民Charles。
+
+白天阶段:
+- 第二天,玩家们根据死者遗言和夜间行动情况,对Bella、Charles、Ethan和Gabriel的身份产生了怀疑,并进行了投票讨论。最终Bella被多数票淘汰。
+- 游戏结束,狼人阵营获胜。存活玩家为Adam(女巫)、Daphne(村民)、Ethan(狼人)和Haley(狼人).
+"""
         
         output_message["is_day"] = self.isDay
         output_message["round"] = self.round
@@ -402,6 +426,9 @@ class GameMaster(object):
         
         if self.isDay:
             self.stage = GameStage.DayDebate.value
+            # clean previous vote log
+            self.game_player_vote_log = []
+            
             for player in self.player_agents:
                 if self.exit_flag:
                     self.run = False
@@ -461,39 +488,39 @@ class GameMaster(object):
         
         if self.isDay:
             self.stage = GameStage.DayVote.value
+            # clean previous vote
+            self.game_player_vote_log = []
+            
+            # start voting
+            for player in self.player_agents:
+                # 如果玩家是死亡状态
+                if player.GetStatus() == -1:
+                    pass
+                # 如果玩家是遗言状态
+                if player.GetStatus() == 0:
+                    pass
+                # 如果玩家是存活状态
+                if player.GetStatus() == 1: 
+                    #question_template = self.game_config_dict["player"]["action_plan_day_vote"]
+                    question_template = self.Lang("player.action_plan_day_vote")
+                    player.DoPlanning(question_template, i)
+                    pass
+                pass
+            pass
+        
             # calculate votes
-            while not self.DayVote(i):
+            while not self.voter.MajorityVote(i, self.dayVotes[-1]):               
                 if self.exit_flag:
                     self.run = False
                     return
-                # clean previous vote
-                self.game_player_vote_log = []
-                # reset votes
-                self.palyervotes = []
-                # start voting
-                for player in self.player_agents:
-                    # 如果玩家是死亡状态
-                    if player.GetStatus() == -1:
-                        pass
-                    # 如果玩家是遗言状态
-                    if player.GetStatus() == 0:
-                        pass
-                    # 如果玩家是存活状态
-                    if player.GetStatus() == 1: 
-                        #question_template = self.game_config_dict["player"]["action_plan_day_vote"]
-                        question_template = self.Lang("player.action_plan_day_vote")
-                        player.DoPlanning(question_template, i)
-                        pass
-                    pass
-                pass
-                
-                if self.DayVote(i):
-                    break
-                #message = self.game_config_dict["system"]["player_vote_failed"].format(self.current_time, self.palyervotes)
-                
                 message = self.Lang("system.player_vote_failed").format(self.current_time, self.palyervotes)
                 Info("\t====== "+ message)
                 self.game_public_log.append(message)
+               
+                # reset votes
+                self.palyervotes = []
+                # re poll
+                self.PostAction(i)
                 pass
 
             # leave death words
@@ -518,7 +545,7 @@ class GameMaster(object):
 
         else: # night post action
             self.stage = GameStage.NightAction.value
-            while not self.NightVote(i):
+            while not self.voter.MajorityVote(i, self.nightVotes[-1]):
                 if self.exit_flag:
                     self.run = False
                     return
@@ -541,7 +568,10 @@ class GameMaster(object):
                 question_template = self.Lang("player.action_plan_night")
                 witch.DoPlanning(question_template, i)
                 
-                self.NightWitch(i)
+                self.voter.WithPoisionVote(i, self.witchAntiDoteVotes[-1])
+                self.voter.WithAntidoteVote(i, self.witchPoisionVotes[-1])
+                # self.NightWitch(i)
+                
             pass
         
         message = self.EndRoundCheck()
@@ -568,6 +598,55 @@ class GameMaster(object):
         Info("\t===== elapsed_time: {0} ======".format(self.elapsed_time))
         pass
     
+    def DayRound(self, i):
+        if i <= 1:
+            return True
+        if i > self.game_config_dict["max_round"]:
+            Info("\t===== GAME OVER  =====")
+            return False
+        # day round
+        self.isDay = True
+                
+        dVotes = GameCandidates(f"PLAYER-{self._current_time(i)}")     
+        dVotes.set(self.player_agents)
+        self.dayVotes.append(dVotes)
+
+        self.PreAction(i)
+        self.DoAction(i)
+        self.PostAction(i)
+        
+        if self.winner != 0:
+            Info("\t===== GAME OVER  =====")
+            return False
+        return True
+    
+    def NightRound(self, i):
+        # night round
+        if i >= self.game_config_dict["max_round"]:
+            Info("\t===== GAME OVER  =====")
+            return False
+        self.isDay = False
+        nVotes = GameCandidates(f"WOLF-{self._current_time(i)}")      
+        nVotes.set(self.player_agents)
+        self.nightVotes.append(nVotes)
+
+        waVotes = GameCandidates(f"WITCH-ANTIDOTE-{self._current_time(i)}")      
+        waVotes.set(self.player_agents)
+        self.witchPoisionVotes.append(waVotes)
+
+        wpVotes = GameCandidates(f"WITCH-POISION-{self._current_time(i)}") 
+        wpVotes.set(self.player_agents)
+        self.witchAntiDoteVotes.append(wpVotes)
+
+        self.PreAction(i)
+        self.DoAction(i)
+        self.PostAction(i)
+        
+        if self.winner != 0:
+            Info("\t===== GAME OVER  =====")
+            return False
+        return True
+    
     def RunGame(self): 
         Info("\t===== {0} RunGame =====".format(GetAllPlayersName(self.roles_dict, self.lang)))
         i = 0
@@ -577,31 +656,16 @@ class GameMaster(object):
             self.end_time = time.time()
             self.elapsed_time = self.end_time - self.start_time
             Info("\t===== elapsed_time: {0} ======".format(self.elapsed_time))
-            # escape condition
-            if i >= self.game_config_dict["max_round"]:
-                Info("\t===== GAME OVER  =====")
-                break
+            
             # round increment   
-            i = i+1
+            i += 1
             self.i = i
             
             # day round
-            if i > 1:
-                self.isDay = True
-                self.PreAction(i)
-                self.DoAction(i)
-                self.PostAction(i)
-                if self.winner != 0:
-                    Info("\t===== GAME OVER  =====")
-                    break
-                    
-            # night round
-            self.isDay = False
-            self.PreAction(i)
-            self.DoAction(i)
-            self.PostAction(i)
-
-            if self.winner != 0:
-                Info("\t===== GAME OVER  =====")
+            if not self.DayRound(i):
                 break
+            # night round
+            if not self.NightRound(i):
+                break
+
         self.inGame = False

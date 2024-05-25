@@ -100,7 +100,7 @@ def GroupAllPlayers(roles_dict=[], lang="cn") -> dict:
     return grouped_dict
     
 def ActionLog(prefix, current_time, agent, res_obj):
-    print(res_obj)
+    #print(res_obj)
     action_log = {"time": current_time, "player": agent["name"], "status": agent['status'], "response": res_obj}
     logger.debug("\n ActionLog: {0}={1}\n".format(prefix, action_log))
     return action_log

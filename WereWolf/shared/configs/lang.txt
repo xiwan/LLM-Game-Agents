@@ -92,8 +92,8 @@
             "cn": "时间{0}, 狼人没有统一选择, 夜晚必须要投出一名玩家."
         },
         "wolf_vote_again": {
-            "en": "The previous vote failed, you must vote for a player.",
-            "cn": "上轮投票失败，投票必须选一名玩家."
+            "en": "In the last round, the werewolves voted for: {0}. The result: failed, reason: not unanimous.",
+            "cn": "上轮狼人分别投了:{0}.结果:失败，原因:没有统一."
         },
         "player_vote_failed": {
             "en": "Time {0}, the players did not reach a consensus. Players re-vote to suspect one of {1}!",

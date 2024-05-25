@@ -35,9 +35,9 @@ class GamePlayerWitch(GamePlayer):
         return self._useItem(1)
     
     def DoMemory(self, memorysize=10, memories=[]):
+        
         for log in self.GM.game_witch_potion_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
-
         memories = super().DoMemory(memorysize, memories)
         return memories
 
@@ -53,6 +53,7 @@ class GamePlayerWitch(GamePlayer):
                 player_log =  self.GM.Lang("WitchPoision").format(self.GM.current_time, target)
                 log = ReadableActionLog("[WITCH POISION]", self.GM.current_time, target, player_log)
                 self.GM.game_public_log.append(log)
+                self.AddMemory(log)
         # Antidote
         if EqualIgnoreCase(abilityName, "WitchAntidote"):
             if self.UseAntidote():
@@ -61,4 +62,5 @@ class GamePlayerWitch(GamePlayer):
                 player_log =  self.GM.Lang("WitchAntidote").format(self.GM.current_time, target)
                 log = ReadableActionLog("[WITCH ANTIDOTE]", self.GM.current_time, target, player_log)
                 self.GM.game_public_log.append(log)
+                self.AddMemory(log)
         return log

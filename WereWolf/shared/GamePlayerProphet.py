@@ -33,9 +33,9 @@ class GamePlayerProphet(GamePlayer):
         return playerInfo
     
     def DoMemory(self, memorysize=10, memories=[]):
+        
         for log in self.GM.game_prophet_check_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
-
         memories = super().DoMemory(memorysize, memories)
         return memories
 
@@ -56,4 +56,5 @@ class GamePlayerProphet(GamePlayer):
             checker = self.GM.Lang("prophetUseAbility").format(name, role)
             self.GM.game_prophet_check_log.append(checker)
             log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent["name"], item)
+            self.AddMemory(log)
         return log

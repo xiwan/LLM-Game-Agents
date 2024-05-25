@@ -91,11 +91,11 @@ class GamePlayer:
         return 0 # assistant
     
     def InfoMessage(self, title):
-        Info("\t--------- TIME: {1} ACTION: {0} ---------".format(title, self.GM.current_time, ))
-        Info("\t\t******** PALYER: {0} ROLE: {1} ********".format(self.GetName(), self.GetRole()))
-        Info("\t\t******** ACTOR: {0}********".format(self.agent["actor"].model_id))
-        Info("\t\t******** REVISOR: {0}********".format(self.agent["reflector"].model_id))
-        Info("\t\t******** SUMMERY: {0}********".format(self.agent["assistant"].model_id))
+        Info("\t******** TIME: {1} ACTION: {0} ********".format(title, self.GM.current_time, ))
+        Info("\t\t--------- PALYER: {0} ROLE: {1} MSG: {2}---------".format(self.GetName(), self.GetRole(),self.GM.game_output_queue.qsize()))
+        Debug("\t\t--------- ACTOR: {0}---------".format(self.agent["actor"].model_id))
+        Debug("\t\t--------- REVISOR: {0}---------".format(self.agent["reflector"].model_id))
+        Debug("\t\t--------- SUMMERY: {0}---------".format(self.agent["assistant"].model_id))
         
     def UsePlayerValidate(self, abilityName, target=None, item=None):
         pass
@@ -152,7 +152,7 @@ class GamePlayer:
         self.question_template = question_template
         if self.GM.exit_flag:
             return
-        self.DoMemory(memories=[])
+        self.DoMemory(memorysize=10, memories=[])
         question = self.question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), self.idx)
         answer = self.DoAnswer(question)
         answer = self.DoValidate(question, answer)
@@ -175,6 +175,7 @@ class GamePlayer:
         if self.GM.quick:
             return answer
         self.InfoMessage("DoReflect")
+        self.reflectTimes += 1
         answer = [ConvertToJson(answer[len(answer)-1])]
         response = ParseJson(answer[len(answer)-1]["content"])
 
@@ -192,7 +193,6 @@ class GamePlayer:
             if not "score" in res_obj:
                 res_obj["score"] = self.GM.game_config_dict["reflect_treshhold"] - 1
             if res_obj["score"] < self.GM.game_config_dict["reflect_treshhold"] and self.reflectTimes < 3:
-                self.reflectTimes += 1
                 self.reflectScore = res_obj["score"]
                 return self.DoAnswer(question)
         
@@ -252,10 +252,10 @@ class GamePlayer:
         pass
         
     def DoMemory(self, memorysize=10, memories=[]):
-        self.InfoMessage("DoMemory")
+        self.InfoMessage(f"DoMemory1: {len(memories)}")
         for log in self.GM.game_public_log[-1*memorysize:]:
             memories.append(json.dumps(log, ensure_ascii=False))
-
+        self.InfoMessage(f"DoMemory2: {len(memories)}")
         if len(memories) > 0:
             # Info(memories)
             logs = ".".join(memories)
@@ -274,7 +274,7 @@ class GamePlayer:
             self.AddMemory(_summary)
             
             self.BuildOutputMessage(summary[len(summary)-1], 0)
-        time.sleep(3)
+        time.sleep(1)
         return memories
     
     def AddMemory(self, memory):
@@ -300,7 +300,7 @@ class GamePlayer:
             output_message["type"] = messageType
             output_message["stage"] = self.GM.stage
             
-            # Info("\t\t BuildOutputMessage: {0}".format(output_message))
+            # Info("\t\t BuildOutputMessage: {0}".format(len(output_message)))
             self.GM.game_output_queue.put(output_message)
         except queue.Full:
             logger.exception('game_output_queue.Full')
