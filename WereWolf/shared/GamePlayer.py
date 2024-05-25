@@ -154,9 +154,12 @@ class GamePlayer:
             return
         self.DoMemory(memorysize=10, memories=[])
         question = self.question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), self.idx)
-        answer = self.DoAnswer(question)
+        (answer, reflect) = self.DoAnswer(question)
         answer = self.DoValidate(question, answer)
         self.DoAction(answer)
+        
+        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
+        self.BuildOutputMessage(reflect[len(reflect)-1], self.MessageRoleType()) 
         time.sleep(3)
         pass
     
@@ -167,8 +170,8 @@ class GamePlayer:
             question = self.question_template.format(self._stateInfoBuilder(), self._playerInfoBuilder(), self.idx)
             question = self.GM.Lang("playerDoAnswer").format(self.reflectScore) + question
         answer = self._invokeActor(question)
-        answer = self.DoReflect(question, answer)
-        return answer
+        (answer, reflect) = self.DoReflect(question, answer)
+        return (answer, reflect) 
 
     def DoReflect(self, question, answer):
         # Info(answer)
@@ -197,9 +200,8 @@ class GamePlayer:
                 return self.DoAnswer(question)
         
         Info("\t\t DoReflect: {0}".format(reflectResponse))
-        self.BuildOutputMessage(reflect[len(reflect)-1], self.MessageRoleType()) 
         self.reflectScore = 0
-        return answer
+        return answer, reflect
     
     def DoValidate(self, question, answer):
         self.InfoMessage("DoValidate")
@@ -226,7 +228,7 @@ class GamePlayer:
             return {}
             
         Info("\t\t DoValidate: {0}".format(response))
-        self.BuildOutputMessage(answer[len(answer)-1], 0)
+        
         self.questionTry = 3
         return response
         
