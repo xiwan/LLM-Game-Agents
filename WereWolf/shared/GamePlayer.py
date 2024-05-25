@@ -177,7 +177,6 @@ class GamePlayer:
         self.InfoMessage("DoReflect")
         self.reflectTimes += 1
         answer = [ConvertToJson(answer[len(answer)-1])]
-        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
         
         response = ParseJson(answer[len(answer)-1]["content"])
 
@@ -199,6 +198,7 @@ class GamePlayer:
                 return self.DoAnswer(question)
         
         Info("\t\t DoReflect: {0}".format(reflectResponse))
+        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
         self.BuildOutputMessage(reflect[len(reflect)-1], self.MessageRoleType()) 
         self.reflectTimes = 0
         return answer
@@ -228,7 +228,7 @@ class GamePlayer:
             return {}
             
         Info("\t\t DoValidate: {0}".format(response))
-        self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
+        # self.BuildOutputMessage(answer[len(answer)-1], self.MessageRoleType())
         self.questionTry = 3
         return response
         
