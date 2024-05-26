@@ -10,10 +10,10 @@ if __name__ == "__main__":
     for arg in sys.argv[1:]:  # 从索引1开始,跳过脚本名称
         if arg.startswith("--round="):
             round_value = int(arg.split("=")[1])
-            print("Round value:", round_value)
         elif arg.startswith("--qsize="):
             qsize_value = int(arg.split("=")[1])
-            print("Queue size:", qsize_value)
             
+    print("Round value:", round_value)
+    print("Queue size:", qsize_value)
     GS = GameServer(round_value, qsize_value)
     GS.Run("0.0.0.0", 8000)

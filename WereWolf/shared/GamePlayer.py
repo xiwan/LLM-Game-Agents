@@ -292,6 +292,10 @@ class GamePlayer:
         self.agent["assistant"].Clear()
 
     def BuildOutputMessage(self, message, messageType=0, model_id=""):
+        if self.GM.exit_flag:
+            self.GM.run = False
+            return
+        
         try:
             output_message = {}
             output_message["player_id"] = self.agent["id"]

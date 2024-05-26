@@ -291,8 +291,11 @@ class GameMaster(object):
 #         pass
     
     def EndRoundCheck(self):
+        if self.exit_flag:
+            self.run = False
+            return
+        
         self.winner = self._checkWinner()
-
         message = self.Lang("system.win_none").format(GetAllPlayersName(self.roles_dict, self.lang))
         if self.winner == 1:
             message = self.Lang("system.win_villager").format(GetAllPlayersName(self.roles_dict, self.lang))
@@ -598,6 +601,13 @@ class GameMaster(object):
         message = self.EndRoundCheck()
         Info(message)
         pass
+    
+    def StopGame(self):
+        Info("\t===== StopGame ======")
+        self.run = False
+        self.exit_flag = True
+        while not self.game_output_queue.empty():
+            self.game_output_queue.get()
     
     def ResetGame(self, lang="cn"):
         self.lang = lang

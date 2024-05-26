@@ -26,7 +26,12 @@ class CustomThread(threading.Thread):
             self.app.GM.exit_flag = True
 
     def stop(self):
-        self._stop_event.set()
+        try:
+            self.app.GM.StopGame()
+        finally:
+            self._stop_event.set()
+        
+        
         
 def ReturnJson(data):
     json_str = json.dumps(data, ensure_ascii=False).encode('utf-8')
