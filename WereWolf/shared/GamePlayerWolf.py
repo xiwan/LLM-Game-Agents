@@ -33,4 +33,6 @@ class GamePlayerWolf(GamePlayer):
             log = ReadableActionLog("wolf_vote_log", self.GM.current_time, self.agent["name"], item)
             self.GM.game_wolf_share_vote_log.append(log)
             self.AddMemory(log)
+            
+            self.GM.nightVotes[-1].vote(target)
         return log

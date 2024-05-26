@@ -110,6 +110,7 @@ class GamePlayer:
             self.GM.game_player_vote_log.append(log)
             log = ReadableActionLog("player_vote_log", self.GM.current_time, self.agent["name"], item)
             self.GM.game_public_log.append(log)
+            self.GM.dayVotes[-1].vote(item["target"])
             pass
         if EqualIgnoreCase(abilityName, "PlayerDoubt"):
             log = ReadableActionLog("player_doubt_log", self.GM.current_time, self.agent["name"], item)

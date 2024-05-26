@@ -46,6 +46,9 @@ class GameCandidates(object):
     def nocandidate(self):
         return not self.candidates or len(self.candidates) == 0
     
+    def getcandidate(self):
+        return self.candidates
+    
     def count(self, candidate):
         if candidate in self.candidates:
             return self.candidates[candidate]
@@ -59,34 +62,20 @@ class GameVotes(object):
         self.GM = GM
         pass
     
-    def EliminateOrRevivePlayer(self, target, logTitle, langTitle, status=0):
-        # kill the player and log it
-        for player in self.GM.roles_dict["players"]:
-            if EqualIgnoreCase(player["name"], target):
-                Info("\t {0} player: {1} {2}".format(logTitle, player["name"], player["status"]))
-                player["status"] = status # EliminateOrRevive !!!!
-                Info("\t {0} player: {1} {2}".format(logTitle, player["name"], player["status"]))
-                player_log = self.GM.Lang(langTitle).format(self.GM.current_time, player["name"])
-                pub_log = ReadableActionLog(logTitle, self.GM.current_time, player["name"] , player_log)
-                self.GM.game_public_log.append(pub_log)
-                sys_log = SystemLog(logTitle, self.GM.current_time, player, player_log)
-                self.GM.game_system_log.append(sys_log)
-                return True
-        return False
-    
     def WithPoisionVote(self, i, vote:GameCandidates):
-        vote.reset()
-        poision_names = []
-        logs = self.GM.game_witch_potion_log
-        for log in logs:
-            # Witch Poision
-            if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], "WitchPoision"):
-                if log["response"]["target"] != "" :
-                    vote.vote(log["response"]["target"])
+        #vote.reset()
+        #poision_names = []
+        # logs = self.GM.game_witch_potion_log
+        # for log in logs:
+        #     # Witch Poision
+        #     if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], "WitchPoision"):
+        #         if log["response"]["target"] != "" :
+        #             vote.vote(log["response"]["target"])
         if vote.nocandidate():
             return False
         
         self.GM.poisions = vote.win()
+        vote.reset()
         target = self.GM.poisions[0]
         target_count = vote.count(target)
         Info(f"\t [NIGHT_WITCH] target={target}, count={target_count}")
@@ -95,18 +84,19 @@ class GameVotes(object):
         return self.EliminateOrRevivePlayer(target, "[NIGHT_WITCH]", "WitchPoision", 0)
     
     def WithAntidoteVote(self, i, vote:GameCandidates):
-        vote.reset()
-        antidote_names = []
-        logs = self.GM.game_witch_potion_log
-        for log in logs:
-            # Witch WitchAntidote
-            if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], "WitchAntidote"):
-                if log["response"]["target"] != "" :
-                    vote.vote(log["response"]["target"])
+        #vote.reset()
+        #antidote_names = []
+        # logs = self.GM.game_witch_potion_log
+        # for log in logs:
+        #     # Witch WitchAntidote
+        #     if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], "WitchAntidote"):
+        #         if log["response"]["target"] != "" :
+        #             vote.vote(log["response"]["target"])
         if vote.nocandidate():
             return False
         
         self.GM.antidotes = vote.win()
+        vote.reset()
         target = self.GM.antidotes[0]
         target_count = vote.count(target)
         Info(f"\t [NIGHT_WITCH] target={target}, count={target_count}")
@@ -116,15 +106,15 @@ class GameVotes(object):
     
     
     def MajorityVote(self, i, vote:GameCandidates):
-        vote.reset()
-        logs = self.GM.game_player_vote_log if self.GM.isDay else self.GM.game_wolf_vote_log
-        action = "playerVote" if self.GM.isDay else "wolfvote"
-        for log in logs:
-            if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], action):
-                if log["response"]["target"] != "" :
-                    vote.vote(log["response"]["target"])
-        if vote.nocandidate():
-            return False
+        # vote.reset()
+        # logs = self.GM.game_player_vote_log if self.GM.isDay else self.GM.game_wolf_vote_log
+        # action = "playerVote" if self.GM.isDay else "wolfvote"
+        # for log in logs:
+        #     if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], action):
+        #         if log["response"]["target"] != "" :
+        #             vote.vote(log["response"]["target"])
+        # if vote.nocandidate():
+        #     return False
         
         if self.GM.isDay:
             return self.DayVote(i, vote)
@@ -135,6 +125,7 @@ class GameVotes(object):
     def NightVote(self, i, vote:GameCandidates):
 
         self.GM.wolfvotes = vote.win()
+        vote.reset()
         # not on agreement, need to share memory
         if len(self.GM.wolfvotes) != 1:
             for player in self.GM.player_agents:
@@ -155,6 +146,7 @@ class GameVotes(object):
     def DayVote(self, i, vote:GameCandidates):
         
         self.GM.palyervotes = vote.win()
+        vote.reset()
         if len(self.GM.palyervotes) != 1:
             for player in self.GM.player_agents:
                 question = self.GM.Lang("system.player_vote_again").format(",".join(self.GM.palyervotes))
@@ -168,3 +160,18 @@ class GameVotes(object):
         target_count = vote.count(target)
         Info(f"\t [DAY_VOTE] target={target}, count={target_count}")
         return self.EliminateOrRevivePlayer(target, "[DAY_VOTE]", "MasterVote", 0)
+
+    def EliminateOrRevivePlayer(self, target, logTitle, langTitle, status=0):
+        # kill the player and log it
+        for player in self.GM.roles_dict["players"]:
+            if EqualIgnoreCase(player["name"], target):
+                Info("\t {0} player: {1} {2}".format(logTitle, player["name"], player["status"]))
+                player["status"] = status # EliminateOrRevive !!!!
+                Info("\t {0} player: {1} {2}".format(logTitle, player["name"], player["status"]))
+                player_log = self.GM.Lang(langTitle).format(self.GM.current_time, player["name"])
+                pub_log = ReadableActionLog(logTitle, self.GM.current_time, player["name"] , player_log)
+                self.GM.game_public_log.append(pub_log)
+                sys_log = SystemLog(logTitle, self.GM.current_time, player, player_log)
+                self.GM.game_system_log.append(sys_log)
+                return True
+        return False

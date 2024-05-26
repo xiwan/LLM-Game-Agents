@@ -72,6 +72,7 @@ class GameMaster(object):
         self.winner = 0  # 0: 继续 1: 好人 2:坏人
         
         self.wolfvotes = []
+        self.prophetVotes = []
         self.palyervotes = []
         self.antidotes = []
         self.poisions = []
@@ -335,10 +336,14 @@ class GameMaster(object):
         output['end'] = not self.inGame
         output['players'] = GetPlayerInfo(self.roles_dict, self.lang)
         output['votes'] = {}
-        output['votes']['wolf_votes'] = self.wolfvotes
-        output['votes']['player_votes'] = self.palyervotes
-        output['votes']['witch_antidotes'] = self.antidotes
-        output['votes']['witch_poisions'] = self.poisions
+        
+        if len(self.dayVotes) > 0:
+            output['votes']['player_votes'] = self.dayVotes[-1].getcandidate()
+        if len(self.nightVotes) > 0:
+            output['votes']['wolf_votes'] = self.nightVotes[-1].getcandidate()
+            output['votes']['prophet_votes'] = self.prophetVotes[-1].getcandidate()
+            output['votes']['witch_antidotes'] = self.witchAntiDoteVotes[-1].getcandidate()
+            output['votes']['witch_poisions'] = self.witchPoisionVotes[-1].getcandidate()
         return output
     
     def FakeEnding(self):
@@ -629,14 +634,18 @@ class GameMaster(object):
         nVotes = GameCandidates(f"WOLF-{self._current_time(i)}")      
         nVotes.set(self.player_agents)
         self.nightVotes.append(nVotes)
+        
+        pVotes = GameCandidates(f"PROPHET-{self._current_time(i)}")      
+        pVotes.set(self.player_agents)
+        self.prophetVotes.append(pVotes)
 
         waVotes = GameCandidates(f"WITCH-ANTIDOTE-{self._current_time(i)}")      
         waVotes.set(self.player_agents)
-        self.witchPoisionVotes.append(waVotes)
-
+        self.witchAntiDoteVotes.append(waVotes)
+ 
         wpVotes = GameCandidates(f"WITCH-POISION-{self._current_time(i)}") 
         wpVotes.set(self.player_agents)
-        self.witchAntiDoteVotes.append(wpVotes)
+        self.witchPoisionVotes.append(wpVotes)
 
         self.PreAction(i)
         self.DoAction(i)

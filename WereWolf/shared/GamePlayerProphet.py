@@ -57,4 +57,5 @@ class GamePlayerProphet(GamePlayer):
             self.GM.game_prophet_check_log.append(checker)
             log = ReadableActionLog("prophet_check_log", self.GM.current_time, self.agent["name"], item)
             self.AddMemory(log)
+            self.GM.prophetVotes[-1].vote(target)
         return log

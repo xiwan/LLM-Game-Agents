@@ -54,6 +54,8 @@ class GamePlayerWitch(GamePlayer):
                 log = ReadableActionLog("[WITCH POISION]", self.GM.current_time, target, player_log)
                 self.GM.game_public_log.append(log)
                 self.AddMemory(log)
+                self.GM.witchPoisionVotes[-1].vote(target)
+                
         # Antidote
         if EqualIgnoreCase(abilityName, "WitchAntidote"):
             if self.UseAntidote():
@@ -63,4 +65,5 @@ class GamePlayerWitch(GamePlayer):
                 log = ReadableActionLog("[WITCH ANTIDOTE]", self.GM.current_time, target, player_log)
                 self.GM.game_public_log.append(log)
                 self.AddMemory(log)
+                self.GM.witchAntiDoteVotes[-1].vote(target)
         return log
