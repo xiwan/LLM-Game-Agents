@@ -71,7 +71,7 @@
         },
         "action_prefix": {
             "en": "Remember, the player you support is {0}, identity {1}, personality {2}. {3}. Please extract useful information, then think through step-by-step.",
-            "cn": "记住，你支持的玩家是{0},身份{1},性格{2}.{3}.请提取有用的信息,然后进行一步一步思考."
+            "cn": "记住，你扮演的玩家是{0},身份{1},性格{2}.{3}.请提取有用的信息,然后进行一步一步思考."
         },
         "action_plan_test": {
             "en": "Currently how many players are alive and how many are eliminated?",

@@ -6,16 +6,23 @@
 
 2.The game alternates between night and day phases:
 - At night, all players keep their eyes closed, and actions do not reveal identities.
--- At night, the werewolves must unanimously vote to eliminate one player, prioritizing the elimination of players with roles (non-villagers).
+-- At night, the werewolves must unanimously vote to eliminate one player.
 -- At night, the prophet must verify the identity of one player.
 -- At night, the witch must use one potion, with the priority of rescuing a player over eliminating a player.
 -- At night, ordinary villagers cannot take any action.
 
-3. During the day, all players open their eyes, and the phase is divided into discussion and voting segments.
+- During the day, all players open their eyes, and the phase is divided into discussion and voting segments.
 -- Day: Discussion segment, each player must participate in the discussion and speak.
--- Day: Voting segment, each player must vote or abstain.
+-- Day: Voting segment, each player must vote or pass.
 
-4.Items:
--The witch has only one poison vial and one antidote vial.
+3.Items:
+- The witch has only one poison vial and one antidote vial.
 -- The poison vial can immediately eliminate one player.
 -- The antidote vial can revive an eliminated player.
+
+4.Strategies:
+- Players should use the opportunity of their last words to reveal the truth or create chaos.
+- Werewolves can choose to eliminate themselves or their teammates at night, but they need to consider the risks.
+- The seer needs to guide others to believe them, but they need to consider the risks.
+- The witch can use the poison potion to eliminate suspicious targets, but they need to consider the risks.
+- Villagers should take advantage of their numerical superiority when voting.
