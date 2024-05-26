@@ -66,59 +66,39 @@ class GameVotes(object):
         pass
     
     def WithPoisionVote(self, i, vote:GameCandidates):
-        #vote.reset()
-        #poision_names = []
-        # logs = self.GM.game_witch_potion_log
-        # for log in logs:
-        #     # Witch Poision
-        #     if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], "WitchPoision"):
-        #         if log["response"]["target"] != "" :
-        #             vote.vote(log["response"]["target"])
-        if vote.nocandidate():
-            return False
+        try:
+            if vote.nocandidate():
+                return False
+
+            self.GM.poisions = vote.win()
+            target = self.GM.poisions[0]
+            target_count = vote.count(target)
+
+            Info(f"\t [NIGHT_WITCH_POISION] target={target}, count={target_count}")
+            if target_count == 0:
+                return True
+            return self.EliminateOrRevivePlayer(target, "[NIGHT_WITCH_POISION]", "WitchPoision", 0)
+        finally:
+            vote.reset()
         
-        self.GM.poisions = vote.win()
-        vote.reset()
-        target = self.GM.poisions[0]
-        target_count = vote.count(target)
-        Info(f"\t [NIGHT_WITCH] target={target}, count={target_count}")
-        if target_count == 0:
-            return True
-        return self.EliminateOrRevivePlayer(target, "[NIGHT_WITCH]", "WitchPoision", 0)
     
     def WithAntidoteVote(self, i, vote:GameCandidates):
-        #vote.reset()
-        #antidote_names = []
-        # logs = self.GM.game_witch_potion_log
-        # for log in logs:
-        #     # Witch WitchAntidote
-        #     if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], "WitchAntidote"):
-        #         if log["response"]["target"] != "" :
-        #             vote.vote(log["response"]["target"])
-        if vote.nocandidate():
-            return False
-        
-        self.GM.antidotes = vote.win()
-        vote.reset()
-        target = self.GM.antidotes[0]
-        target_count = vote.count(target)
-        Info(f"\t [NIGHT_WITCH] target={target}, count={target_count}")
-        if target_count == 0:
-            return True
-        return self.EliminateOrRevivePlayer(target, "[NIGHT_WITCH]", "WitchAntidote", 1)
-    
+        try:
+            if vote.nocandidate():
+                return False
+
+            self.GM.antidotes = vote.win()
+            target = self.GM.antidotes[0]
+            target_count = vote.count(target)
+            vote.reset()
+            Info(f"\t [NIGHT_WITCH_ANTIDOTE] target={target}, count={target_count}")
+            if target_count == 0:
+                return True
+            return self.EliminateOrRevivePlayer(target, "[NIGHT_WITCH_ANTIDOTE]", "WitchAntidote", 1) 
+        finally:
+            vote.reset()
     
     def MajorityVote(self, i, vote:GameCandidates):
-        # vote.reset()
-        # logs = self.GM.game_player_vote_log if self.GM.isDay else self.GM.game_wolf_vote_log
-        # action = "playerVote" if self.GM.isDay else "wolfvote"
-        # for log in logs:
-        #     if (not isinstance(log, str)) and log["time"] == self.GM.current_time and EqualIgnoreCase(log["response"]["action"], action):
-        #         if log["response"]["target"] != "" :
-        #             vote.vote(log["response"]["target"])
-        # if vote.nocandidate():
-        #     return False
-        
         if self.GM.isDay:
             return self.DayVote(i, vote)
         else:
@@ -126,43 +106,50 @@ class GameVotes(object):
         pass
 
     def NightVote(self, i, vote:GameCandidates):
+        try:
+            self.GM.wolfvotes = vote.win()
+            # vote.reset()
+            # not on agreement, need to share memory
+            if len(self.GM.wolfvotes) != 1:
+                for player in self.GM.player_agents:
+                    if player.IsWolf():
+                        question = self.GM.Lang("system.wolf_vote_again").format(",".join(self.GM.wolfvotes))
+                        Info("[NIGHT_VOTE_AGAIN]" + question)
+                        self.GM.game_system_log.append(question)
+                        self.GM.game_wolf_vote_log.append(question)
+                        player.AddMemory(question)
+                return False
 
-        self.GM.wolfvotes = vote.win()
-        vote.reset()
-        # not on agreement, need to share memory
-        if len(self.GM.wolfvotes) != 1:
-            for player in self.GM.player_agents:
-                if player.IsWolf():
-                    question = self.GM.Lang("system.wolf_vote_again").format(",".join(self.GM.wolfvotes))
-                    Info("[NIGHT_VOTE_AGAIN]" + question)
-                    self.GM.game_system_log.append(question)
-                    self.GM.game_wolf_vote_log.append(question)
-                    player.AddMemory(question)
-            return False
-                
-        target = self.GM.wolfvotes[0]
-        target_count = vote.count(target)
-        Info(f"\t [NIGHT_VOTE] target={target}, count={target_count}")
+            target = self.GM.wolfvotes[0]
+            target_count = vote.count(target)
+            Info(f"\t [NIGHT_VOTE] target={target}, count={target_count}")
+        finally:
+            vote.reset()
+        
         
         return self.EliminateOrRevivePlayer(target, "[NIGHT_VOTE]", "MasterVote", 0)
     
     def DayVote(self, i, vote:GameCandidates):
+        try:
+            self.GM.palyervotes = vote.win()
+            #vote.reset()
+            if len(self.GM.palyervotes) != 1:
+                for player in self.GM.player_agents:
+                    question = self.GM.Lang("system.player_vote_again").format(",".join(self.GM.palyervotes))
+                    Info("[DAY_VOTE_AGAIN]" + question)
+                    self.GM.game_system_log.append(question)
+                    self.GM.game_player_vote_log.append(question)
+                    player.AddMemory(question)
+                return False
+
+            target = self.GM.palyervotes[0]
+            target_count = vote.count(target)
+            Info(f"\t [DAY_VOTE] target={target}, count={target_count}")
+
+            return self.EliminateOrRevivePlayer(target, "[DAY_VOTE]", "MasterVote", 0) 
+        finally:
+            vote.reset()
         
-        self.GM.palyervotes = vote.win()
-        vote.reset()
-        if len(self.GM.palyervotes) != 1:
-            for player in self.GM.player_agents:
-                question = self.GM.Lang("system.player_vote_again").format(",".join(self.GM.palyervotes))
-                Info("[DAY_VOTE_AGAIN]" + question)
-                self.GM.game_system_log.append(question)
-                self.GM.game_player_vote_log.append(question)
-                player.AddMemory(question)
-            return False
-        
-        target = self.GM.palyervotes[0]
-        target_count = vote.count(target)
-        Info(f"\t [DAY_VOTE] target={target}, count={target_count}")
-        return self.EliminateOrRevivePlayer(target, "[DAY_VOTE]", "MasterVote", 0)
 
     def EliminateOrRevivePlayer(self, target, logTitle, langTitle, status=0):
         # kill the player and log it

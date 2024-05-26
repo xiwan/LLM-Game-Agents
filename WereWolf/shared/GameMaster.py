@@ -589,8 +589,8 @@ class GameMaster(object):
                 question_template = self.Lang("player.action_plan_night")
                 witch.DoPlanning(question_template, i)
                 
-                self.voter.WithPoisionVote(i, self.witchAntiDoteVotes[-1])
-                self.voter.WithAntidoteVote(i, self.witchPoisionVotes[-1])
+                self.voter.WithPoisionVote(i, self.witchPoisionVotes[-1])
+                self.voter.WithAntidoteVote(i, self.witchAntiDoteVotes[-1])
                 # self.NightWitch(i)
                 
             pass
