@@ -47,11 +47,6 @@ def after_request(response):
 def hello_world():
     return 'hello, world'
 
-@app.route('/getPlayer')
-def get_player():
-    data = GetPlayerInfo(app.GM.roles_dict, app.GM.lang)
-    return ReturnJson(data)
-
 @app.route('/startGame')
 def start_game():
     if app.GMrunning:
@@ -88,6 +83,16 @@ def reset_game():
 def get_msg():
     # app.GM.GetMessages()
     data = app.GM.GetMessages()
+    return ReturnJson(data)
+
+@app.route('/getPlayer')
+def get_player():
+    data = app.GM.GetPlayerInfo()
+    return ReturnJson(data)
+
+@app.route('/getVotes')
+def get_vote():
+    data = app.GM.GetVotes()
     return ReturnJson(data)
 
 @app.route('/fakeEnding')

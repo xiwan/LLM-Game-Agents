@@ -334,9 +334,12 @@ class GameMaster(object):
         output = {}
         output['messages'] = messages
         output['end'] = not self.inGame
-        output['players'] = GetPlayerInfo(self.roles_dict, self.lang)
+        output['players'] = self.GetPlayerInfo()
+        return output
+    
+    def GetVotes(self):
+        output = {}
         output['votes'] = {}
-        
         if len(self.dayVotes) > 0:
             output['votes']['player_votes'] = self.dayVotes[-1].getcandidate()
         if len(self.nightVotes) > 0:
@@ -346,6 +349,19 @@ class GameMaster(object):
             output['votes']['witch_poisions'] = self.witchPoisionVotes[-1].getcandidate()
         return output
     
+    def GetPlayerInfo(self):
+        player_info = []
+        for player in self.roles_dict["players"]:
+            tmp_player = {}
+            tmp_player["id"] = player["id"]
+            tmp_player["name"] = player["name"]
+            tmp_player["role"] = player["role"]
+            tmp_player["character"] = player["character"]
+            tmp_player["status"] = player["status"]
+            tmp_player["gender"] = player["gender"]
+            player_info.append(tmp_player)
+        return player_info
+
     def FakeEnding(self):
         self.stage = GameStage.Assistant.value
         output_message = {}
@@ -374,7 +390,7 @@ class GameMaster(object):
         output = {}
         output['messages'] = [output_message]
         output['end'] = not self.inGame
-        output['players'] = GetPlayerInfo(self.roles_dict, self.lang)
+        output['players'] = self.GetPlayerInfo()
         return output
 
     def PreAction(self, i):
