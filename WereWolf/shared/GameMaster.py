@@ -341,12 +341,12 @@ class GameMaster(object):
         output = {}
         output['votes'] = {}
         if len(self.dayVotes) > 0:
-            output['votes']['player_votes'] = self.dayVotes[-1].getcandidate()
+            output['votes']['player_votes'] = self.dayVotes[-1].getcandidate(self.roles_dict["players"])
         if len(self.nightVotes) > 0:
-            output['votes']['wolf_votes'] = self.nightVotes[-1].getcandidate()
-            output['votes']['prophet_votes'] = self.prophetVotes[-1].getcandidate()
-            output['votes']['witch_antidotes'] = self.witchAntiDoteVotes[-1].getcandidate()
-            output['votes']['witch_poisions'] = self.witchPoisionVotes[-1].getcandidate()
+            output['votes']['wolf_votes'] = self.nightVotes[-1].getcandidate(self.roles_dict["players"])
+            output['votes']['prophet_votes'] = self.prophetVotes[-1].getcandidate(self.roles_dict["players"])
+            output['votes']['witch_antidotes'] = self.witchAntiDoteVotes[-1].getcandidate(self.roles_dict["players"])
+            output['votes']['witch_poisions'] = self.witchPoisionVotes[-1].getcandidate(self.roles_dict["players"])
         return output
     
     def GetPlayerInfo(self):

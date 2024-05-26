@@ -46,8 +46,11 @@ class GameCandidates(object):
     def nocandidate(self):
         return not self.candidates or len(self.candidates) == 0
     
-    def getcandidate(self):
-        return self.candidates
+    def getcandidate(self, roles_dict=[]):
+        
+        return [{"name": item["name"], "count": self.candidates[item["name"]], "id": item["id"]} for item in roles_dict]
+
+        #return [{"name": name, "count": count} for name, count in self.candidates.items()] 
     
     def count(self, candidate):
         if candidate in self.candidates:
