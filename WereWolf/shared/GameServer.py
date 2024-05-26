@@ -103,8 +103,8 @@ def def_fakeEnding():
 @singleton
 class GameServer(object):
     
-    def __init__(self):
-        self.GM = GameMaster(50, 50, False)
+    def __init__(self, round=20, qsize=3):
+        self.GM = GameMaster(round, qsize, False)
         app.GM = self.GM
         app.GMrunning = False
         pass
