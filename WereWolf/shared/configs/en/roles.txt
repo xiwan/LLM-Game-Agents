@@ -1,23 +1,23 @@
 {
   "players": [
     {
-      "name": "Adam_Claude",
+      "name": "Adam_Meta",
       "id": 1001,
       "role": "prophet",
       "character": "Courageous and Resourceful",
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
+      "actor": "meta.llama3-70b-instruct-v1:0",
+      "revisor": "meta.llama3-70b-instruct-v1:0",
+      "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
-      "name": "Bella_Meta",
+      "name": "Bella_Claude",
       "id": 1002,
       "role": "witch", 
       "character": "Independent Thinker",
-      "actor": "meta.llama3-70b-instruct-v1:0",
-      "revisor": "meta.llama3-70b-instruct-v1:0",
-      "summary": "meta.llama3-8b-instruct-v1:0",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
@@ -27,7 +27,7 @@
       "character": "Rule-Follower",
       "actor": "meta.llama3-70b-instruct-v1:0",
       "revisor": "meta.llama3-70b-instruct-v1:0",
-      "summary": "meta.llama3-8b-instruct-v1:0",
+      "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
@@ -47,7 +47,7 @@
       "character": "Talkative",
       "actor": "meta.llama3-70b-instruct-v1:0",
       "revisor": "meta.llama3-70b-instruct-v1:0",
-      "summary": "meta.llama3-8b-instruct-v1:0",
+      "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
@@ -67,7 +67,7 @@
       "character": "Shy", 
       "actor": "meta.llama3-70b-instruct-v1:0",
       "revisor": "meta.llama3-70b-instruct-v1:0",
-      "summary": "meta.llama3-8b-instruct-v1:0",
+      "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
