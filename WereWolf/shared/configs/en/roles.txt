@@ -1,82 +1,82 @@
 {
   "players": [
     {
-      "name": "Adam_Meta",
+      "name": "Adam",
       "id": 1001,
       "role": "prophet",
       "character": "Courageous and Resourceful",
-      "actor": "meta.llama3-70b-instruct-v1:0",
-      "revisor": "meta.llama3-70b-instruct-v1:0",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
-      "name": "Bella_Claude",
+      "name": "Bella",
       "id": 1002,
       "role": "witch", 
       "character": "Independent Thinker",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
-      "name": "Charles_Meta",
+      "name": "Charles",
       "id": 1003,
       "role": "wolf",
       "character": "Rule-Follower",
-      "actor": "meta.llama3-70b-instruct-v1:0",
-      "revisor": "meta.llama3-70b-instruct-v1:0",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
-      "name": "Daphne_Claude",
+      "name": "Daphne",
       "id": 1004,
       "role": "villager",
       "character": "Organizer",
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
-      "name": "Ethan_Meta",
+      "name": "Ethan",
       "id": 1005,
       "role": "villager",
       "character": "Talkative",
-      "actor": "meta.llama3-70b-instruct-v1:0",
-      "revisor": "meta.llama3-70b-instruct-v1:0",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
-      "name": "Fiona_Claude",
+      "name": "Fiona",
       "id": 1006,
       "role": "wolf",
       "character": "Observer", 
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     },
     {
-      "name": "Gabriel_Meta",
+      "name": "Gabriel",
       "id": 1007,
       "role": "villager",
       "character": "Shy", 
-      "actor": "meta.llama3-70b-instruct-v1:0",
-      "revisor": "meta.llama3-70b-instruct-v1:0",
+      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "mistral.mistral-7b-instruct-v0:2",
       "status": 1
     },
     {
-      "name": "Haley_Claude",
+      "name": "Haley",
       "id": 1008,
       "role": "villager",
       "character": "Social Butterfly", 
       "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "anthropic.claude-3-sonnet-20240229-v1:0",
+      "revisor": "meta.llama3-8b-instruct-v1:0",
       "summary": "anthropic.claude-3-haiku-20240307-v1:0",
       "status": 1
     }
