@@ -27,7 +27,7 @@ class LangchainMini():
                     self.llm = Anthropic3(api_key="")
             elif model_id == "mistral.mixtral-8x7b-instruct-v0:1" or model_id == "mistral.mistral-7b-instruct-v0:2":
                 self.llm = Mistral7BBedrock(aws_region="us-east-1", model_id=model_id)
-            elif model_id == "meta.llama3-8b-instruct-v1:0":
+            elif model_id == "meta.llama3-8b-instruct-v1:0" or model_id == "meta.llama3-70b-instruct-v1:0":
                 self.llm = Llama8BBedrock(aws_region="us-east-1", model_id=model_id)
                 pass
             

@@ -19,7 +19,7 @@ class GamePlayer:
         # player agent
         action_role = self.agent["action_prompt"]
         _action_role = action_role.replace("{formation}", GetPartySize(self.GM.roles_dict, self.GM.lang))
-        # Info(_action_role)
+        #Info(_action_role)
         player["actor"] = GameAssistant(_action_role, GM, 10, player["actor"])
 
         # reflect agent

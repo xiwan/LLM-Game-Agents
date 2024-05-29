@@ -5,7 +5,6 @@ import logging
 import os
 import re
 import random
-import numpy as np
 import queue
 import time
 import boto3

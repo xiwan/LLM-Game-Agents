@@ -43,22 +43,21 @@ class Mistral7BBedrock(LLMProduct):
 
         response = None
         try:
-            systemMsg = SystemMessage(content=self.system)
             prompt = ChatPromptTemplate.from_messages(
                 [
-                    systemMsg,
+                    SystemMessage(content=self.system),
                     MessagesPlaceholder(variable_name="messages"),
                 ]
             )
             chain = prompt | self.chat
             if self.stream:
                 streamtext = ""
-                for chunk in self.chat.stream(_messages):
+                for chunk in chain.stream(_messages):
                     print(chunk.content, end="", flush=True)
                     streamtext = streamtext + chunk.content
                 response = {"role": self.assistant, "content": streamtext}
             else:
-                message = self.chat.invoke(_messages)
+                message = chain.invoke(_messages)
                 response = {"role": self.assistant, "content": message.content}
         except Exception as e:
             logger.error(str(e))

@@ -56,7 +56,7 @@ def hello_world():
 def start_game():
     if app.GMrunning:
         return app.sessionId
-
+    app.stop_game()
     uselang=request.args["lang"]
     
     app.GMrunning = True

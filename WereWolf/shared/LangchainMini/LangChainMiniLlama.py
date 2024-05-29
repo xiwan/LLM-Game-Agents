@@ -11,7 +11,6 @@ class Llama8BBedrock(LLMProduct):
                  model_id="mistral.mistral-7b-instruct-v0:2",
                  max_tokens=2048, temperature=0.8):
         super().__init__(model_id, max_tokens, temperature)
-
         self.chat = ChatBedrock(
             model_id=self.model_id,
             model_kwargs={"temperature": self.temperature, "max_gen_len": self.max_tokens},
@@ -43,22 +42,21 @@ class Llama8BBedrock(LLMProduct):
 
         response = None
         try:
-            systemMsg = SystemMessage(content=self.system)
             prompt = ChatPromptTemplate.from_messages(
                 [
-                    systemMsg,
+                    SystemMessage(content=self.system),
                     MessagesPlaceholder(variable_name="messages"),
                 ]
             )
             chain = prompt | self.chat
             if self.stream:
                 streamtext = ""
-                for chunk in self.chat.stream(_messages):
+                for chunk in chain.stream(_messages):
                     print(chunk.content, end="", flush=True)
                     streamtext = streamtext + chunk.content
                 response = {"role": self.assistant, "content": streamtext}
             else:
-                message = self.chat.invoke(_messages)
+                message = chain.invoke(_messages)
                 response = {"role": self.assistant, "content": message.content}
         except Exception as e:
             logger.error(str(e))
