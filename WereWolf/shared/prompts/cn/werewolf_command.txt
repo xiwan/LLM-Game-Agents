@@ -35,11 +35,11 @@
 - 方法: Debate
   描述: agent(玩家)白天讨论，不会计入投票
   参数: agent=执行玩家, content=思考/理由
-  例子: {"action": "Debate", "agent": "P2", "content": "我的推理为xx是狼，(给出原因)"}
+  例子: {"action": "Debate", "agent": "P2", "content": "我跳预言家/女巫，(给出原因)"}
 - 方法: DeathWords
   描述: agent(玩家)白天死亡遗言
   参数: agent=执行玩家, content=思考/理由
-  例子: {"action": "DeathWords", "agent": "P2", "content": "我觉得xx有很大的嫌疑, (给出原因)"}
+  例子: {"action": "DeathWords", "agent": "P2", "content": "我今天被刀了, (给出原因)"}
 - 方法: Pass
   描述: agent(玩家)行动弃权
   参数: agent=执行玩家
