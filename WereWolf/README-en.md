@@ -9,6 +9,7 @@ This is a social game 'Werewolf' driven by LLM models. The main purpose is to st
 + Make sure you have Python 3.9.16 and pip 21.3.1
 + Run pip3 install -r requirements.txt in this directory
 + Start with python3 Entry.py
++ Player will use AWS Strands Agent as default
 
 ### Rules 
 

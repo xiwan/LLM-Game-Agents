@@ -9,6 +9,7 @@
 + 确保你有 Python 3.9.16  pip 21.3.1
 + 在此目录下运行 pip3 install -r requirements.txt
 + 启动方法 python3 Entry.py
++ 目前默认支持 AWS Strands Agent来启动玩家
 
 ### 规则
 
