@@ -3,13 +3,19 @@ from .LangChainMiniKlass import *
 from .LangChainMiniClaude import *
 from .LangChainMiniMistral import *
 from .LangChainMiniLlama import *
+from .StrandsAgent import *
 
-
-claude_models = ["anthropic.claude-3-sonnet-20240229-v1:0",
+claude_models = [
+                "anthropic.claude-3-sonnet-20240229-v1:0",
                 "anthropic.claude-3-haiku-20240307-v1:0",
-                "anthropic.claude-3-opus-20240229-v1:0",
+                "anthropic.claude-3-opus-20240229-v1:0"]
+
+strands_models = ["us.deepseek.r1-v1:0",
+                "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
                 "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
-                "us.anthropic.claude-3-5-haiku-20241022-v1:0"]
+                "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
+                "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+                "us.anthropic.claude-3-sonnet-20240229-v1:0"]
             
 mistral_models = ["mistral.mixtral-8x7b-instruct-v0:1",
                 "mistral.mistral-7b-instruct-v0:2"]
@@ -36,11 +42,10 @@ class LangchainMini():
             elif model_id in claude_models:
                 if platform == "bedrock":
                     self.llm = Anthropic3Bedrock(aws_region="us-east-1", model_id=model_id)
-                elif platform == "strands":
-                    
-                    self.llm = Anthropic3Strands(aws_region="us-east-1", model_id=model_id, system_prompt=system )
                 else:
                     self.llm = Anthropic3(api_key="")
+            elif model_id in strands_models:
+                self.llm = StrandsAgent(aws_region="us-east-1", model_id=model_id, system_prompt=system)
             elif model_id in mistral_models:
                 self.llm = Mistral7BBedrock(aws_region="us-east-1", model_id=model_id)
             elif model_id in meta_models:
@@ -50,7 +55,7 @@ class LangchainMini():
         except ClientError:
             logger.exception("Couldn't invoke model %s", model_id)
             raise
-            
+        
         self.llm.stream = stream
         if not memory is None:
             self.llm._memory(memory)

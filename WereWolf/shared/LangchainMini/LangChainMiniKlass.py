@@ -96,7 +96,7 @@ class LLMProduct(LLMInterface):
     temperature = 0.8
     system = ""
     memory = None
-    
+    stream = True
     retry = RETRY_NUM
     
     def __init__(self, model_id, max_tokens=2048, temperature=0.8):
