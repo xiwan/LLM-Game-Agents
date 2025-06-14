@@ -1,6 +1,6 @@
 from . import *
 from .PeTemplates import *
-from .GameAssistant import GameAssistant
+from .GameAssistant import GameAssistant, GameAssistantV2
 from .LangchainMini.LangchainMini import LangchainMini, LangchainMiniMemory, LangchainMiniPromptTemplate
 
 class GamePlayer:
@@ -20,17 +20,17 @@ class GamePlayer:
         action_role = self.agent["action_prompt"]
         _action_role = action_role.replace("{formation}", GetPartySize(self.GM.roles_dict, self.GM.lang))
         #Info(_action_role)
-        player["actor"] = GameAssistant(_action_role, GM, 10, player["actor"])
+        player["actor"] = GameAssistantV2(_action_role, GM, 10, player["actor"])
 
         # reflect agent
         reflect_role = self.agent["reflect_prompt"]
         _reflect_role = reflect_role.replace("{formation}", GetPartySize(self.GM.roles_dict, self.GM.lang))
-        player["reflector"] = GameAssistant(_reflect_role, GM, 5, player["revisor"])
+        player["reflector"] = GameAssistantV2(_reflect_role, GM, 5, player["revisor"])
         
         # assistant agent
         summary_role = self.agent["summary_prompt"]
         _summary_role = summary_role.replace("{num}", "144")
-        player["assistant"] = GameAssistant(_summary_role, GM, 1, player["summary"])
+        player["assistant"] = GameAssistantV2(_summary_role, GM, 1, player["summary"])
         pass
 
     def _stateInfoBuilder(self):
@@ -177,9 +177,8 @@ class GamePlayer:
             return answer
         self.InfoMessage("DoReflect")
         self.reflectTimes += 1
-        answer = [ConvertToJson(answer[len(answer)-1])]
-        
-        response = ParseJson(answer[len(answer)-1]["content"])
+
+        response = RetriveResponse(answer, self.GM.platform)
 
         relfect_question = self.GM.Lang("playerDoReflect").format(
             self.GM.current_time, 
@@ -188,8 +187,8 @@ class GamePlayer:
             json.dumps(response,  ensure_ascii=False))
         reflect = self._invokeReflector(relfect_question)
         
-        reflect = [ConvertToJson(reflect[len(reflect)-1])]
-        reflectResponse = ParseJson(reflect[len(reflect)-1]["content"])
+        reflectResponse = RetriveResponse(reflect, self.GM.platform)
+
         for res in reflectResponse:
             res_obj = json.loads(res)
             if not "score" in res_obj:
@@ -211,12 +210,7 @@ class GamePlayer:
             return []
 
         #Info(answer)
-        answer = [ConvertToJson(answer[len(answer)-1])]
-        response = {}
-        if 'content' in answer[len(answer)-1] and answer[len(answer)-1]['content']:
-            response = ParseJson(answer[len(answer)-1]["content"])
-        else:
-            response = answer[len(answer)-1]
+        response = RetriveResponse(answer, self.GM.platform)
         # Info(response)
         validJsonFlag = True
         for res in response:

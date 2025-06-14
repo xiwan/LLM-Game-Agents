@@ -4,6 +4,19 @@ from .LangChainMiniClaude import *
 from .LangChainMiniMistral import *
 from .LangChainMiniLlama import *
 
+
+claude_models = ["anthropic.claude-3-sonnet-20240229-v1:0",
+                "anthropic.claude-3-haiku-20240307-v1:0",
+                "anthropic.claude-3-opus-20240229-v1:0",
+                "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+                "us.anthropic.claude-3-5-haiku-20241022-v1:0"]
+            
+mistral_models = ["mistral.mixtral-8x7b-instruct-v0:1",
+                "mistral.mistral-7b-instruct-v0:2"]
+
+meta_models = ["meta.llama3-8b-instruct-v1:0",
+               "meta.llama3-70b-instruct-v1:0"]
+
 class LangchainMini():
     
     def __init__(self, model_id, 
@@ -20,14 +33,17 @@ class LangchainMini():
                 self.llm = Anthropic2Bedrock()
             elif model_id == "anthropic.claude-v2":
                 self.llm = Anthropic2Bedrock()
-            elif model_id == "anthropic.claude-3-sonnet-20240229-v1:0" or model_id == "anthropic.claude-3-haiku-20240307-v1:0" or model_id == "anthropic.claude-3-opus-20240229-v1:0":
+            elif model_id in claude_models:
                 if platform == "bedrock":
                     self.llm = Anthropic3Bedrock(aws_region="us-east-1", model_id=model_id)
+                elif platform == "strands":
+                    
+                    self.llm = Anthropic3Strands(aws_region="us-east-1", model_id=model_id, system_prompt=system )
                 else:
                     self.llm = Anthropic3(api_key="")
-            elif model_id == "mistral.mixtral-8x7b-instruct-v0:1" or model_id == "mistral.mistral-7b-instruct-v0:2":
+            elif model_id in mistral_models:
                 self.llm = Mistral7BBedrock(aws_region="us-east-1", model_id=model_id)
-            elif model_id == "meta.llama3-8b-instruct-v1:0" or model_id == "meta.llama3-70b-instruct-v1:0":
+            elif model_id in meta_models:
                 self.llm = Llama8BBedrock(aws_region="us-east-1", model_id=model_id)
                 pass
             

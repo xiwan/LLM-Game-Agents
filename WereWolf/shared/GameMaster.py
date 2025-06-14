@@ -31,6 +31,7 @@ class GameMaster(object):
         self.num = num
         self._resetGlobal()
         self.voter = GameVotes(self)
+        self.platform = "strands" # strands/bedrock
  
         # assistant agent
         # _template_assistant_recommend_role = template_assistant_recommend_role.replace("{num}", "144")

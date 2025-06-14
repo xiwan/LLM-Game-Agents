@@ -5,9 +5,9 @@
       "id": 1001,
       "role": "prophet",
       "character": "Courageous and Resourceful",
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "mistral.mistral-7b-instruct-v0:2",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     },
     {
@@ -15,9 +15,9 @@
       "id": 1002,
       "role": "witch", 
       "character": "Independent Thinker",
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     },
     {
@@ -25,9 +25,9 @@
       "id": 1003,
       "role": "wolf",
       "character": "Rule-Follower",
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "mistral.mistral-7b-instruct-v0:2",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     },
     {
@@ -35,9 +35,9 @@
       "id": 1004,
       "role": "villager",
       "character": "Organizer",
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     },
     {
@@ -45,9 +45,9 @@
       "id": 1005,
       "role": "villager",
       "character": "Talkative",
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "mistral.mistral-7b-instruct-v0:2",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     },
     {
@@ -55,9 +55,9 @@
       "id": 1006,
       "role": "wolf",
       "character": "Observer", 
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     },
     {
@@ -65,9 +65,9 @@
       "id": 1007,
       "role": "villager",
       "character": "Shy", 
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "mistral.mistral-7b-instruct-v0:2",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     },
     {
@@ -75,9 +75,9 @@
       "id": 1008,
       "role": "villager",
       "character": "Social Butterfly", 
-      "actor": "anthropic.claude-3-sonnet-20240229-v1:0",
-      "revisor": "meta.llama3-8b-instruct-v1:0",
-      "summary": "anthropic.claude-3-haiku-20240307-v1:0",
+      "actor": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+      "summary": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
       "status": 1
     }
   ]

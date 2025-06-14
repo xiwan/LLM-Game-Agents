@@ -136,6 +136,22 @@ def ParseJson(text):
         logger.exception("Cannot parse json")
     return None
 
+def RetriveResponse(answer, model="bedrock"):
+    answer = [ConvertToJson(answer[len(answer)-1])]
+    response = None
+    if model == "bedrock":
+        if 'content' in answer[len(answer)-1] and answer[len(answer)-1]['content']:
+            response = ParseJson(answer[len(answer)-1]["content"])
+        else:
+            response = answer[len(answer)-1]
+    elif model == "strands":
+        if 'content' in answer[len(answer)-1] and answer[len(answer)-1]['content']:
+            content = answer[len(answer)-1]["content"]
+            response = ParseJson(content[len(content)-1]["text"])
+        else:
+            response = answer[len(answer)-1]
+    return response 
+
 def IsValidJson(json_str):
     try:
         # print(json_str)
@@ -211,7 +227,7 @@ def LoadPlayerPrompts(lang="cn", roles_dict=[]) -> str:
     template_prophet_role = LoadPrompt(lang, "template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", prophet_tools)
     template_witch_role = LoadPrompt(lang, "template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", witch_tools)
     template_player_role = LoadPrompt(lang, "template_player_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", player_tools)
-
+    
     template_assistant_summarize_role = LoadPrompt(lang, "template_assistant_summarize_role.txt").replace("{game_rule}", werewolf_rule_v1).replace("{commands}", all_tools)
     template_assistant_recommend_role = LoadPrompt(lang, "template_assistant_recommend_role.txt").replace("{game_rule}", werewolf_rule_v1)
 
