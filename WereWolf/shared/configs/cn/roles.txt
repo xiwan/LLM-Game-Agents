@@ -5,9 +5,9 @@
       "id": 1001,
       "role": "女巫",
       "character": "有勇有谋",
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     },
     {
@@ -15,9 +15,9 @@
       "id": 1002,
       "role": "预言家", 
       "character": "独立思考",
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     },
     {
@@ -25,9 +25,9 @@
       "id": 1003,
       "role": "狼人",
       "character": "规矩型",
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     },
     {
@@ -35,9 +35,9 @@
       "id": 1004,
       "role": "村民",
       "character": "组织者",
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     },
     {
@@ -45,9 +45,9 @@
       "id": 1005,
       "role": "村民",
       "character": "话痨",
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     },
     {
@@ -55,9 +55,9 @@
       "id": 1006,
       "role": "狼人",
       "character": "观察家", 
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     },
     {
@@ -65,9 +65,9 @@
       "id": 1007,
       "role": "村民",
       "character": "腼腆型",
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     },
     {
@@ -75,9 +75,9 @@
       "id": 1008,
       "role": "村民",
       "character": "互动达人", 
-      "actor": "us.anthropic.claude-3-5-sonnet-20240620-v1:0",
-      "revisor": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
-      "summary": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+      "actor": "us.amazon.nova-pro-v1:0",
+      "revisor": "us.amazon.nova-premier-v1:0",
+      "summary": "us.amazon.nova-micro-v1:0",
       "status": 1
     }
   ]

@@ -260,11 +260,11 @@ class GamePlayer:
             summary = self._invokeAssistant(logs)
             if summary is None:
                 self.InfoMessage("!!DoMemory Retry!!")
-                self.agent["summary"] = "mistral.mixtral-8x7b-instruct-v0:1"
+                # self.agent["summary"] = "mistral.mixtral-8x7b-instruct-v0:1"
                 # assistant agent
                 summary_role = self.agent["summary_prompt"]
                 _summary_role = summary_role.replace("{num}", "144")
-                self.agent["assistant"] = GameAssistant(_summary_role, self.GM, 1, self.agent["summary"])
+                self.agent["assistant"] = GameAssistantV2(_summary_role, self.GM, 1, self.agent["summary"])
                 summary = self._invokeAssistant(logs)
                     
             _summary = summary[len(summary)-1]["content"]
